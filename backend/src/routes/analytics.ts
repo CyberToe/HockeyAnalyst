@@ -390,7 +390,41 @@ router.get('/games/:gameId', async (req: AuthRequest, res, next) => {
       include: {
         team: {
           include: {
-            players: true
+            players: {
+              include: {
+                shots: {
+                  include: {
+                    game: true,
+                    period: true
+                  },
+                  where: { gameId: gameId }
+                },
+                goalsScored: {
+                  include: {
+                    game: true
+                  },
+                  where: { gameId: gameId }
+                },
+                goalsAssisted1: {
+                  include: {
+                    game: true
+                  },
+                  where: { gameId: gameId }
+                },
+                goalsAssisted2: {
+                  include: {
+                    game: true
+                  },
+                  where: { gameId: gameId }
+                },
+                faceoffs: {
+                  include: {
+                    game: true
+                  },
+                  where: { gameId: gameId }
+                }
+              }
+            }
           }
         },
         shots: {
@@ -462,29 +496,44 @@ router.get('/games/:gameId', async (req: AuthRequest, res, next) => {
       };
     });
 
-    // Player statistics for this game
-    const playerStats = Array.from(new Set(teamShots.map(shot => shot.shooterPlayerId)))
-      .filter(Boolean)
-      .map(playerId => {
-        const player = (game.team as any).players?.find((p: any) => p.id === playerId);
-        const playerShots = teamShots.filter(shot => shot.shooterPlayerId === playerId);
-        const playerGoals = playerShots.filter(shot => shot.scored).length;
+    // Player statistics for this game - include ALL team players with comprehensive stats
+    const playerStats = game.team.players.map(player => {
+      // Shots from shot tracker (already filtered by gameId in query)
+      const shots = player.shots.length;
+      
+      // Goals from shot tracker (scored shots)
+      const goalsFromShots = player.shots.filter(shot => shot.scored).length;
+      
+      // Goals from goals and assists tracker (already filtered by gameId in query)
+      const goalsFromGoals = player.goalsScored.length;
+      
+      // Assists from goals and assists tracker (already filtered by gameId in query)
+      const assists = player.goalsAssisted1.length + player.goalsAssisted2.length;
+      
+      // Faceoffs (already filtered by gameId in query)
+      const faceoffsTaken = player.faceoffs.reduce((sum, faceoff) => sum + faceoff.taken, 0);
+      const faceoffsWon = player.faceoffs.reduce((sum, faceoff) => sum + faceoff.won, 0);
+      
+      // Use the greater of goals from shots vs goals from goals tracker
+      const goals = Math.max(goalsFromShots, goalsFromGoals);
 
-        return {
-          player: {
-            id: player?.id,
-            name: player?.name,
-            number: player?.number
-          },
-          statistics: {
-            shots: playerShots.length,
-            goals: playerGoals,
-            shootingPercentage: playerShots.length > 0 ? 
-              Math.round((playerGoals / playerShots.length) * 10000) / 100 : 0
-          }
-        };
-      })
-      .sort((a, b) => b.statistics.goals - a.statistics.goals);
+      return {
+        player: {
+          id: player.id,
+          name: player.name,
+          number: player.number
+        },
+        statistics: {
+          shots,
+          goals,
+          assists,
+          faceoffsTaken,
+          faceoffsWon,
+          shootingPercentage: shots > 0 ? 
+            Math.round((goals / shots) * 10000) / 100 : 0
+        }
+      };
+    }).sort((a, b) => b.statistics.goals - a.statistics.goals);
 
     // Shot timeline
     const shotTimeline = allShots.map(shot => ({
