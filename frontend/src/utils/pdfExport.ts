@@ -176,10 +176,6 @@ export const exportGameAnalysisToPDF = async (
       const actualHeight1 = (canvas1.height * imgWidth) / canvas1.width
       const scaledHeight1 = Math.min(actualHeight1, imgHeight)
       
-      pdf.setFontSize(10)
-      pdf.setFont('helvetica', 'bold')
-      pdf.text('Period 1', 20, yPosition)
-      yPosition += 5
       pdf.addImage(imgData1, 'PNG', 20, yPosition, imgWidth, scaledHeight1)
       
       // Period 2 (top right)
@@ -193,9 +189,6 @@ export const exportGameAnalysisToPDF = async (
       const scaledHeight2 = Math.min(actualHeight2, imgHeight)
       const rightX = 20 + imgWidth + 20
       
-      pdf.setFontSize(10)
-      pdf.setFont('helvetica', 'bold')
-      pdf.text('Period 2', rightX, yPosition - scaledHeight1 - 5)
       pdf.addImage(imgData2, 'PNG', rightX, yPosition, imgWidth, scaledHeight2)
       
       // Period 3 (bottom left)
@@ -209,10 +202,7 @@ export const exportGameAnalysisToPDF = async (
       const scaledHeight3 = Math.min(actualHeight3, imgHeight)
       const bottomY = yPosition + Math.max(scaledHeight1, scaledHeight2) + 20
       
-      pdf.setFontSize(10)
-      pdf.setFont('helvetica', 'bold')
-      pdf.text('Period 3', 20, bottomY)
-      pdf.addImage(imgData3, 'PNG', 20, bottomY + 5, imgWidth, scaledHeight3)
+      pdf.addImage(imgData3, 'PNG', 20, bottomY, imgWidth, scaledHeight3)
       
       // All Periods (bottom right)
       const canvasAll = await html2canvas(shotVisualizations[3], {
@@ -224,10 +214,7 @@ export const exportGameAnalysisToPDF = async (
       const actualHeightAll = (canvasAll.height * imgWidth) / canvasAll.width
       const scaledHeightAll = Math.min(actualHeightAll, imgHeight)
       
-      pdf.setFontSize(10)
-      pdf.setFont('helvetica', 'bold')
-      pdf.text('All Periods', rightX, bottomY)
-      pdf.addImage(imgDataAll, 'PNG', rightX, bottomY + 5, imgWidth, scaledHeightAll)
+      pdf.addImage(imgDataAll, 'PNG', rightX, bottomY, imgWidth, scaledHeightAll)
       
     } catch (error) {
       console.error('Error capturing shot visualizations:', error)
