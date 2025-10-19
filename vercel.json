@@ -5,6 +5,7 @@
   "installCommand": "cd frontend && npm install",
   "framework": null,
   "functions": {},
+  "builds": [],
   "routes": [
     {
       "src": "/(.*)",
