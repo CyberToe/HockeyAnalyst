@@ -13,15 +13,17 @@ interface Shot {
   }
   takenAt: string
   period: number
+  attackingDirection?: 'left' | 'right' | null
 }
 
 interface ShotVisualizationProps {
   shots: Shot[]
   period: number | 'all'
   title: string
+  periodAttackingDirection?: 'left' | 'right' | null
 }
 
-export default function ShotVisualization({ shots, period, title }: ShotVisualizationProps) {
+export default function ShotVisualization({ shots, period, title, periodAttackingDirection }: ShotVisualizationProps) {
   const [hoveredShot, setHoveredShot] = useState<Shot | null>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
@@ -148,9 +150,17 @@ export default function ShotVisualization({ shots, period, title }: ShotVisualiz
       let x = shot.xCoord
       let y = shot.yCoord
 
-      // For "All Periods", flip coordinates to show as if attacking direction is to the right
+      // Mirror shots based on attacking direction
       if (period === 'all') {
-        x = width - x
+        // For "All Periods", mirror shots that were taken when attacking direction was 'left'
+        if (shot.attackingDirection === 'left') {
+          x = width - x
+        }
+      } else {
+        // For individual periods, mirror shots if the period's attacking direction was 'left'
+        if (periodAttackingDirection === 'left') {
+          x = width - x
+        }
       }
 
       // Determine marker style based on shot properties (same as ShotTracker)
@@ -202,9 +212,22 @@ export default function ShotVisualization({ shots, period, title }: ShotVisualiz
     const x = event.clientX - rect.left
     const y = event.clientY - rect.top
 
-    // Find shot near click position
+    // Find shot near click position (accounting for mirrored coordinates)
     const clickedShot = filteredShots.find(shot => {
-      const distance = Math.sqrt((shot.xCoord - x) ** 2 + (shot.yCoord - y) ** 2)
+      let shotX = shot.xCoord
+      
+      // Apply same mirroring logic as in drawShotMarkers
+      if (period === 'all') {
+        if (shot.attackingDirection === 'left') {
+          shotX = canvas.width - shotX
+        }
+      } else {
+        if (periodAttackingDirection === 'left') {
+          shotX = canvas.width - shotX
+        }
+      }
+      
+      const distance = Math.sqrt((shotX - x) ** 2 + (shot.yCoord - y) ** 2)
       return distance < 15 // Within 15 pixels
     })
 

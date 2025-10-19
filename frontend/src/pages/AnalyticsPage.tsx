@@ -379,6 +379,7 @@ export default function AnalyticsPage() {
                         shots={gameAnalytics.shotTimeline || []}
                         period={1}
                         title="Period 1"
+                        periodAttackingDirection={gameAnalytics.periodStats?.find(p => p.period.periodNumber === 1)?.period.attackingDirection}
                       />
                     </div>
                     <div ref={(el) => shotVizRefs.current[1] = el}>
@@ -386,6 +387,7 @@ export default function AnalyticsPage() {
                         shots={gameAnalytics.shotTimeline || []}
                         period={2}
                         title="Period 2"
+                        periodAttackingDirection={gameAnalytics.periodStats?.find(p => p.period.periodNumber === 2)?.period.attackingDirection}
                       />
                     </div>
                     <div ref={(el) => shotVizRefs.current[2] = el}>
@@ -393,6 +395,7 @@ export default function AnalyticsPage() {
                         shots={gameAnalytics.shotTimeline || []}
                         period={3}
                         title="Period 3"
+                        periodAttackingDirection={gameAnalytics.periodStats?.find(p => p.period.periodNumber === 3)?.period.attackingDirection}
                       />
                     </div>
                     <div ref={(el) => shotVizRefs.current[3] = el}>

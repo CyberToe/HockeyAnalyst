@@ -548,7 +548,8 @@ router.get('/games/:gameId', async (req: AuthRequest, res, next) => {
         name: shot.shooter.name,
         number: shot.shooter.number
       } : null,
-      period: shot.period.periodNumber
+      period: shot.period.periodNumber,
+      attackingDirection: shot.period.attackingDirection
     }));
 
     res.json({
