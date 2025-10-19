@@ -1,5 +1,10 @@
 backend/
+**/backend/**
 node_modules/
 *.sql
 *.bat
 *.txt
+README.md
+SETUP.md
+HT BRD.txt
+TrainingAdviser-BRD.txt

@@ -5,7 +5,7 @@
   "main": "dist/index.js",
   "scripts": {
     "dev": "nodemon src/index.ts",
-    "build": "tsc",
+    "build:backend": "tsc",
     "start": "node dist/index.js",
     "test": "jest",
     "db:generate": "prisma generate",
