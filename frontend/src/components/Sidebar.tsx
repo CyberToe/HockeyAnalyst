@@ -7,7 +7,8 @@ import {
   UserGroupIcon,
   CalendarDaysIcon,
   ChevronRightIcon,
-  ChevronDownIcon
+  ChevronDownIcon,
+  ChartBarIcon
 } from '@heroicons/react/24/outline'
 import { useAuthStore } from '../stores/authStore'
 import { useState } from 'react'
@@ -128,6 +129,19 @@ export default function Sidebar() {
                         >
                           <CalendarDaysIcon className="mr-3 flex-shrink-0 h-4 w-4" />
                           Games
+                        </NavLink>
+                        <NavLink
+                          to={`/teams/${team.id}/analytics`}
+                          className={({ isActive }) =>
+                            `group flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors duration-200 ${
+                              isActive
+                                ? 'bg-primary-100 text-primary-900'
+                                : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                            }`
+                          }
+                        >
+                          <ChartBarIcon className="mr-3 flex-shrink-0 h-4 w-4" />
+                          Analytics
                         </NavLink>
                       </div>
                     )}

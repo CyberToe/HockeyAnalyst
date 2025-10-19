@@ -154,6 +154,109 @@ router.get('/teams/:teamId', requireTeamMember, async (req: AuthRequest, res, ne
   }
 });
 
+// Get team player analytics
+router.get('/teams/:teamId/players', requireTeamMember, async (req: AuthRequest, res, next) => {
+  try {
+    const { teamId } = req.params;
+    const { gameId } = req.query;
+
+    // Get team with players and their statistics
+    const team = await prisma.team.findUnique({
+      where: { id: teamId },
+      include: {
+        players: {
+          include: {
+            shots: {
+              include: {
+                game: true,
+                period: true
+              },
+              ...(gameId && gameId !== 'all' ? {
+                where: { gameId: gameId as string }
+              } : {})
+            },
+            goalsScored: {
+              include: {
+                game: true
+              },
+              ...(gameId && gameId !== 'all' ? {
+                where: { gameId: gameId as string }
+              } : {})
+            },
+            goalsAssisted1: {
+              include: {
+                game: true
+              },
+              ...(gameId && gameId !== 'all' ? {
+                where: { gameId: gameId as string }
+              } : {})
+            },
+            goalsAssisted2: {
+              include: {
+                game: true
+              },
+              ...(gameId && gameId !== 'all' ? {
+                where: { gameId: gameId as string }
+              } : {})
+            },
+            faceoffs: {
+              include: {
+                game: true
+              },
+              ...(gameId && gameId !== 'all' ? {
+                where: { gameId: gameId as string }
+              } : {})
+            }
+          }
+        }
+      }
+    });
+
+    if (!team) {
+      return res.status(404).json({ error: 'Team not found' });
+    }
+
+    // Calculate player statistics
+    const players = team.players.map(player => {
+      // Shots from shot tracker
+      const shots = player.shots.length;
+      
+      // Goals from shot tracker (scored shots)
+      const goalsFromShots = player.shots.filter(shot => shot.scored).length;
+      
+      // Goals from goals and assists tracker
+      const goalsFromGoals = player.goalsScored.length;
+      
+      // Assists from goals and assists tracker
+      const assists = player.goalsAssisted1.length + player.goalsAssisted2.length;
+      
+      // Faceoffs
+      const faceoffsTaken = player.faceoffs.reduce((sum, faceoff) => sum + faceoff.taken, 0);
+      const faceoffsWon = player.faceoffs.reduce((sum, faceoff) => sum + faceoff.won, 0);
+      
+      // Use the greater of goals from shots vs goals from goals tracker
+      const goals = Math.max(goalsFromShots, goalsFromGoals);
+
+      return {
+        id: player.id,
+        name: player.name,
+        number: player.number,
+        stats: {
+          shots,
+          goals,
+          assists,
+          faceoffsTaken,
+          faceoffsWon
+        }
+      };
+    });
+
+    res.json({ players });
+  } catch (error) {
+    next(error);
+  }
+});
+
 // Get player analytics
 router.get('/players/:playerId', async (req: AuthRequest, res, next) => {
   try {

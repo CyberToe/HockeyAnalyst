@@ -164,6 +164,9 @@ export const faceoffsApi = {
 // Analytics API
 export const analyticsApi = {
   getTeamAnalytics: (teamId: string) => api.get(`/analytics/teams/${teamId}`),
-  getPlayerAnalytics: (playerId: string) => api.get(`/analytics/players/${playerId}`),
+  getPlayerAnalytics: (teamId: string, gameId?: string) => {
+    const params = gameId && gameId !== 'all' ? { gameId } : {}
+    return api.get(`/analytics/teams/${teamId}/players`, { params })
+  },
   getGameAnalytics: (gameId: string) => api.get(`/analytics/games/${gameId}`),
 }
