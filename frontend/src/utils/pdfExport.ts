@@ -167,7 +167,6 @@ export const exportGameAnalysisToPDF = async (
       
       // Calculate dimensions for 2x2 grid (doubled size)
       const imgWidth = (pageWidth - 60) / 2 // Half width with margins
-      const imgHeight = 160 // Doubled height for consistency
       
       // Period 1 (top left)
       const canvas1 = await html2canvas(shotVisualizations[0], {
