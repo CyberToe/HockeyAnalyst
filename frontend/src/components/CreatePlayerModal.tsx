@@ -32,7 +32,7 @@ export default function CreatePlayerModal({ isOpen, onClose, onSuccess, teamId }
       // Clean up the data - remove number if it's empty or NaN
       const cleanData = {
         name: data.name,
-        ...(data.number && data.number !== '' && !isNaN(Number(data.number)) ? { number: Number(data.number) } : {})
+        ...(data.number && data.number !== 0 ? { number: data.number } : {})
       }
       await playersApi.createPlayer(teamId, cleanData)
       toast.success('Player added successfully!')

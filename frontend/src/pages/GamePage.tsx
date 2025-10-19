@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { gamesApi, goalsApi, faceoffsApi } from '../lib/api'
@@ -14,7 +14,6 @@ interface Player {
 
 export default function GamePage() {
   const { gameId } = useParams<{ teamId: string; gameId: string }>()
-  const queryClient = useQueryClient()
   const [selectedTracker, setSelectedTracker] = useState<string>('')
   const [showComingSoon, setShowComingSoon] = useState<boolean>(false)
 
@@ -305,7 +304,7 @@ export default function GamePage() {
                 <div className="mb-4">
                   <h4 className="text-xs font-medium text-gray-600 mb-2">Select Player</h4>
                   <div className="flex flex-wrap gap-1">
-                    {game.team.players.map((player) => (
+                    {game.team.players.map((player: Player) => (
                       <button
                         key={player.id}
                         onClick={() => handlePlayerSelect(player)}
@@ -432,8 +431,8 @@ export default function GamePage() {
                   <h4 className="text-xs font-medium text-gray-600 mb-2">Add Player to Faceoffs Tracking</h4>
                   <div className="flex flex-wrap gap-1">
                     {game.team.players
-                      .filter(player => !faceoffsData?.faceoffs?.some((f: any) => f.playerId === player.id))
-                      .map((player) => (
+                      .filter((player: Player) => !faceoffsData?.faceoffs?.some((f: any) => f.playerId === player.id))
+                      .map((player: Player) => (
                         <button
                           key={player.id}
                           onClick={() => addPlayerToFaceoffsMutation.mutate({ playerId: player.id })}

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { teamsApi, playersApi } from '../lib/api'
 import { PlusIcon, TrashIcon, PencilIcon } from '@heroicons/react/24/outline'
@@ -13,7 +13,6 @@ interface Player {
 
 export default function TeamPlayersPage() {
   const { teamId } = useParams<{ teamId: string }>()
-  const navigate = useNavigate()
   const queryClient = useQueryClient()
   
   const [showCreateModal, setShowCreateModal] = useState(false)
