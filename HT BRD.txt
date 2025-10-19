@@ -1,0 +1,201 @@
+Hockey Analytics Tracking Application
+
+Business Requirements Document (BRD)
+
+Version: 1.0
+Database: PostgreSQL
+Prepared for: Hockey Analytics App Project
+Prepared by: Paul Leblanc
+
+1. Purpose
+
+This document describes the functional and non-functional requirements of a hockey analytics tracking application designed to record, share, and analyze shot data during hockey games. The application supports multiple users, shared teams, and aggregated player statistics across games.
+
+The system provides a visual rink interface where users can track shots live or after a game, noting location, result (score/miss), player, period, and attack direction.
+
+2. System Overview
+
+The application allows users to:
+
+Create user accounts and manage secure access.
+
+Create or join teams using a unique 7-character team code.
+
+Add players to teams and record games.
+
+Share teams between users so that multiple users can view and update team data.
+
+Record game shots interactively on a rink interface.
+
+Automatically generate player statistics across all games.
+
+The application ensures that if one user modifies team or game data, all users who share that team will see the same information.
+
+3. Key Entities and Relationships
+3.1 Users
+
+Each user has:
+
+Email (unique)
+
+Password (stored hashed)
+
+Display name
+
+Users can create teams, join teams, and track statistics.
+
+3.2 Teams
+
+Each team has:
+
+Name and optional description.
+
+A unique share code (7 characters) that allows others to join.
+
+One or more users associated with it.
+
+One or more players and games.
+
+The creator of a team is automatically assigned as admin.
+
+Admins can:
+
+Manage team members (promote to admin, remove members).
+
+Delete the team (with confirmation).
+
+3.3 Players
+
+Each player belongs to one team.
+
+Fields: Name (required), Number (optional).
+
+Players are used to link shots and generate per-player statistics.
+
+3.4 Games
+
+Each game belongs to one team.
+
+Each game automatically has 3 periods created.
+
+Each period tracks the attacking direction (left or right).
+
+Games store shots taken during play.
+
+3.5 Shots
+
+Each shot is linked to:
+
+Game
+
+Period
+
+Player (if known)
+
+Coordinates (x, y) on the rink
+
+Whether it scored or missed
+
+Whether it was for the team or against
+
+Timestamp
+
+Shots are entered via a graphical rink interface.
+
+4. Functional Requirements
+4.1 User Management
+
+Users can register and log in with email/password.
+
+Passwords are securely hashed.
+
+Users can reset passwords.
+
+Users can view and manage their associated teams.
+
+4.2 Team Management
+
+Users can:
+
+Create a new team (generates unique code).
+
+Join an existing team using its share code.
+
+View all teams they belong to.
+
+Admins can:
+
+Add/remove members.
+
+Promote members to admin.
+
+Delete the team (confirmation required).
+
+Non-admin members can leave a team but cannot delete it.
+
+4.3 Player Management
+
+Admins can add/edit/delete players from a team.
+
+Each player must have a name, and may have a number.
+
+Player names must be unique within the team.
+
+4.4 Game Management
+
+Users can create games within a team.
+
+Upon game creation:
+
+3 periods (1, 2, 3) are automatically generated.
+
+Users can update game metadata (opponent, location, start time).
+
+Users can select attack direction for each period (left or right).
+
+4.5 Shot Tracking Interface
+
+When a game is selected:
+
+The user selects the period (1, 2, or 3).
+
+The user selects the attack direction (left or right).
+
+The user sees a rink view with team and opposing players listed.
+
+The user chooses:
+
+The shooter (player or “Against”)
+
+The outcome (Score or Miss)
+
+The user clicks a location on the rink image, which records:
+
+X, Y coordinates of the click
+
+Player
+
+Period
+
+Attack direction
+
+Score/Miss flag
+
+“For” or “Against” (based on the team selection)
+
+Timestamp
+
+All this information is stored in the database under the associated team, game, and player.
+
+5. Statistics and Analytics
+5.1 Player Statistics
+
+For each player, the system aggregates data across all games:
+
+Total shots taken
+
+Total goals (scored = true)
+
+Shooting percentage = (goals ÷ total shots) × 100
+
+Displayed as:
