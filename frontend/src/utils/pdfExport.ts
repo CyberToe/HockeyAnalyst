@@ -145,7 +145,10 @@ export const exportGameAnalysisToPDF = async (
     xPosition += colWidths[4]
     pdf.text(player.statistics.faceoffsWon.toString(), xPosition, yPosition)
     xPosition += colWidths[5]
-    pdf.text(`${player.statistics.shootingPercentage.toFixed(1)}%`, xPosition, yPosition)
+    const faceoffPercentage = player.statistics.faceoffsTaken > 0 
+      ? (player.statistics.faceoffsWon / player.statistics.faceoffsTaken) * 100 
+      : 0
+    pdf.text(`${faceoffPercentage.toFixed(1)}%`, xPosition, yPosition)
     yPosition += 7
   })
 
