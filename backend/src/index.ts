@@ -31,7 +31,8 @@ app.use(cors({
     'http://localhost:5173', 
     'http://localhost:5174', 
     'http://localhost:5175',
-    process.env.FRONTEND_URL || 'https://your-vercel-app.vercel.app'
+    'https://hockey-analyst.vercel.app',
+    process.env.FRONTEND_URL || 'https://hockey-analyst.vercel.app'
   ],
   credentials: true
 }));
