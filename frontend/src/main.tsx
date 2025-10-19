@@ -36,7 +36,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
               },
             },
             error: {
-              duration: 5000,
+              duration: 12000,
               iconTheme: {
                 primary: '#ef4444',
                 secondary: '#fff',
