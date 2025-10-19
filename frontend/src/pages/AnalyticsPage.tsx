@@ -306,7 +306,19 @@ export default function AnalyticsPage() {
         <div className="space-y-6">
           {/* Game Selection */}
           <div className="bg-white rounded-lg border border-gray-200 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Select Game</h3>
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold text-gray-900">Select Game</h3>
+              {selectedGameAnalysisId && gameAnalytics && (
+                <button
+                  onClick={handlePDFExport}
+                  disabled={isExporting}
+                  className="flex items-center px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <DocumentArrowDownIcon className="h-4 w-4 mr-2" />
+                  {isExporting ? 'Exporting...' : 'Export PDF'}
+                </button>
+              )}
+            </div>
             <div className="relative">
               <button
                 onClick={() => setShowGameAnalysisDropdown(!showGameAnalysisDropdown)}
@@ -361,7 +373,7 @@ export default function AnalyticsPage() {
               ) : gameAnalytics ? (
                 <div className="space-y-6">
                   {/* Shot Visualizations */}
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <div className="space-y-6">
                     <div ref={(el) => shotVizRefs.current[0] = el}>
                       <ShotVisualization
                         shots={gameAnalytics.shotTimeline || []}
@@ -417,16 +429,8 @@ export default function AnalyticsPage() {
 
                   {/* Player Statistics */}
                   <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-                    <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+                    <div className="px-6 py-4 border-b border-gray-200">
                       <h3 className="text-lg font-semibold text-gray-900">Player Statistics</h3>
-                      <button
-                        onClick={handlePDFExport}
-                        disabled={isExporting}
-                        className="flex items-center px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        <DocumentArrowDownIcon className="h-4 w-4 mr-2" />
-                        {isExporting ? 'Exporting...' : 'Export PDF'}
-                      </button>
                     </div>
 
                     <div className="overflow-x-auto">
