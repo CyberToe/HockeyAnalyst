@@ -24,6 +24,9 @@ import { authenticateToken } from './middleware/auth';
 const app = express();
 const prisma = new PrismaClient();
 
+// Trust proxy for Railway deployment
+app.set('trust proxy', 1);
+
 // Security middleware
 app.use(helmet());
 app.use(cors({
