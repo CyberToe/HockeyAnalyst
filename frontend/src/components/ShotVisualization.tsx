@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 
 interface Shot {
   id: string
@@ -23,6 +23,7 @@ interface ShotVisualizationProps {
 
 export default function ShotVisualization({ shots, period, title }: ShotVisualizationProps) {
   const [hoveredShot, setHoveredShot] = useState<Shot | null>(null)
+  const canvasRef = useRef<HTMLCanvasElement>(null)
 
   // Filter shots by period
   const filteredShots = period === 'all' 
@@ -39,18 +40,175 @@ export default function ShotVisualization({ shots, period, title }: ShotVisualiz
   const shotsAgainstCount = shotsAgainst.length
   const goalsAgainstCount = shotsAgainst.filter(shot => shot.scored).length
 
-  // Convert coordinates to percentage for positioning on the rink
-  const getPositionStyle = (xCoord: number, yCoord: number) => {
-    // Assuming coordinates are normalized between 0-1
-    // Adjust these values based on your actual coordinate system
-    const x = xCoord * 100
-    const y = yCoord * 100
-    return {
-      left: `${x}%`,
-      top: `${y}%`,
-      transform: 'translate(-50%, -50%)'
+  // Draw the hockey rink on canvas (same as ShotTracker)
+  const drawRink = () => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
+
+    const width = canvas.width
+    const height = canvas.height
+
+    // Clear canvas
+    ctx.clearRect(0, 0, width, height)
+
+    // Background (ice)
+    ctx.fillStyle = '#e8f4f8'
+    ctx.fillRect(0, 0, width, height)
+
+    // Rink outline
+    ctx.strokeStyle = '#000'
+    ctx.lineWidth = 3
+    ctx.strokeRect(0, 0, width, height)
+
+    // Center line (red)
+    ctx.strokeStyle = '#c41e3a'
+    ctx.lineWidth = 4
+    ctx.beginPath()
+    ctx.moveTo(width / 2, 0)
+    ctx.lineTo(width / 2, height)
+    ctx.stroke()
+
+    // Blue lines
+    ctx.strokeStyle = '#0033a0'
+    ctx.lineWidth = 4
+    
+    // Left blue line
+    ctx.beginPath()
+    ctx.moveTo(width * 0.33, 0)
+    ctx.lineTo(width * 0.33, height)
+    ctx.stroke()
+    
+    // Right blue line
+    ctx.beginPath()
+    ctx.moveTo(width * 0.66, 0)
+    ctx.lineTo(width * 0.66, height)
+    ctx.stroke()
+
+    // Face-off circles
+    drawFaceoffCircle(ctx, width * 0.2, height * 0.35, 40)
+    drawFaceoffCircle(ctx, width * 0.2, height * 0.65, 40)
+    drawFaceoffCircle(ctx, width * 0.8, height * 0.35, 40)
+    drawFaceoffCircle(ctx, width * 0.8, height * 0.65, 40)
+
+    // Center face-off circle
+    drawFaceoffCircle(ctx, width * 0.5, height * 0.5, 50)
+
+    // Goal creases
+    drawGoalCrease(ctx, width * 0.05, height * 0.5)
+    drawGoalCrease(ctx, width * 0.95, height * 0.5)
+
+    // Draw shot markers
+    drawShotMarkers(ctx, width)
+  }
+
+  // Draw face-off circle
+  const drawFaceoffCircle = (ctx: CanvasRenderingContext2D, x: number, y: number, radius: number) => {
+    ctx.strokeStyle = '#c41e3a'
+    ctx.lineWidth = 2
+    ctx.beginPath()
+    ctx.arc(x, y, radius, 0, Math.PI * 2)
+    ctx.stroke()
+
+    // Center dot
+    ctx.fillStyle = '#c41e3a'
+    ctx.beginPath()
+    ctx.arc(x, y, 4, 0, Math.PI * 2)
+    ctx.fill()
+  }
+
+  // Draw goal crease
+  const drawGoalCrease = (ctx: CanvasRenderingContext2D, x: number, y: number) => {
+    ctx.strokeStyle = '#c41e3a'
+    ctx.fillStyle = 'rgba(196, 30, 58, 0.1)'
+    ctx.lineWidth = 2
+
+    ctx.beginPath()
+    if (x < canvasRef.current!.width / 2) {
+      // Left goal
+      ctx.arc(x, y, 30, -Math.PI / 2, Math.PI / 2)
+    } else {
+      // Right goal
+      ctx.arc(x, y, 30, Math.PI / 2, -Math.PI / 2)
+    }
+    ctx.fill()
+    ctx.stroke()
+  }
+
+  // Draw shot markers (same logic as ShotTracker)
+  const drawShotMarkers = (ctx: CanvasRenderingContext2D, width: number) => {
+    filteredShots.forEach(shot => {
+      const x = shot.xCoord
+      const y = shot.yCoord
+
+      // Determine marker style based on shot properties (same as ShotTracker)
+      let fillColor, strokeColor, isFilled
+
+      if (shot.scored && !shot.scoredAgainst) {
+        // Score - For
+        fillColor = '#38ef7d'
+        strokeColor = '#11998e'
+        isFilled = true
+      } else if (shot.scored && shot.scoredAgainst) {
+        // Score - Against
+        fillColor = '#ff6a00'
+        strokeColor = '#ee0979'
+        isFilled = true
+      } else if (!shot.scored && !shot.scoredAgainst) {
+        // Miss - For
+        fillColor = 'transparent'
+        strokeColor = '#00f2fe'
+        isFilled = false
+      } else {
+        // Miss - Against
+        fillColor = 'transparent'
+        strokeColor = '#fa709a'
+        isFilled = false
+      }
+
+      // Draw marker
+      ctx.beginPath()
+      ctx.arc(x, y, 8, 0, Math.PI * 2)
+      
+      if (isFilled) {
+        ctx.fillStyle = fillColor
+        ctx.fill()
+      }
+      
+      ctx.strokeStyle = strokeColor
+      ctx.lineWidth = 2
+      ctx.stroke()
+    })
+  }
+
+  // Handle canvas click for tooltip
+  const handleCanvasClick = (event: React.MouseEvent<HTMLCanvasElement>) => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+
+    const rect = canvas.getBoundingClientRect()
+    const x = event.clientX - rect.left
+    const y = event.clientY - rect.top
+
+    // Find shot near click position
+    const clickedShot = filteredShots.find(shot => {
+      const distance = Math.sqrt((shot.xCoord - x) ** 2 + (shot.yCoord - y) ** 2)
+      return distance < 15 // Within 15 pixels
+    })
+
+    if (clickedShot) {
+      setHoveredShot(clickedShot)
+    } else {
+      setHoveredShot(null)
     }
   }
+
+  // Draw rink when component mounts or shots change
+  useEffect(() => {
+    drawRink()
+  }, [filteredShots])
 
   return (
     <div className="bg-white rounded-lg border border-gray-200 p-6">
@@ -62,57 +220,37 @@ export default function ShotVisualization({ shots, period, title }: ShotVisualiz
       </div>
 
       <div className="relative">
-        {/* Rink Background */}
-        <div className="relative w-full h-96 bg-gray-100 rounded-lg border-2 border-gray-300 overflow-hidden">
-          {/* Rink lines and markings would go here */}
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="w-4/5 h-4/5 border-2 border-gray-400 rounded-lg bg-white">
-              {/* Center line */}
-              <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-gray-400"></div>
-              {/* Center circle */}
-              <div className="absolute top-1/2 left-1/2 w-16 h-16 border-2 border-gray-400 rounded-full transform -translate-x-1/2 -translate-y-1/2"></div>
-              {/* Goal lines */}
-              <div className="absolute top-0 left-0 right-0 h-1 bg-gray-400"></div>
-              <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-400"></div>
+        {/* Legend - Same as ShotTracker */}
+        <div className="flex justify-center mb-4">
+          <div className="flex flex-wrap gap-3 text-xs">
+            <div className="flex items-center gap-1">
+              <div className="w-3 h-3 rounded-full" style={{backgroundColor: '#38ef7d', border: '2px solid #11998e'}}></div>
+              <span className="text-gray-600">Score - For</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <div className="w-3 h-3 rounded-full" style={{backgroundColor: 'transparent', border: '2px solid #00f2fe'}}></div>
+              <span className="text-gray-600">Miss - For</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <div className="w-3 h-3 rounded-full" style={{backgroundColor: '#ff6a00', border: '2px solid #ee0979'}}></div>
+              <span className="text-gray-600">Score - Against</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <div className="w-3 h-3 rounded-full" style={{backgroundColor: 'transparent', border: '2px solid #fa709a'}}></div>
+              <span className="text-gray-600">Miss - Against</span>
             </div>
           </div>
+        </div>
 
-          {/* Shots For (Left side) */}
-          <div className="absolute left-4 top-4 bottom-4 w-1/3">
-            <div className="text-xs font-medium text-gray-700 mb-2">Shots For</div>
-            <div className="text-xs text-gray-600">
-              {shotsForCount} shots, {goalsForCount} goals
-            </div>
-          </div>
-
-          {/* Shots Against (Right side) */}
-          <div className="absolute right-4 top-4 bottom-4 w-1/3 text-right">
-            <div className="text-xs font-medium text-gray-700 mb-2">Shots Against</div>
-            <div className="text-xs text-gray-600">
-              {shotsAgainstCount} shots, {goalsAgainstCount} goals
-            </div>
-          </div>
-
-          {/* Shot markers */}
-          {filteredShots.map((shot) => (
-            <div
-              key={shot.id}
-              className="absolute cursor-pointer z-10"
-              style={getPositionStyle(shot.xCoord, shot.yCoord)}
-              onMouseEnter={() => setHoveredShot(shot)}
-              onMouseLeave={() => setHoveredShot(null)}
-            >
-              <div
-                className={`w-3 h-3 rounded-full border-2 ${
-                  shot.scored
-                    ? 'bg-green-500 border-green-700'
-                    : shot.scoredAgainst
-                    ? 'bg-red-500 border-red-700'
-                    : 'bg-blue-500 border-blue-700'
-                }`}
-              />
-            </div>
-          ))}
+        {/* Canvas for rink */}
+        <div className="flex justify-center">
+          <canvas
+            ref={canvasRef}
+            width={800}
+            height={400}
+            className="border border-gray-300 rounded-lg cursor-pointer"
+            onClick={handleCanvasClick}
+          />
         </div>
 
         {/* Shot tooltip */}
@@ -131,22 +269,6 @@ export default function ShotVisualization({ shots, period, title }: ShotVisualiz
             </div>
           </div>
         )}
-
-        {/* Legend */}
-        <div className="mt-4 flex items-center space-x-6 text-sm">
-          <div className="flex items-center">
-            <div className="w-3 h-3 bg-green-500 border-2 border-green-700 rounded-full mr-2"></div>
-            <span>Goal</span>
-          </div>
-          <div className="flex items-center">
-            <div className="w-3 h-3 bg-blue-500 border-2 border-blue-700 rounded-full mr-2"></div>
-            <span>Shot</span>
-          </div>
-          <div className="flex items-center">
-            <div className="w-3 h-3 bg-red-500 border-2 border-red-700 rounded-full mr-2"></div>
-            <span>Goal Against</span>
-          </div>
-        </div>
       </div>
     </div>
   )
