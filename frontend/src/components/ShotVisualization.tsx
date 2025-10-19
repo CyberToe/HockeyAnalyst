@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { MapPinIcon } from '@heroicons/react/24/outline'
 
 interface Shot {
   id: string
