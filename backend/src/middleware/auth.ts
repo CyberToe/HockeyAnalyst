@@ -24,7 +24,8 @@ export const authenticateToken = async (
   }
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as { userId: string };
+    const jwtSecret = process.env.JWT_TOKEN || 'hockey-analytics-super-secret-key-2025-production-change-this';
+    const decoded = jwt.verify(token, jwtSecret) as { userId: string };
     
     // Verify user still exists
     const user = await prisma.user.findUnique({
