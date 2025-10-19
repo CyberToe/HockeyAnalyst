@@ -101,7 +101,7 @@ export default function ShotVisualization({ shots, period, title }: ShotVisualiz
     drawGoalCrease(ctx, width * 0.95, height * 0.5)
 
     // Draw shot markers
-    drawShotMarkers(ctx, width)
+    drawShotMarkers(ctx)
   }
 
   // Draw face-off circle
@@ -138,7 +138,7 @@ export default function ShotVisualization({ shots, period, title }: ShotVisualiz
   }
 
   // Draw shot markers (same logic as ShotTracker)
-  const drawShotMarkers = (ctx: CanvasRenderingContext2D, width: number) => {
+  const drawShotMarkers = (ctx: CanvasRenderingContext2D) => {
     filteredShots.forEach(shot => {
       const x = shot.xCoord
       const y = shot.yCoord
