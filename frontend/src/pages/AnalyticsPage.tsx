@@ -27,10 +27,20 @@ export default function AnalyticsPage() {
 
 
   // Fetch player analytics
-  const { data: playerAnalytics, isLoading: analyticsLoading } = useQuery({
+  const { data: playerAnalytics, isLoading: analyticsLoading, error: analyticsError } = useQuery({
     queryKey: ['playerAnalytics', teamId, selectedGameId],
     queryFn: () => analyticsApi.getPlayerAnalytics(teamId!, selectedGameId).then(res => res.data),
     enabled: !!teamId && analysisType === 'players'
+  })
+
+  // Debug logging
+  console.log('Analytics Debug:', {
+    teamId,
+    selectedGameId,
+    analysisType,
+    playerAnalytics,
+    analyticsLoading,
+    analyticsError
   })
 
   const handleAnalysisTypeChange = (type: AnalysisType) => {
@@ -154,6 +164,26 @@ export default function AnalyticsPage() {
               <div className="p-6 text-center">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto"></div>
                 <p className="mt-2 text-sm text-gray-600">Loading player statistics...</p>
+              </div>
+            ) : analyticsError ? (
+              <div className="p-6 text-center">
+                <p className="text-red-600">Error loading player statistics</p>
+                <p className="text-sm text-gray-500 mt-1">
+                  {analyticsError.message?.includes('404') 
+                    ? 'Analytics API not available. Please ensure the backend is deployed with the latest code.'
+                    : analyticsError.message
+                  }
+                </p>
+              </div>
+            ) : !playerAnalytics?.players || playerAnalytics.players.length === 0 ? (
+              <div className="p-6 text-center">
+                <p className="text-gray-600">No player data available</p>
+                <p className="text-sm text-gray-500 mt-1">
+                  {selectedGameId === 'all' 
+                    ? 'No players found for this team' 
+                    : 'No players found for the selected game'
+                  }
+                </p>
               </div>
             ) : (
               <div className="overflow-x-auto">

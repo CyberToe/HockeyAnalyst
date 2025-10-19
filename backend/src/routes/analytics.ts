@@ -216,6 +216,7 @@ router.get('/teams/:teamId/players', requireTeamMember, async (req: AuthRequest,
       return res.status(404).json({ error: 'Team not found' });
     }
 
+
     // Calculate player statistics
     const players = team.players.map(player => {
       // Shots from shot tracker
@@ -250,6 +251,7 @@ router.get('/teams/:teamId/players', requireTeamMember, async (req: AuthRequest,
         }
       };
     });
+
 
     res.json({ players });
   } catch (error) {
