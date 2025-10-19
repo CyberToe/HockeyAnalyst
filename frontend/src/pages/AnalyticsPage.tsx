@@ -372,6 +372,12 @@ export default function AnalyticsPage() {
                 </div>
               ) : gameAnalytics ? (
                 <div className="space-y-6">
+                  {/* Debug logging */}
+                  {console.log('Game Analytics Data:', {
+                    periodStats: gameAnalytics.periodStats,
+                    shotTimeline: gameAnalytics.shotTimeline?.slice(0, 3) // First 3 shots for debugging
+                  })}
+                  
                   {/* Shot Visualizations */}
                   <div className="space-y-6">
                     <div ref={(el) => shotVizRefs.current[0] = el}>
@@ -379,7 +385,11 @@ export default function AnalyticsPage() {
                         shots={gameAnalytics.shotTimeline || []}
                         period={1}
                         title="Period 1"
-                        periodAttackingDirection={gameAnalytics.periodStats?.find(p => p.period.periodNumber === 1)?.period.attackingDirection}
+                        periodAttackingDirection={(() => {
+                          const direction = gameAnalytics.periodStats?.find((p: any) => p.period.periodNumber === 1)?.period.attackingDirection;
+                          console.log('Period 1 attacking direction:', direction);
+                          return direction;
+                        })()}
                       />
                     </div>
                     <div ref={(el) => shotVizRefs.current[1] = el}>
@@ -387,7 +397,11 @@ export default function AnalyticsPage() {
                         shots={gameAnalytics.shotTimeline || []}
                         period={2}
                         title="Period 2"
-                        periodAttackingDirection={gameAnalytics.periodStats?.find(p => p.period.periodNumber === 2)?.period.attackingDirection}
+                        periodAttackingDirection={(() => {
+                          const direction = gameAnalytics.periodStats?.find((p: any) => p.period.periodNumber === 2)?.period.attackingDirection;
+                          console.log('Period 2 attacking direction:', direction);
+                          return direction;
+                        })()}
                       />
                     </div>
                     <div ref={(el) => shotVizRefs.current[2] = el}>
@@ -395,7 +409,11 @@ export default function AnalyticsPage() {
                         shots={gameAnalytics.shotTimeline || []}
                         period={3}
                         title="Period 3"
-                        periodAttackingDirection={gameAnalytics.periodStats?.find(p => p.period.periodNumber === 3)?.period.attackingDirection}
+                        periodAttackingDirection={(() => {
+                          const direction = gameAnalytics.periodStats?.find((p: any) => p.period.periodNumber === 3)?.period.attackingDirection;
+                          console.log('Period 3 attacking direction:', direction);
+                          return direction;
+                        })()}
                       />
                     </div>
                     <div ref={(el) => shotVizRefs.current[3] = el}>

@@ -146,6 +146,18 @@ export default function ShotVisualization({ shots, period, title, periodAttackin
     
     const width = canvas.width
 
+    // Debug logging
+    console.log(`Drawing shots for period ${period}:`, {
+      period,
+      periodAttackingDirection,
+      totalShots: filteredShots.length,
+      shots: filteredShots.map(shot => ({
+        id: shot.id,
+        xCoord: shot.xCoord,
+        attackingDirection: shot.attackingDirection
+      }))
+    })
+
     filteredShots.forEach(shot => {
       let x = shot.xCoord
       let y = shot.yCoord
@@ -154,11 +166,13 @@ export default function ShotVisualization({ shots, period, title, periodAttackin
       if (period === 'all') {
         // For "All Periods", mirror shots that were taken when attacking direction was 'left'
         if (shot.attackingDirection === 'left') {
+          console.log(`Mirroring shot ${shot.id} for all periods (left direction)`)
           x = width - x
         }
       } else {
         // For individual periods, mirror shots if the period's attacking direction was 'left'
         if (periodAttackingDirection === 'left') {
+          console.log(`Mirroring shot ${shot.id} for period ${period} (left direction)`)
           x = width - x
         }
       }
