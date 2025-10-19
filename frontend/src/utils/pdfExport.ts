@@ -165,13 +165,13 @@ export const exportGameAnalysisToPDF = async (
       pdf.text('Shot Visualizations - All Periods', 20, yPosition)
       yPosition += 15
       
-      // Calculate dimensions for 2x2 grid
+      // Calculate dimensions for 2x2 grid (doubled size)
       const imgWidth = (pageWidth - 60) / 2 // Half width with margins
-      const imgHeight = 80 // Fixed height for consistency
+      const imgHeight = 160 // Doubled height for consistency
       
       // Period 1 (top left)
       const canvas1 = await html2canvas(shotVisualizations[0], {
-        scale: 1.2,
+        scale: 2.4,
         useCORS: true,
         backgroundColor: '#ffffff'
       })
@@ -183,7 +183,7 @@ export const exportGameAnalysisToPDF = async (
       
       // Period 2 (top right)
       const canvas2 = await html2canvas(shotVisualizations[1], {
-        scale: 1.2,
+        scale: 2.4,
         useCORS: true,
         backgroundColor: '#ffffff'
       })
@@ -196,20 +196,20 @@ export const exportGameAnalysisToPDF = async (
       
       // Period 3 (bottom left)
       const canvas3 = await html2canvas(shotVisualizations[2], {
-        scale: 1.2,
+        scale: 2.4,
         useCORS: true,
         backgroundColor: '#ffffff'
       })
       const imgData3 = canvas3.toDataURL('image/png')
       const actualHeight3 = (canvas3.height * imgWidth) / canvas3.width
       const scaledHeight3 = Math.min(actualHeight3, imgHeight)
-      const bottomY = yPosition + Math.max(scaledHeight1, scaledHeight2) + 20
+      const bottomY = yPosition + Math.max(scaledHeight1, scaledHeight2) + 40
       
       pdf.addImage(imgData3, 'PNG', 20, bottomY, imgWidth, scaledHeight3)
       
       // All Periods (bottom right)
       const canvasAll = await html2canvas(shotVisualizations[3], {
-        scale: 1.2,
+        scale: 2.4,
         useCORS: true,
         backgroundColor: '#ffffff'
       })
