@@ -25,6 +25,9 @@ interface GameAnalytics {
     statistics: {
       shots: number
       goals: number
+      assists: number
+      faceoffsTaken: number
+      faceoffsWon: number
       shootingPercentage: number
     }
   }>
@@ -104,43 +107,6 @@ export const exportGameAnalysisToPDF = async (
     yPosition += 7
   })
   yPosition += 10
-
-  // Player Statistics Table
-  checkNewPage(50)
-  pdf.setFontSize(14)
-  pdf.setFont('helvetica', 'bold')
-  pdf.text('Player Statistics', 20, yPosition)
-  yPosition += 10
-
-  // Table headers
-  pdf.setFontSize(10)
-  pdf.setFont('helvetica', 'bold')
-  const tableHeaders = ['Player', 'Shots', 'Goals', 'Shooting %']
-  const colWidths = [60, 20, 20, 30]
-  let xPosition = 20
-
-  tableHeaders.forEach((header, index) => {
-    pdf.text(header, xPosition, yPosition)
-    xPosition += colWidths[index]
-  })
-  yPosition += 7
-
-  // Table rows
-  pdf.setFont('helvetica', 'normal')
-  gameAnalytics.playerStats.forEach((player) => {
-    checkNewPage(15)
-    xPosition = 20
-    pdf.text(player.player.name, xPosition, yPosition)
-    xPosition += colWidths[0]
-    pdf.text(player.statistics.shots.toString(), xPosition, yPosition)
-    xPosition += colWidths[1]
-    pdf.text(player.statistics.goals.toString(), xPosition, yPosition)
-    xPosition += colWidths[2]
-    pdf.text(`${player.statistics.shootingPercentage.toFixed(1)}%`, xPosition, yPosition)
-    yPosition += 7
-  })
-
-  yPosition += 15
 
   // Player Statistics Table
   checkNewPage(50)
