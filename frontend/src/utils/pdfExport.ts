@@ -142,34 +142,104 @@ export const exportGameAnalysisToPDF = async (
 
   yPosition += 15
 
-  // Shot Visualizations
-  for (let i = 0; i < shotVisualizations.length; i++) {
-    checkNewPage(100)
+  // Shot Visualizations - Grouped by pages
+  // Page 1: Period 1 and Period 2
+  if (shotVisualizations.length >= 2) {
+    pdf.addPage()
+    yPosition = 20
     
+    // Period 1
     try {
-      const canvas = await html2canvas(shotVisualizations[i], {
-        scale: 2,
+      const canvas1 = await html2canvas(shotVisualizations[0], {
+        scale: 1.5,
         useCORS: true,
         backgroundColor: '#ffffff'
       })
       
-      const imgData = canvas.toDataURL('image/png')
-      const imgWidth = pageWidth - 40
-      const imgHeight = (canvas.height * imgWidth) / canvas.width
-      
-      pdf.addPage()
-      yPosition = 20
+      const imgData1 = canvas1.toDataURL('image/png')
+      const imgWidth = (pageWidth - 60) / 2 // Half width for side-by-side
+      const imgHeight = (canvas1.height * imgWidth) / canvas1.width
       
       pdf.setFontSize(14)
       pdf.setFont('helvetica', 'bold')
-      pdf.text(`Shot Visualization - ${i === 0 ? 'Period 1' : i === 1 ? 'Period 2' : i === 2 ? 'Period 3' : 'All Periods'}`, 20, yPosition)
-      yPosition += 10
+      pdf.text('Shot Visualizations - Periods 1 & 2', 20, yPosition)
+      yPosition += 15
       
-      pdf.addImage(imgData, 'PNG', 20, yPosition, imgWidth, imgHeight)
+      // Period 1 (left side)
+      pdf.setFontSize(12)
+      pdf.setFont('helvetica', 'bold')
+      pdf.text('Period 1', 20, yPosition)
+      yPosition += 5
+      pdf.addImage(imgData1, 'PNG', 20, yPosition, imgWidth, imgHeight)
+      
+      // Period 2 (right side)
+      const canvas2 = await html2canvas(shotVisualizations[1], {
+        scale: 1.5,
+        useCORS: true,
+        backgroundColor: '#ffffff'
+      })
+      
+      const imgData2 = canvas2.toDataURL('image/png')
+      const rightX = 20 + imgWidth + 20
+      
+      pdf.setFontSize(12)
+      pdf.setFont('helvetica', 'bold')
+      pdf.text('Period 2', rightX, yPosition - imgHeight - 5)
+      pdf.addImage(imgData2, 'PNG', rightX, yPosition, imgWidth, imgHeight)
+      
     } catch (error) {
-      console.error('Error capturing shot visualization:', error)
-      pdf.text('Error capturing shot visualization', 20, yPosition)
-      yPosition += 10
+      console.error('Error capturing Period 1 & 2 visualizations:', error)
+      pdf.text('Error capturing shot visualizations', 20, yPosition)
+    }
+  }
+  
+  // Page 2: Period 3 and All Periods
+  if (shotVisualizations.length >= 4) {
+    pdf.addPage()
+    yPosition = 20
+    
+    try {
+      // Period 3
+      const canvas3 = await html2canvas(shotVisualizations[2], {
+        scale: 1.5,
+        useCORS: true,
+        backgroundColor: '#ffffff'
+      })
+      
+      const imgData3 = canvas3.toDataURL('image/png')
+      const imgWidth = (pageWidth - 60) / 2
+      const imgHeight = (canvas3.height * imgWidth) / canvas3.width
+      
+      pdf.setFontSize(14)
+      pdf.setFont('helvetica', 'bold')
+      pdf.text('Shot Visualizations - Period 3 & All Periods', 20, yPosition)
+      yPosition += 15
+      
+      // Period 3 (left side)
+      pdf.setFontSize(12)
+      pdf.setFont('helvetica', 'bold')
+      pdf.text('Period 3', 20, yPosition)
+      yPosition += 5
+      pdf.addImage(imgData3, 'PNG', 20, yPosition, imgWidth, imgHeight)
+      
+      // All Periods (right side)
+      const canvasAll = await html2canvas(shotVisualizations[3], {
+        scale: 1.5,
+        useCORS: true,
+        backgroundColor: '#ffffff'
+      })
+      
+      const imgDataAll = canvasAll.toDataURL('image/png')
+      const rightX = 20 + imgWidth + 20
+      
+      pdf.setFontSize(12)
+      pdf.setFont('helvetica', 'bold')
+      pdf.text('All Periods', rightX, yPosition - imgHeight - 5)
+      pdf.addImage(imgDataAll, 'PNG', rightX, yPosition, imgWidth, imgHeight)
+      
+    } catch (error) {
+      console.error('Error capturing Period 3 & All visualizations:', error)
+      pdf.text('Error capturing shot visualizations', 20, yPosition)
     }
   }
 

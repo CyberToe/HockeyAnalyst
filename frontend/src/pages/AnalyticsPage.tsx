@@ -447,7 +447,16 @@ export default function AnalyticsPage() {
                               Goals
                             </th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                              Shooting %
+                              Assists
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Faceoffs Taken
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Faceoffs Won
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Faceoff %
                             </th>
                           </tr>
                         </thead>
@@ -477,7 +486,19 @@ export default function AnalyticsPage() {
                                 {player.statistics.goals}
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {player.statistics.shootingPercentage.toFixed(1)}%
+                                {player.statistics.assists || 0}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                {player.statistics.faceoffsTaken || 0}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                {player.statistics.faceoffsWon || 0}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                {player.statistics.faceoffsTaken > 0 
+                                  ? `${((player.statistics.faceoffsWon / player.statistics.faceoffsTaken) * 100).toFixed(1)}%`
+                                  : '0.0%'
+                                }
                               </td>
                             </tr>
                           ))}
