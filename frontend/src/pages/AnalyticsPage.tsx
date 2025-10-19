@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
-import { gamesApi, playersApi, analyticsApi } from '../lib/api'
+import { gamesApi, analyticsApi } from '../lib/api'
 import { 
   ChartBarIcon, 
   UserGroupIcon, 
@@ -25,12 +25,6 @@ export default function AnalyticsPage() {
     enabled: !!teamId
   })
 
-  // Fetch players for the team
-  const { data: playersData } = useQuery({
-    queryKey: ['players', teamId],
-    queryFn: () => playersApi.getPlayers(teamId!).then(res => res.data),
-    enabled: !!teamId
-  })
 
   // Fetch player analytics
   const { data: playerAnalytics, isLoading: analyticsLoading } = useQuery({
