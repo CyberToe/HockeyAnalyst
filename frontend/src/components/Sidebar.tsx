@@ -1,16 +1,14 @@
-import { NavLink, useNavigate } from 'react-router-dom'
+import { NavLink } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { teamsApi } from '../lib/api'
 import { 
   HomeIcon, 
-  ArrowRightOnRectangleIcon,
   UserGroupIcon,
   CalendarDaysIcon,
   ChevronRightIcon,
   ChevronDownIcon,
   ChartBarIcon
 } from '@heroicons/react/24/outline'
-import { useAuthStore } from '../stores/authStore'
 import { useState } from 'react'
 
 const navigation = [
@@ -18,8 +16,6 @@ const navigation = [
 ]
 
 export default function Sidebar() {
-  const { user, logout } = useAuthStore()
-  const navigate = useNavigate()
   const [expandedTeams, setExpandedTeams] = useState<Set<string>>(new Set())
 
   // Fetch user's teams
@@ -27,11 +23,6 @@ export default function Sidebar() {
     queryKey: ['teams'],
     queryFn: () => teamsApi.getTeams().then(res => res.data),
   })
-
-  const handleLogout = () => {
-    logout()
-    navigate('/login')
-  }
 
   const toggleTeam = (teamId: string) => {
     const newExpanded = new Set(expandedTeams)
@@ -152,28 +143,6 @@ export default function Sidebar() {
           </nav>
         </div>
 
-        {/* User section */}
-        <div className="flex-shrink-0 flex border-t border-gray-200 p-4">
-          <div className="flex-shrink-0 w-full group block">
-            <div className="flex items-center">
-              <div className="ml-3 flex-1">
-                <p className="text-sm font-medium text-gray-700 group-hover:text-gray-900">
-                  {user?.displayName || user?.email}
-                </p>
-                <p className="text-xs font-medium text-gray-500 group-hover:text-gray-700">
-                  {user?.email}
-                </p>
-              </div>
-            </div>
-            <button
-              onClick={handleLogout}
-              className="mt-2 w-full flex items-center px-2 py-2 text-sm font-medium text-gray-600 rounded-md hover:bg-gray-50 hover:text-gray-900 transition-colors duration-200"
-            >
-              <ArrowRightOnRectangleIcon className="mr-3 flex-shrink-0 h-5 w-5" />
-              Sign out
-            </button>
-          </div>
-        </div>
       </div>
     </div>
   )
