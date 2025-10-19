@@ -139,9 +139,19 @@ export default function ShotVisualization({ shots, period, title }: ShotVisualiz
 
   // Draw shot markers (same logic as ShotTracker)
   const drawShotMarkers = (ctx: CanvasRenderingContext2D) => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+    
+    const width = canvas.width
+
     filteredShots.forEach(shot => {
-      const x = shot.xCoord
-      const y = shot.yCoord
+      let x = shot.xCoord
+      let y = shot.yCoord
+
+      // For "All Periods", flip coordinates to show as if attacking direction is to the right
+      if (period === 'all') {
+        x = width - x
+      }
 
       // Determine marker style based on shot properties (same as ShotTracker)
       let fillColor, strokeColor, isFilled

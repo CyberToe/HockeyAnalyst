@@ -142,103 +142,129 @@ export const exportGameAnalysisToPDF = async (
 
   yPosition += 15
 
-  // Shot Visualizations - Grouped by pages
-  // Page 1: Period 1 and Period 2
-  if (shotVisualizations.length >= 2) {
-    pdf.addPage()
-    yPosition = 20
-    
-    // Period 1
-    try {
-      const canvas1 = await html2canvas(shotVisualizations[0], {
-        scale: 1.5,
-        useCORS: true,
-        backgroundColor: '#ffffff'
-      })
-      
-      const imgData1 = canvas1.toDataURL('image/png')
-      const imgWidth = (pageWidth - 60) / 2 // Half width for side-by-side
-      const imgHeight = (canvas1.height * imgWidth) / canvas1.width
-      
-      pdf.setFontSize(14)
-      pdf.setFont('helvetica', 'bold')
-      pdf.text('Shot Visualizations - Periods 1 & 2', 20, yPosition)
-      yPosition += 15
-      
-      // Period 1 (left side)
-      pdf.setFontSize(12)
-      pdf.setFont('helvetica', 'bold')
-      pdf.text('Period 1', 20, yPosition)
-      yPosition += 5
-      pdf.addImage(imgData1, 'PNG', 20, yPosition, imgWidth, imgHeight)
-      
-      // Period 2 (right side)
-      const canvas2 = await html2canvas(shotVisualizations[1], {
-        scale: 1.5,
-        useCORS: true,
-        backgroundColor: '#ffffff'
-      })
-      
-      const imgData2 = canvas2.toDataURL('image/png')
-      const rightX = 20 + imgWidth + 20
-      
-      pdf.setFontSize(12)
-      pdf.setFont('helvetica', 'bold')
-      pdf.text('Period 2', rightX, yPosition - imgHeight - 5)
-      pdf.addImage(imgData2, 'PNG', rightX, yPosition, imgWidth, imgHeight)
-      
-    } catch (error) {
-      console.error('Error capturing Period 1 & 2 visualizations:', error)
-      pdf.text('Error capturing shot visualizations', 20, yPosition)
-    }
-  }
-  
-  // Page 2: Period 3 and All Periods
+  // Player Statistics Table
+  checkNewPage(50)
+  pdf.setFontSize(14)
+  pdf.setFont('helvetica', 'bold')
+  pdf.text('Player Statistics', 20, yPosition)
+  yPosition += 10
+
+  // Table headers
+  pdf.setFontSize(10)
+  pdf.setFont('helvetica', 'bold')
+  const tableHeaders = ['Player', 'Shots', 'Goals', 'Assists', 'Faceoffs Taken', 'Faceoffs Won', 'Faceoff %']
+  const colWidths = [50, 15, 15, 15, 25, 25, 20]
+  let xPosition = 20
+
+  tableHeaders.forEach((header, index) => {
+    pdf.text(header, xPosition, yPosition)
+    xPosition += colWidths[index]
+  })
+  yPosition += 7
+
+  // Table rows
+  pdf.setFont('helvetica', 'normal')
+  gameAnalytics.playerStats.forEach((player) => {
+    checkNewPage(15)
+    xPosition = 20
+    pdf.text(player.player.name, xPosition, yPosition)
+    xPosition += colWidths[0]
+    pdf.text(player.statistics.shots.toString(), xPosition, yPosition)
+    xPosition += colWidths[1]
+    pdf.text(player.statistics.goals.toString(), xPosition, yPosition)
+    xPosition += colWidths[2]
+    pdf.text(player.statistics.assists.toString(), xPosition, yPosition)
+    xPosition += colWidths[3]
+    pdf.text(player.statistics.faceoffsTaken.toString(), xPosition, yPosition)
+    xPosition += colWidths[4]
+    pdf.text(player.statistics.faceoffsWon.toString(), xPosition, yPosition)
+    xPosition += colWidths[5]
+    pdf.text(`${player.statistics.shootingPercentage.toFixed(1)}%`, xPosition, yPosition)
+    yPosition += 7
+  })
+
+  yPosition += 15
+
+  // Shot Visualizations - All 4 on one page
   if (shotVisualizations.length >= 4) {
     pdf.addPage()
     yPosition = 20
     
     try {
-      // Period 3
-      const canvas3 = await html2canvas(shotVisualizations[2], {
-        scale: 1.5,
-        useCORS: true,
-        backgroundColor: '#ffffff'
-      })
-      
-      const imgData3 = canvas3.toDataURL('image/png')
-      const imgWidth = (pageWidth - 60) / 2
-      const imgHeight = (canvas3.height * imgWidth) / canvas3.width
-      
       pdf.setFontSize(14)
       pdf.setFont('helvetica', 'bold')
-      pdf.text('Shot Visualizations - Period 3 & All Periods', 20, yPosition)
+      pdf.text('Shot Visualizations - All Periods', 20, yPosition)
       yPosition += 15
       
-      // Period 3 (left side)
-      pdf.setFontSize(12)
-      pdf.setFont('helvetica', 'bold')
-      pdf.text('Period 3', 20, yPosition)
-      yPosition += 5
-      pdf.addImage(imgData3, 'PNG', 20, yPosition, imgWidth, imgHeight)
+      // Calculate dimensions for 2x2 grid
+      const imgWidth = (pageWidth - 60) / 2 // Half width with margins
+      const imgHeight = 80 // Fixed height for consistency
       
-      // All Periods (right side)
-      const canvasAll = await html2canvas(shotVisualizations[3], {
-        scale: 1.5,
+      // Period 1 (top left)
+      const canvas1 = await html2canvas(shotVisualizations[0], {
+        scale: 1.2,
         useCORS: true,
         backgroundColor: '#ffffff'
       })
+      const imgData1 = canvas1.toDataURL('image/png')
+      const actualHeight1 = (canvas1.height * imgWidth) / canvas1.width
+      const scaledHeight1 = Math.min(actualHeight1, imgHeight)
       
-      const imgDataAll = canvasAll.toDataURL('image/png')
+      pdf.setFontSize(10)
+      pdf.setFont('helvetica', 'bold')
+      pdf.text('Period 1', 20, yPosition)
+      yPosition += 5
+      pdf.addImage(imgData1, 'PNG', 20, yPosition, imgWidth, scaledHeight1)
+      
+      // Period 2 (top right)
+      const canvas2 = await html2canvas(shotVisualizations[1], {
+        scale: 1.2,
+        useCORS: true,
+        backgroundColor: '#ffffff'
+      })
+      const imgData2 = canvas2.toDataURL('image/png')
+      const actualHeight2 = (canvas2.height * imgWidth) / canvas2.width
+      const scaledHeight2 = Math.min(actualHeight2, imgHeight)
       const rightX = 20 + imgWidth + 20
       
-      pdf.setFontSize(12)
+      pdf.setFontSize(10)
       pdf.setFont('helvetica', 'bold')
-      pdf.text('All Periods', rightX, yPosition - imgHeight - 5)
-      pdf.addImage(imgDataAll, 'PNG', rightX, yPosition, imgWidth, imgHeight)
+      pdf.text('Period 2', rightX, yPosition - scaledHeight1 - 5)
+      pdf.addImage(imgData2, 'PNG', rightX, yPosition, imgWidth, scaledHeight2)
+      
+      // Period 3 (bottom left)
+      const canvas3 = await html2canvas(shotVisualizations[2], {
+        scale: 1.2,
+        useCORS: true,
+        backgroundColor: '#ffffff'
+      })
+      const imgData3 = canvas3.toDataURL('image/png')
+      const actualHeight3 = (canvas3.height * imgWidth) / canvas3.width
+      const scaledHeight3 = Math.min(actualHeight3, imgHeight)
+      const bottomY = yPosition + Math.max(scaledHeight1, scaledHeight2) + 20
+      
+      pdf.setFontSize(10)
+      pdf.setFont('helvetica', 'bold')
+      pdf.text('Period 3', 20, bottomY)
+      pdf.addImage(imgData3, 'PNG', 20, bottomY + 5, imgWidth, scaledHeight3)
+      
+      // All Periods (bottom right)
+      const canvasAll = await html2canvas(shotVisualizations[3], {
+        scale: 1.2,
+        useCORS: true,
+        backgroundColor: '#ffffff'
+      })
+      const imgDataAll = canvasAll.toDataURL('image/png')
+      const actualHeightAll = (canvasAll.height * imgWidth) / canvasAll.width
+      const scaledHeightAll = Math.min(actualHeightAll, imgHeight)
+      
+      pdf.setFontSize(10)
+      pdf.setFont('helvetica', 'bold')
+      pdf.text('All Periods', rightX, bottomY)
+      pdf.addImage(imgDataAll, 'PNG', rightX, bottomY + 5, imgWidth, scaledHeightAll)
       
     } catch (error) {
-      console.error('Error capturing Period 3 & All visualizations:', error)
+      console.error('Error capturing shot visualizations:', error)
       pdf.text('Error capturing shot visualizations', 20, yPosition)
     }
   }
