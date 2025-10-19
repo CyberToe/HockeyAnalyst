@@ -177,7 +177,7 @@ export const exportGameAnalysisToPDF = async (
       })
       const imgData1 = canvas1.toDataURL('image/png')
       const actualHeight1 = (canvas1.height * imgWidth) / canvas1.width
-      const scaledHeight1 = Math.min(actualHeight1, imgHeight)
+      const scaledHeight1 = actualHeight1 // Remove height constraint to allow full size
       
       pdf.addImage(imgData1, 'PNG', 20, yPosition, imgWidth, scaledHeight1)
       
@@ -189,7 +189,7 @@ export const exportGameAnalysisToPDF = async (
       })
       const imgData2 = canvas2.toDataURL('image/png')
       const actualHeight2 = (canvas2.height * imgWidth) / canvas2.width
-      const scaledHeight2 = Math.min(actualHeight2, imgHeight)
+      const scaledHeight2 = actualHeight2 // Remove height constraint to allow full size
       const rightX = 20 + imgWidth + 20
       
       pdf.addImage(imgData2, 'PNG', rightX, yPosition, imgWidth, scaledHeight2)
@@ -202,7 +202,7 @@ export const exportGameAnalysisToPDF = async (
       })
       const imgData3 = canvas3.toDataURL('image/png')
       const actualHeight3 = (canvas3.height * imgWidth) / canvas3.width
-      const scaledHeight3 = Math.min(actualHeight3, imgHeight)
+      const scaledHeight3 = actualHeight3 // Remove height constraint to allow full size
       const bottomY = yPosition + Math.max(scaledHeight1, scaledHeight2) + 40
       
       pdf.addImage(imgData3, 'PNG', 20, bottomY, imgWidth, scaledHeight3)
@@ -215,7 +215,7 @@ export const exportGameAnalysisToPDF = async (
       })
       const imgDataAll = canvasAll.toDataURL('image/png')
       const actualHeightAll = (canvasAll.height * imgWidth) / canvasAll.width
-      const scaledHeightAll = Math.min(actualHeightAll, imgHeight)
+      const scaledHeightAll = actualHeightAll // Remove height constraint to allow full size
       
       pdf.addImage(imgDataAll, 'PNG', rightX, bottomY, imgWidth, scaledHeightAll)
       

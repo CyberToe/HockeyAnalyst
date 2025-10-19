@@ -1,10 +1,18 @@
 import { useState } from 'react'
-import { useLocation } from 'react-router-dom'
-import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline'
+import { useLocation, useNavigate } from 'react-router-dom'
+import { Bars3Icon, XMarkIcon, ArrowRightOnRectangleIcon } from '@heroicons/react/24/outline'
+import { useAuthStore } from '../stores/authStore'
 
 export default function Header() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const location = useLocation()
+  const { user, logout } = useAuthStore()
+  const navigate = useNavigate()
+
+  const handleLogout = () => {
+    logout()
+    navigate('/login')
+  }
 
   const getPageTitle = () => {
     const path = location.pathname
@@ -35,7 +43,24 @@ export default function Header() {
         </div>
 
         <div className="flex items-center space-x-4">
-          {/* Add any header actions here */}
+          {/* User info and signout */}
+          <div className="flex items-center space-x-3">
+            <div className="text-right">
+              <p className="text-sm font-medium text-gray-700">
+                {user?.displayName || user?.email}
+              </p>
+              <p className="text-xs text-gray-500">
+                {user?.email}
+              </p>
+            </div>
+            <button
+              onClick={handleLogout}
+              className="flex items-center px-3 py-2 text-sm font-medium text-gray-600 rounded-md hover:bg-gray-50 hover:text-gray-900 transition-colors duration-200"
+              title="Sign out"
+            >
+              <ArrowRightOnRectangleIcon className="h-4 w-4" />
+            </button>
+          </div>
         </div>
       </div>
 
