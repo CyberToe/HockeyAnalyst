@@ -88,6 +88,8 @@ app.listen(PORT, async () => {
     console.log('✅ Database connected successfully');
     console.log('JWT_TOKEN from env:', process.env.JWT_TOKEN ? 'Set' : 'Not set');
     console.log('All env vars with JWT:', Object.keys(process.env).filter(key => key.includes('JWT')));
+    console.log('TEST_VAR from env:', process.env.TEST_VAR ? 'Set' : 'Not set');
+    console.log('All env vars:', Object.keys(process.env).sort());
   } catch (error) {
     console.error('❌ Database connection failed:', error);
   }
