@@ -86,7 +86,7 @@ app.listen(PORT, async () => {
   try {
     await prisma.$connect();
     console.log('✅ Database connected successfully');
-    console.log('JWT_SECRET from env:', process.env.JWT_SECRET ? 'Set' : 'Not set');
+    console.log('JWT_TOKEN from env:', process.env.JWT_TOKEN ? 'Set' : 'Not set');
     console.log('All env vars with JWT:', Object.keys(process.env).filter(key => key.includes('JWT')));
   } catch (error) {
     console.error('❌ Database connection failed:', error);

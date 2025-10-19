@@ -11,7 +11,7 @@ router.post('/register', async (req, res) => {
   try {
     console.log('Environment check:', {
       DATABASE_URL: process.env.DATABASE_URL ? 'Set' : 'Not set',
-      JWT_SECRET: process.env.JWT_SECRET ? 'Set' : 'Not set'
+      JWT_SECRET: process.env.JWT_TOKEN ? 'Set' : 'Not set'
     });
     const { email, password, displayName } = req.body;
 
@@ -41,11 +41,11 @@ router.post('/register', async (req, res) => {
     });
 
     // Generate token
-    if (!process.env.JWT_SECRET) {
+    if (!process.env.JWT_TOKEN) {
       console.error('JWT_SECRET is not set in environment variables');
       return res.status(500).json({ error: 'Server configuration error' });
     }
-    const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, { expiresIn: '7d' });
+    const token = jwt.sign({ userId: user.id }, process.env.JWT_TOKEN, { expiresIn: '7d' });
 
     return res.status(201).json({
       data: {
@@ -86,11 +86,11 @@ router.post('/login', async (req, res) => {
     });
 
     // Generate token
-    if (!process.env.JWT_SECRET) {
+    if (!process.env.JWT_TOKEN) {
       console.error('JWT_SECRET is not set in environment variables');
       return res.status(500).json({ error: 'Server configuration error' });
     }
-    const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, { expiresIn: '7d' });
+    const token = jwt.sign({ userId: user.id }, process.env.JWT_TOKEN, { expiresIn: '7d' });
 
     return res.json({
       data: {
