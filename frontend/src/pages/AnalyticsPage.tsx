@@ -373,10 +373,13 @@ export default function AnalyticsPage() {
               ) : gameAnalytics ? (
                 <div className="space-y-6">
                   {/* Debug logging */}
-                  {console.log('Game Analytics Data:', {
-                    periodStats: gameAnalytics.periodStats,
-                    shotTimeline: gameAnalytics.shotTimeline?.slice(0, 3) // First 3 shots for debugging
-                  })}
+                  {(() => {
+                    console.log('Game Analytics Data:', {
+                      periodStats: gameAnalytics.periodStats,
+                      shotTimeline: gameAnalytics.shotTimeline?.slice(0, 3) // First 3 shots for debugging
+                    });
+                    return null;
+                  })()}
                   
                   {/* Shot Visualizations */}
                   <div className="space-y-6">
