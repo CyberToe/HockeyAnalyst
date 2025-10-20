@@ -183,6 +183,18 @@ export default function ShotTracker() {
     }
   }, [shotsData])
 
+  // Debug game data
+  useEffect(() => {
+    if (game) {
+      console.log('Game data loaded:', {
+        hasTeam: !!game.team,
+        hasPlayers: !!game.team?.players,
+        playerCount: game.team?.players?.length || 0,
+        players: game.team?.players
+      })
+    }
+  }, [game])
+
   // Draw the hockey rink on canvas
   const drawRink = () => {
     const canvas = canvasRef.current
@@ -722,45 +734,43 @@ export default function ShotTracker() {
       </div>
 
       {/* Player Selection Section */}
-      {game.team?.players && (
-        <div className="mb-6">
-          <h3 className="text-sm font-medium text-gray-700 mb-3">Player Selection</h3>
-          <div className="flex flex-wrap gap-1">
-            {/* Against Button */}
-            <button
-              onClick={() => setSelectedPlayer('AGAINST')}
-              className={`px-2 py-1 rounded text-xs font-medium transition-colors border-2 ${
-                selectedPlayer === 'AGAINST'
-                  ? 'bg-red-600 text-white border-red-700'
-                  : 'bg-red-100 text-red-700 border-red-300 hover:bg-red-200'
-              }`}
-            >
-              AGAINST
-            </button>
-            
-            {/* Team Players */}
-            {game.team.players.length > 0 ? (
-              game.team.players.map((player) => (
-                <button
-                  key={player.id}
-                  onClick={() => setSelectedPlayer(player)}
-                  className={`px-2 py-1 rounded text-xs font-medium transition-colors ${
-                    selectedPlayer === player
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
-                >
-                  {player.number ? `#${player.number} ` : ''}{player.name}
-                </button>
-              ))
-            ) : (
-              <div className="text-xs text-gray-500 text-center py-2">
-                No players found
-              </div>
-            )}
-          </div>
+      <div className="mb-6">
+        <h3 className="text-sm font-medium text-gray-700 mb-3">Player Selection</h3>
+        <div className="flex flex-wrap gap-1">
+          {/* Against Button */}
+          <button
+            onClick={() => setSelectedPlayer('AGAINST')}
+            className={`px-2 py-1 rounded text-xs font-medium transition-colors border-2 ${
+              selectedPlayer === 'AGAINST'
+                ? 'bg-red-600 text-white border-red-700'
+                : 'bg-red-100 text-red-700 border-red-300 hover:bg-red-200'
+            }`}
+          >
+            AGAINST
+          </button>
+          
+          {/* Team Players */}
+          {game.team?.players && game.team.players.length > 0 ? (
+            game.team.players.map((player) => (
+              <button
+                key={player.id}
+                onClick={() => setSelectedPlayer(player)}
+                className={`px-2 py-1 rounded text-xs font-medium transition-colors ${
+                  selectedPlayer === player
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                {player.number ? `#${player.number} ` : ''}{player.name}
+              </button>
+            ))
+          ) : (
+            <div className="text-xs text-gray-500 text-center py-2">
+              No players found
+            </div>
+          )}
         </div>
-      )}
+      </div>
 
 
       {/* Hockey Rink */}
