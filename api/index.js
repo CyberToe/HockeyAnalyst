@@ -34,11 +34,29 @@ module.exports = async (req, res) => {
     // Handle auth login - check for both exact path and starts with
     if ((req.url === '/api/auth/login' || req.url.startsWith('/api/auth/login')) && req.method === 'POST') {
       res.status(200).json({ 
-        message: 'Login endpoint reached',
-        timestamp: new Date().toISOString(),
-        method: req.method,
-        url: req.url,
-        body: req.body
+        data: {
+          user: {
+            id: '1',
+            email: req.body.email || 'test@example.com',
+            displayName: 'Test User'
+          },
+          token: 'test-jwt-token-' + Date.now()
+        }
+      });
+      return;
+    }
+
+    // Handle auth register
+    if ((req.url === '/api/auth/register' || req.url.startsWith('/api/auth/register')) && req.method === 'POST') {
+      res.status(200).json({ 
+        data: {
+          user: {
+            id: '1',
+            email: req.body.email || 'test@example.com',
+            displayName: req.body.displayName || 'Test User'
+          },
+          token: 'test-jwt-token-' + Date.now()
+        }
       });
       return;
     }
