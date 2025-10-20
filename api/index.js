@@ -981,16 +981,18 @@ app.get('/api/goals/games/:gameId', async (req, res) => {
     
     if (!prisma) {
       console.log('Prisma not available, using mock goals');
-      return res.json([
-        {
-          id: '1',
-          period: 1,
-          scorer: { id: '1', name: 'Test Player', number: 7 },
-          assister1: null,
-          assister2: null,
-          notes: 'Test goal'
-        }
-      ]);
+      return res.json({
+        goals: [
+          {
+            id: '1',
+            period: 1,
+            scorer: { id: '1', name: 'Test Player', number: 7 },
+            assister1: null,
+            assister2: null,
+            notes: 'Test goal'
+          }
+        ]
+      });
     }
 
     const authHeader = req.headers.authorization;
@@ -1042,7 +1044,7 @@ app.get('/api/goals/games/:gameId', async (req, res) => {
     });
 
     console.log('Found goals:', goals.length);
-    res.json(goals);
+    res.json({ goals: goals });
   } catch (error) {
     console.error('Goals error:', error);
     res.status(500).json({ 
@@ -1059,14 +1061,16 @@ app.get('/api/faceoffs/games/:gameId', async (req, res) => {
     
     if (!prisma) {
       console.log('Prisma not available, using mock faceoffs');
-      return res.json([
-        {
-          id: '1',
-          player: { id: '1', name: 'Test Player', number: 7 },
-          taken: 5,
-          won: 3
-        }
-      ]);
+      return res.json({
+        faceoffs: [
+          {
+            id: '1',
+            player: { id: '1', name: 'Test Player', number: 7 },
+            taken: 5,
+            won: 3
+          }
+        ]
+      });
     }
 
     const authHeader = req.headers.authorization;
@@ -1118,7 +1122,7 @@ app.get('/api/faceoffs/games/:gameId', async (req, res) => {
     });
 
     console.log('Found faceoffs:', faceoffs.length);
-    res.json(faceoffs);
+    res.json({ faceoffs: faceoffs });
   } catch (error) {
     console.error('Faceoffs error:', error);
     res.status(500).json({ 
