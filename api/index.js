@@ -1204,6 +1204,89 @@ app.get('/api/shots/games/:gameId', async (req, res) => {
   }
 });
 
+// Create shot for a game
+app.post('/api/shots/games/:gameId', async (req, res) => {
+  try {
+    console.log('Create shot request for game:', req.params.gameId);
+    console.log('Shot data:', req.body);
+    
+    if (!prisma) {
+      console.log('Prisma not available, using mock shot creation');
+      return res.status(201).json({
+        id: 'mock-shot-' + Date.now(),
+        gameId: req.params.gameId,
+        periodId: req.body.periodId,
+        shooterPlayerId: req.body.shooterPlayerId,
+        xCoord: req.body.xCoord,
+        yCoord: req.body.yCoord,
+        scored: req.body.scored,
+        notes: req.body.notes
+      });
+    }
+
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ error: 'No token provided' });
+    }
+
+    const token = authHeader.substring(7);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback-secret');
+    
+    const game = await prisma.game.findUnique({
+      where: {
+        id: req.params.gameId
+      },
+      include: {
+        team: {
+          include: {
+            members: {
+              where: {
+                userId: decoded.userId
+              }
+            }
+          }
+        }
+      }
+    });
+
+    if (!game) {
+      return res.status(404).json({ error: 'Game not found' });
+    }
+
+    // Check if user is a member of this team
+    if (game.team.members.length === 0) {
+      return res.status(403).json({ error: 'Access denied to this game' });
+    }
+
+    const { periodId, shooterPlayerId, xCoord, yCoord, scored, notes } = req.body;
+
+    const shot = await prisma.shot.create({
+      data: {
+        gameId: req.params.gameId,
+        periodId,
+        shooterPlayerId,
+        xCoord,
+        yCoord,
+        scored: scored || false,
+        notes,
+        createdBy: decoded.userId
+      },
+      include: {
+        shooter: true
+      }
+    });
+
+    console.log('Created shot:', shot.id);
+    res.status(201).json(shot);
+  } catch (error) {
+    console.error('Create shot error:', error);
+    res.status(500).json({ 
+      error: 'Internal server error',
+      message: error.message
+    });
+  }
+});
+
 // Players routes
 app.get('/api/players/teams/:teamId', async (req, res) => {
   try {
