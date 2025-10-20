@@ -271,13 +271,50 @@ app.get('/api/teams', async (req, res) => {
 
     console.log('Found teams:', teams.length);
     console.log('Teams data:', teams);
-    res.json(teams);
+    res.json({ teams: teams });
   } catch (error) {
     console.error('Teams error:', error);
     res.status(500).json({ 
       error: 'Internal server error',
       message: error.message,
       stack: error.stack
+    });
+  }
+});
+
+// Simple debug endpoint to check token
+app.get('/api/debug/token', async (req, res) => {
+  try {
+    console.log('Debug: Checking token...');
+    console.log('Headers:', req.headers);
+    console.log('Authorization header:', req.headers.authorization);
+    
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ 
+        error: 'No token provided',
+        headers: req.headers,
+        authHeader: authHeader
+      });
+    }
+
+    const token = authHeader.substring(7);
+    console.log('Token received:', token);
+    
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback-secret');
+    console.log('Token decoded:', decoded);
+    
+    res.json({
+      success: true,
+      token: token,
+      decoded: decoded,
+      message: 'Token is valid'
+    });
+  } catch (error) {
+    console.error('Token debug error:', error);
+    res.status(401).json({ 
+      error: 'Token validation failed',
+      message: error.message
     });
   }
 });
