@@ -20,6 +20,8 @@ interface Game {
   id: string
   periods: Period[]
   team: {
+    id: string
+    name: string
     players: Player[]
   }
 }
@@ -183,20 +185,20 @@ export default function ShotTracker() {
     }
   }, [shotsData])
 
-  // Debug game data
-  useEffect(() => {
-    if (game) {
-      console.log('Game data loaded:', {
-        hasTeam: !!game.team,
-        hasPlayers: !!game.team?.players,
-        playerCount: game.team?.players?.length || 0,
-        players: game.team?.players,
-        teamId: game.team?.id,
-        teamName: game.team?.name,
-        fullGameData: game
-      })
-    }
-  }, [game])
+  // Debug game data (removed for production)
+  // useEffect(() => {
+  //   if (game) {
+  //     console.log('Game data loaded:', {
+  //       hasTeam: !!game.team,
+  //       hasPlayers: !!game.team?.players,
+  //       playerCount: game.team?.players?.length || 0,
+  //       players: game.team?.players,
+  //       teamId: game.team?.id,
+  //       teamName: game.team?.name,
+  //       fullGameData: game
+  //     })
+  //   }
+  // }, [game])
 
   // Draw the hockey rink on canvas
   const drawRink = () => {
