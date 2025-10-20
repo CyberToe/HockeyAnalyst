@@ -625,6 +625,132 @@ app.get('/api/games/teams/:teamId', async (req, res) => {
   }
 });
 
+// Analytics routes
+app.get('/api/analytics/teams/:teamId/players', async (req, res) => {
+  try {
+    console.log('Player analytics request for team:', req.params.teamId);
+    console.log('Request headers:', req.headers);
+    
+    if (!prisma) {
+      console.log('Prisma not available, using mock analytics');
+      return res.json({
+        players: [
+          {
+            id: '1',
+            name: 'Test Player 1',
+            number: 7,
+            goals: 5,
+            assists: 3,
+            shots: 12,
+            faceoffs: 8,
+            faceoffWins: 5
+          }
+        ]
+      });
+    }
+
+    const authHeader = req.headers.authorization;
+    console.log('Auth header:', authHeader);
+    
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      console.log('No token provided, returning 401');
+      return res.status(401).json({ error: 'No token provided' });
+    }
+
+    const token = authHeader.substring(7);
+    console.log('Token received:', token);
+    
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback-secret');
+    console.log('Token decoded:', decoded);
+    
+    console.log('Looking for player analytics for team:', req.params.teamId, 'user:', decoded.userId);
+    
+    // Check if user is a member of this team
+    const teamMembership = await prisma.teamMember.findFirst({
+      where: {
+        teamId: req.params.teamId,
+        userId: decoded.userId
+      }
+    });
+
+    if (!teamMembership) {
+      return res.status(403).json({ error: 'Access denied to this team' });
+    }
+
+    // Get player analytics
+    const players = await prisma.player.findMany({
+      where: {
+        teamId: req.params.teamId
+      },
+      include: {
+        goalsScored: {
+          select: {
+            id: true
+          }
+        },
+        goalsAssisted1: {
+          select: {
+            id: true
+          }
+        },
+        goalsAssisted2: {
+          select: {
+            id: true
+          }
+        },
+        shots: {
+          select: {
+            id: true,
+            scored: true
+          }
+        },
+        faceoffs: {
+          select: {
+            taken: true,
+            won: true
+          }
+        }
+      }
+    });
+
+    // Calculate analytics for each player
+    const playerAnalytics = players.map(player => {
+      const goals = player.goalsScored.length;
+      const assists = player.goalsAssisted1.length + player.goalsAssisted2.length;
+      const shots = player.shots.length;
+      const shotsOnGoal = player.shots.filter(shot => shot.scored).length;
+      const faceoffs = player.faceoffs.reduce((sum, faceoff) => sum + faceoff.taken, 0);
+      const faceoffWins = player.faceoffs.reduce((sum, faceoff) => sum + faceoff.won, 0);
+
+      return {
+        id: player.id,
+        name: player.name,
+        number: player.number,
+        goals,
+        assists,
+        points: goals + assists,
+        shots,
+        shotsOnGoal,
+        shootingPercentage: shots > 0 ? (shotsOnGoal / shots * 100).toFixed(1) : 0,
+        faceoffs,
+        faceoffWins,
+        faceoffPercentage: faceoffs > 0 ? (faceoffWins / faceoffs * 100).toFixed(1) : 0
+      };
+    });
+
+    console.log('Found player analytics:', playerAnalytics.length);
+    console.log('Player analytics data:', playerAnalytics);
+    res.json({ players: playerAnalytics });
+  } catch (error) {
+    console.error('Player analytics error:', error);
+    res.status(500).json({ 
+      error: 'Internal server error',
+      message: error.message,
+      stack: error.stack
+    });
+  }
+});
+
 // Players routes
 app.get('/api/players/teams/:teamId', async (req, res) => {
   try {
