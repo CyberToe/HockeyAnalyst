@@ -908,6 +908,221 @@ app.get('/api/analytics/games/:gameId', async (req, res) => {
   }
 });
 
+// Individual game endpoint
+app.get('/api/games/:gameId', async (req, res) => {
+  try {
+    console.log('Game request for game:', req.params.gameId);
+    
+    if (!prisma) {
+      console.log('Prisma not available, using mock game');
+      return res.json({
+        id: req.params.gameId,
+        opponent: 'Test Team',
+        location: 'Test Arena',
+        startTime: new Date().toISOString(),
+        teamId: 'test-team-id'
+      });
+    }
+
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ error: 'No token provided' });
+    }
+
+    const token = authHeader.substring(7);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback-secret');
+    
+    const game = await prisma.game.findUnique({
+      where: {
+        id: req.params.gameId
+      },
+      include: {
+        team: {
+          include: {
+            members: {
+              where: {
+                userId: decoded.userId
+              }
+            }
+          }
+        }
+      }
+    });
+
+    if (!game) {
+      return res.status(404).json({ error: 'Game not found' });
+    }
+
+    // Check if user is a member of this team
+    if (game.team.members.length === 0) {
+      return res.status(403).json({ error: 'Access denied to this game' });
+    }
+
+    console.log('Found game:', game.id);
+    res.json(game);
+  } catch (error) {
+    console.error('Game error:', error);
+    res.status(500).json({ 
+      error: 'Internal server error',
+      message: error.message
+    });
+  }
+});
+
+// Goals for a game
+app.get('/api/goals/games/:gameId', async (req, res) => {
+  try {
+    console.log('Goals request for game:', req.params.gameId);
+    
+    if (!prisma) {
+      console.log('Prisma not available, using mock goals');
+      return res.json([
+        {
+          id: '1',
+          period: 1,
+          scorer: { id: '1', name: 'Test Player', number: 7 },
+          assister1: null,
+          assister2: null,
+          notes: 'Test goal'
+        }
+      ]);
+    }
+
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ error: 'No token provided' });
+    }
+
+    const token = authHeader.substring(7);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback-secret');
+    
+    const game = await prisma.game.findUnique({
+      where: {
+        id: req.params.gameId
+      },
+      include: {
+        team: {
+          include: {
+            members: {
+              where: {
+                userId: decoded.userId
+              }
+            }
+          }
+        }
+      }
+    });
+
+    if (!game) {
+      return res.status(404).json({ error: 'Game not found' });
+    }
+
+    // Check if user is a member of this team
+    if (game.team.members.length === 0) {
+      return res.status(403).json({ error: 'Access denied to this game' });
+    }
+
+    const goals = await prisma.goal.findMany({
+      where: {
+        gameId: req.params.gameId
+      },
+      include: {
+        scorer: true,
+        assister1: true,
+        assister2: true
+      },
+      orderBy: {
+        period: 'asc'
+      }
+    });
+
+    console.log('Found goals:', goals.length);
+    res.json(goals);
+  } catch (error) {
+    console.error('Goals error:', error);
+    res.status(500).json({ 
+      error: 'Internal server error',
+      message: error.message
+    });
+  }
+});
+
+// Faceoffs for a game
+app.get('/api/faceoffs/games/:gameId', async (req, res) => {
+  try {
+    console.log('Faceoffs request for game:', req.params.gameId);
+    
+    if (!prisma) {
+      console.log('Prisma not available, using mock faceoffs');
+      return res.json([
+        {
+          id: '1',
+          player: { id: '1', name: 'Test Player', number: 7 },
+          taken: 5,
+          won: 3
+        }
+      ]);
+    }
+
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ error: 'No token provided' });
+    }
+
+    const token = authHeader.substring(7);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback-secret');
+    
+    const game = await prisma.game.findUnique({
+      where: {
+        id: req.params.gameId
+      },
+      include: {
+        team: {
+          include: {
+            members: {
+              where: {
+                userId: decoded.userId
+              }
+            }
+          }
+        }
+      }
+    });
+
+    if (!game) {
+      return res.status(404).json({ error: 'Game not found' });
+    }
+
+    // Check if user is a member of this team
+    if (game.team.members.length === 0) {
+      return res.status(403).json({ error: 'Access denied to this game' });
+    }
+
+    const faceoffs = await prisma.faceoff.findMany({
+      where: {
+        gameId: req.params.gameId
+      },
+      include: {
+        player: true
+      },
+      orderBy: {
+        player: {
+          name: 'asc'
+        }
+      }
+    });
+
+    console.log('Found faceoffs:', faceoffs.length);
+    res.json(faceoffs);
+  } catch (error) {
+    console.error('Faceoffs error:', error);
+    res.status(500).json({ 
+      error: 'Internal server error',
+      message: error.message
+    });
+  }
+});
+
 // Players routes
 app.get('/api/players/teams/:teamId', async (req, res) => {
   try {
