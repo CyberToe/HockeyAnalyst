@@ -31,7 +31,15 @@ export const updateTeamSchema = z.object({
 export const createPlayerSchema = z.object({
   name: z.string().min(1, 'Player name is required').max(100, 'Player name too long'),
   number: z.preprocess(
-    (val) => val === '' || val === null || val === undefined ? undefined : Number(val),
+    (val) => {
+      if (val === '' || val === null || val === undefined) return undefined;
+      // Handle string inputs from iOS by parsing them as integers
+      if (typeof val === 'string') {
+        const parsed = parseInt(val, 10);
+        return isNaN(parsed) ? val : parsed; // Return original if parsing fails
+      }
+      return Number(val);
+    },
     z.number().int().min(0).max(99).optional()
   )
 });
@@ -39,7 +47,15 @@ export const createPlayerSchema = z.object({
 export const updatePlayerSchema = z.object({
   name: z.string().min(1, 'Player name is required').max(100, 'Player name too long').optional(),
   number: z.preprocess(
-    (val) => val === '' || val === null || val === undefined ? undefined : Number(val),
+    (val) => {
+      if (val === '' || val === null || val === undefined) return undefined;
+      // Handle string inputs from iOS by parsing them as integers
+      if (typeof val === 'string') {
+        const parsed = parseInt(val, 10);
+        return isNaN(parsed) ? val : parsed; // Return original if parsing fails
+      }
+      return Number(val);
+    },
     z.number().int().min(0).max(99).optional()
   )
 });
