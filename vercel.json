@@ -4,6 +4,11 @@
   "installCommand": "npm install",
   "outputDirectory": "frontend/dist",
   "framework": null,
+  "functions": {
+    "api/index.js": {
+      "includeFiles": "backend/dist/**"
+    }
+  },
   "routes": [
     {
       "src": "/api/(.*)",
