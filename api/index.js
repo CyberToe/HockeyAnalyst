@@ -216,6 +216,60 @@ app.get('/api/teams', async (req, res) => {
   }
 });
 
+// Test user creation endpoint (for debugging)
+app.post('/api/test/create-user', async (req, res) => {
+  try {
+    console.log('Creating test user...');
+    
+    if (!prisma) {
+      return res.status(500).json({ error: 'Database not available' });
+    }
+
+    const { email, password, displayName } = req.body;
+    
+    if (!email || !password || !displayName) {
+      return res.status(400).json({ error: 'Email, password, and display name are required' });
+    }
+
+    // Check if user already exists
+    const existingUser = await prisma.user.findUnique({
+      where: { email }
+    });
+
+    if (existingUser) {
+      return res.status(400).json({ error: 'User already exists' });
+    }
+
+    // Hash password
+    const hashedPassword = await bcrypt.hash(password, 12);
+
+    // Create user
+    const user = await prisma.user.create({
+      data: {
+        email,
+        password: hashedPassword,
+        displayName
+      }
+    });
+
+    console.log('Test user created:', user.id);
+    res.status(201).json({
+      message: 'Test user created successfully',
+      user: {
+        id: user.id,
+        email: user.email,
+        displayName: user.displayName
+      }
+    });
+  } catch (error) {
+    console.error('Test user creation error:', error);
+    res.status(500).json({ 
+      error: 'Failed to create test user',
+      message: error.message
+    });
+  }
+});
+
 // Health check
 app.get('/health', (req, res) => {
   res.json({ status: 'OK', timestamp: new Date().toISOString() });
