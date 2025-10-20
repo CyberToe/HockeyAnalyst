@@ -78,6 +78,12 @@ app.use('*', (req, res) => {
 
 // For Vercel serverless functions, we don't start a server
 // Just export the app and handle database connection on first request
+console.log('=== BACKEND DEBUG ===');
+console.log('NODE_ENV:', process.env.NODE_ENV);
+console.log('VERCEL:', process.env.VERCEL);
+console.log('Should start server:', process.env.NODE_ENV !== 'production' && !process.env.VERCEL);
+console.log('=====================');
+
 if (process.env.NODE_ENV !== 'production' && !process.env.VERCEL) {
   // Only start server in development or non-Vercel environments
   const PORT = process.env.PORT || 3001;
