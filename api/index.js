@@ -1131,7 +1131,12 @@ app.get('/api/faceoffs/games/:gameId', async (req, res) => {
 // Shots for a game
 app.get('/api/shots/games/:gameId', async (req, res) => {
   try {
-    console.log('Shots request for game:', req.params.gameId);
+    console.log('=== SHOTS REQUEST DEBUG ===');
+    console.log('Game ID:', req.params.gameId);
+    console.log('Request URL:', req.url);
+    console.log('Request method:', req.method);
+    console.log('Request headers:', req.headers);
+    console.log('===========================');
     
     if (!prisma) {
       console.log('Prisma not available, using mock shots');
