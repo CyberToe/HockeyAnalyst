@@ -5,7 +5,69 @@ console.log('VERCEL:', process.env.VERCEL);
 console.log('Environment check:', process.env.NODE_ENV !== 'production' && !process.env.VERCEL);
 console.log('=============================');
 
-const app = require('../backend/dist/index.js').default;
+// Import the backend directly
+const express = require('express');
+const cors = require('cors');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
+
+// Import Prisma client
+const { PrismaClient } = require('@prisma/client');
+
+// Import routes
+const authRoutes = require('./routes/auth-simple');
+const teamRoutes = require('./routes/teams');
+const playerRoutes = require('./routes/players');
+const gameRoutes = require('./routes/games');
+const shotRoutes = require('./routes/shots');
+const goalRoutes = require('./routes/goals');
+const faceoffRoutes = require('./routes/faceoffs');
+const analyticsRoutes = require('./routes/analytics');
+
+// Import middleware
+const { errorHandler } = require('./middleware/errorHandler');
+const { authenticateToken } = require('./middleware/auth');
+
+const app = express();
+const prisma = new PrismaClient();
+
+// Trust proxy for Vercel deployment
+app.set('trust proxy', 1);
+
+// Security middleware
+app.use(helmet());
+app.use(cors({
+  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+  credentials: true
+}));
+
+// Rate limiting
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100 // limit each IP to 100 requests per windowMs
+});
+app.use(limiter);
+
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true }));
+
+// Routes
+app.use('/api/auth', authRoutes);
+app.use('/api/teams', authenticateToken, teamRoutes);
+app.use('/api/players', authenticateToken, playerRoutes);
+app.use('/api/games', authenticateToken, gameRoutes);
+app.use('/api/shots', authenticateToken, shotRoutes);
+app.use('/api/goals', authenticateToken, goalRoutes);
+app.use('/api/faceoffs', authenticateToken, faceoffRoutes);
+app.use('/api/analytics', authenticateToken, analyticsRoutes);
+
+// Error handling middleware
+app.use(errorHandler);
+
+// 404 handler
+app.use('*', (req, res) => {
+  res.status(404).json({ error: 'Route not found' });
+});
 
 // Export the app for Vercel
 module.exports = app;

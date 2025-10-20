@@ -1,14 +1,9 @@
 {
   "version": 2,
-  "buildCommand": "npm run build:all && npx prisma generate",
+  "buildCommand": "npm run build:all && npx prisma generate && copy backend/dist/routes/*.js api/routes/ && copy backend/dist/middleware/*.js api/middleware/ && copy backend/dist/lib/*.js api/lib/",
   "installCommand": "npm install",
   "outputDirectory": "frontend/dist",
   "framework": null,
-  "functions": {
-    "api/index.js": {
-      "includeFiles": "backend/dist/**"
-    }
-  },
   "routes": [
     {
       "src": "/api/(.*)",
