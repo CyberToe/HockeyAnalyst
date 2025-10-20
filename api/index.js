@@ -1140,16 +1140,21 @@ app.get('/api/shots/games/:gameId', async (req, res) => {
     
     if (!prisma) {
       console.log('Prisma not available, using mock shots');
-      return res.json([
-        {
-          id: '1',
-          xCoord: 50,
-          yCoord: 30,
-          scored: true,
-          shooter: { id: '1', name: 'Test Player', number: 7 },
-          notes: 'Test shot'
-        }
-      ]);
+      return res.json({
+        shots: [
+          {
+            id: '1',
+            xCoord: 50,
+            yCoord: 30,
+            scored: true,
+            shooter: { id: '1', name: 'Test Player', number: 7 },
+            period: { id: '1', periodNumber: 1, attackingDirection: 'right' },
+            takenAt: new Date().toISOString(),
+            scoredAgainst: false,
+            notes: 'Test shot'
+          }
+        ]
+      });
     }
 
     const authHeader = req.headers.authorization;
@@ -1191,7 +1196,8 @@ app.get('/api/shots/games/:gameId', async (req, res) => {
         gameId: req.params.gameId
       },
       include: {
-        shooter: true
+        shooter: true,
+        period: true
       },
       orderBy: {
         takenAt: 'asc'
@@ -1200,7 +1206,7 @@ app.get('/api/shots/games/:gameId', async (req, res) => {
 
     console.log('Found shots:', shots.length);
     console.log('Shots data:', shots);
-    res.json(shots);
+    res.json({ shots: shots });
   } catch (error) {
     console.error('Shots error:', error);
     res.status(500).json({ 
