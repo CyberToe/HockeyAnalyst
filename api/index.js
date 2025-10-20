@@ -61,6 +61,35 @@ module.exports = async (req, res) => {
       return;
     }
 
+    // Handle teams endpoint
+    if ((req.url === '/api/teams' || req.url.startsWith('/api/teams')) && req.method === 'GET') {
+      res.status(200).json([
+        {
+          id: '1',
+          name: 'Test Team 1',
+          description: 'A test team for development',
+          teamCode: 'TEST123',
+          createdAt: new Date().toISOString(),
+          _count: {
+            players: 5,
+            games: 3
+          }
+        },
+        {
+          id: '2', 
+          name: 'Test Team 2',
+          description: 'Another test team',
+          teamCode: 'TEST456',
+          createdAt: new Date().toISOString(),
+          _count: {
+            players: 8,
+            games: 7
+          }
+        }
+      ]);
+      return;
+    }
+
     // Handle GET requests to login (for debugging)
     if ((req.url === '/api/auth/login' || req.url.startsWith('/api/auth/login')) && req.method === 'GET') {
       res.status(200).json({ 
