@@ -36,21 +36,21 @@ app.get('/test', (req, res) => {
 // Import and setup routes with error handling
 try {
   // Import Prisma client first
-  require('../backend/dist/lib/prisma');
-  
+  require('./backend/dist/lib/prisma');
+
   // Import routes
-  const authRoutes = require('../backend/dist/routes/auth-simple');
-  const teamRoutes = require('../backend/dist/routes/teams');
-  const playerRoutes = require('../backend/dist/routes/players');
-  const gameRoutes = require('../backend/dist/routes/games');
-  const shotRoutes = require('../backend/dist/routes/shots');
-  const goalRoutes = require('../backend/dist/routes/goals');
-  const faceoffRoutes = require('../backend/dist/routes/faceoffs');
-  const analyticsRoutes = require('../backend/dist/routes/analytics');
+  const authRoutes = require('./backend/dist/routes/auth-simple');
+  const teamRoutes = require('./backend/dist/routes/teams');
+  const playerRoutes = require('./backend/dist/routes/players');
+  const gameRoutes = require('./backend/dist/routes/games');
+  const shotRoutes = require('./backend/dist/routes/shots');
+  const goalRoutes = require('./backend/dist/routes/goals');
+  const faceoffRoutes = require('./backend/dist/routes/faceoffs');
+  const analyticsRoutes = require('./backend/dist/routes/analytics');
 
   // Import middleware
-  const { authenticateToken } = require('../backend/dist/middleware/auth');
-  const { errorHandler } = require('../backend/dist/middleware/errorHandler');
+  const { authenticateToken } = require('./backend/dist/middleware/auth');
+  const { errorHandler } = require('./backend/dist/middleware/errorHandler');
 
   // Routes - remove the /api prefix since Vercel already adds it
   app.use('/auth', authRoutes);
