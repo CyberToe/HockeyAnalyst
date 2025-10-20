@@ -61,6 +61,16 @@ module.exports = async (req, res) => {
       return;
     }
 
+    // Handle auth/me endpoint
+    if ((req.url === '/api/auth/me' || req.url.startsWith('/api/auth/me')) && req.method === 'GET') {
+      res.status(200).json({
+        id: '1',
+        email: 'test@example.com',
+        displayName: 'Test User'
+      });
+      return;
+    }
+
     // Handle teams endpoint
     if ((req.url === '/api/teams' || req.url.startsWith('/api/teams')) && req.method === 'GET') {
       res.status(200).json([
