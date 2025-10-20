@@ -534,7 +534,7 @@ app.get('/api/teams/:teamId', async (req, res) => {
     }
 
     console.log('Found team:', team.name);
-    res.json(team);
+    res.json({ team: team });
   } catch (error) {
     console.error('Team detail error:', error);
     res.status(500).json({ 
