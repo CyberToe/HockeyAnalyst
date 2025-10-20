@@ -545,6 +545,86 @@ app.get('/api/teams/:teamId', async (req, res) => {
   }
 });
 
+// Games routes
+app.get('/api/games/teams/:teamId', async (req, res) => {
+  try {
+    console.log('Games request for team:', req.params.teamId);
+    console.log('Request headers:', req.headers);
+    
+    if (!prisma) {
+      console.log('Prisma not available, using mock games');
+      return res.json({
+        games: [
+          {
+            id: '1',
+            opponent: 'Test Team',
+            location: 'Test Arena',
+            startTime: new Date().toISOString(),
+            teamId: req.params.teamId
+          }
+        ]
+      });
+    }
+
+    const authHeader = req.headers.authorization;
+    console.log('Auth header:', authHeader);
+    
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      console.log('No token provided, returning 401');
+      return res.status(401).json({ error: 'No token provided' });
+    }
+
+    const token = authHeader.substring(7);
+    console.log('Token received:', token);
+    
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback-secret');
+    console.log('Token decoded:', decoded);
+    
+    console.log('Looking for games for team:', req.params.teamId, 'user:', decoded.userId);
+    
+    // Check if user is a member of this team
+    const teamMembership = await prisma.teamMember.findFirst({
+      where: {
+        teamId: req.params.teamId,
+        userId: decoded.userId
+      }
+    });
+
+    if (!teamMembership) {
+      return res.status(403).json({ error: 'Access denied to this team' });
+    }
+
+    const games = await prisma.game.findMany({
+      where: {
+        teamId: req.params.teamId
+      },
+      orderBy: {
+        startTime: 'desc'
+      },
+      include: {
+        _count: {
+          select: {
+            goals: true,
+            shots: true,
+            faceoffs: true
+          }
+        }
+      }
+    });
+
+    console.log('Found games:', games.length);
+    console.log('Games data:', games);
+    res.json({ games: games });
+  } catch (error) {
+    console.error('Games error:', error);
+    res.status(500).json({ 
+      error: 'Internal server error',
+      message: error.message,
+      stack: error.stack
+    });
+  }
+});
+
 // Players routes
 app.get('/api/players/teams/:teamId', async (req, res) => {
   try {
