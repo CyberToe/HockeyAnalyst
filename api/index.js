@@ -549,23 +549,26 @@ app.get('/api/teams/:teamId', async (req, res) => {
 app.get('/api/players/teams/:teamId', async (req, res) => {
   try {
     console.log('Players request for team:', req.params.teamId);
+    console.log('Request headers:', req.headers);
     
     if (!prisma) {
       console.log('Prisma not available, using mock players');
-      return res.json([
-        {
-          id: '1',
-          name: 'Test Player 1',
-          number: 7,
-          teamId: req.params.teamId
-        },
-        {
-          id: '2', 
-          name: 'Test Player 2',
-          number: 12,
-          teamId: req.params.teamId
-        }
-      ]);
+      return res.json({
+        players: [
+          {
+            id: '1',
+            name: 'Test Player 1',
+            number: 7,
+            teamId: req.params.teamId
+          },
+          {
+            id: '2', 
+            name: 'Test Player 2',
+            number: 12,
+            teamId: req.params.teamId
+          }
+        ]
+      });
     }
 
     const authHeader = req.headers.authorization;
@@ -610,6 +613,16 @@ app.get('/api/players/teams/:teamId', async (req, res) => {
       stack: error.stack
     });
   }
+});
+
+// Simple test endpoint for players
+app.get('/api/test/players', (req, res) => {
+  res.json({
+    players: [
+      { id: '1', name: 'Test Player 1', number: 7 },
+      { id: '2', name: 'Test Player 2', number: 12 }
+    ]
+  });
 });
 
 // Health check
