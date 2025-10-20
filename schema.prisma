@@ -1,0 +1,172 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id               String       @id @default(uuid())
+  email            String       @unique
+  passwordHash     String       @map("password_hash")
+  displayName      String?      @map("display_name")
+  createdAt        DateTime     @default(now()) @map("created_at")
+  lastLoginAt      DateTime?    @map("last_login_at")
+  recordedFaceoffs Faceoff[]    @relation("FaceoffRecorder")
+  createdGames     Game[]       @relation("GameCreator")
+  recordedGoals    Goal[]       @relation("GoalRecorder")
+  recordedShots    Shot[]       @relation("ShotRecorder")
+  teamMemberships  TeamMember[]
+  createdTeams     Team[]       @relation("TeamCreator")
+
+  @@map("users")
+}
+
+model Team {
+  id          String       @id @default(uuid())
+  name        String
+  description String?
+  teamCode    String       @unique @map("team_code")
+  createdBy   String       @map("created_by")
+  createdAt   DateTime     @default(now()) @map("created_at")
+  deleted     Boolean      @default(false)
+  deletedAt   DateTime?    @map("deleted_at")
+  games       Game[]
+  players     Player[]
+  members     TeamMember[]
+  creator     User         @relation("TeamCreator", fields: [createdBy], references: [id], onDelete: SetNull)
+
+  @@map("teams")
+}
+
+model TeamMember {
+  id       String     @id @default(uuid())
+  teamId   String     @map("team_id")
+  userId   String     @map("user_id")
+  role     MemberRole @default(member)
+  joinedAt DateTime   @default(now()) @map("joined_at")
+  team     Team       @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  user     User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([teamId, userId])
+  @@map("team_members")
+}
+
+model Player {
+  id             String    @id @default(uuid())
+  teamId         String    @map("team_id")
+  name           String
+  number         Int?
+  createdAt      DateTime  @default(now()) @map("created_at")
+  faceoffs       Faceoff[]
+  goalsAssisted1 Goal[]    @relation("GoalAssister1")
+  goalsAssisted2 Goal[]    @relation("GoalAssister2")
+  goalsScored    Goal[]    @relation("GoalScorer")
+  team           Team      @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  shots          Shot[]
+
+  @@unique([teamId, name])
+  @@unique([teamId, number])
+  @@map("players")
+}
+
+model Game {
+  id        String    @id @default(uuid())
+  teamId    String    @map("team_id")
+  opponent  String?
+  location  String?
+  startTime DateTime? @map("start_time")
+  createdBy String?   @map("created_by")
+  createdAt DateTime  @default(now()) @map("created_at")
+  notes     String?
+  faceoffs  Faceoff[]
+  creator   User?     @relation("GameCreator", fields: [createdBy], references: [id])
+  team      Team      @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  goals     Goal[]
+  periods   Period[]
+  shots     Shot[]
+
+  @@map("games")
+}
+
+model Period {
+  id                 String              @id @default(uuid())
+  gameId             String              @map("game_id")
+  periodNumber       Int                 @map("period_number")
+  attackingDirection AttackingDirection? @map("attacking_direction")
+  startedAt          DateTime?           @map("started_at")
+  endedAt            DateTime?           @map("ended_at")
+  game               Game                @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  shots              Shot[]
+
+  @@unique([gameId, periodNumber])
+  @@map("periods")
+}
+
+model Shot {
+  id              String   @id @default(uuid())
+  gameId          String   @map("game_id")
+  periodId        String   @map("period_id")
+  shooterPlayerId String?  @map("shooter_player_id")
+  xCoord          Float    @map("x_coord")
+  yCoord          Float    @map("y_coord")
+  scored          Boolean  @default(false)
+  scoredAgainst   Boolean  @default(false) @map("scored_against")
+  createdBy       String?  @map("created_by")
+  takenAt         DateTime @default(now()) @map("taken_at")
+  notes           String?
+  recorder        User?    @relation("ShotRecorder", fields: [createdBy], references: [id])
+  game            Game     @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  period          Period   @relation(fields: [periodId], references: [id], onDelete: Cascade)
+  shooter         Player?  @relation(fields: [shooterPlayerId], references: [id])
+
+  @@map("shots")
+}
+
+model Goal {
+  id                String   @id @default(uuid())
+  gameId            String   @map("game_id")
+  period            Int
+  scorerPlayerId    String   @map("scorer_player_id")
+  assister1PlayerId String?  @map("assister1_player_id")
+  assister2PlayerId String?  @map("assister2_player_id")
+  createdBy         String?  @map("created_by")
+  createdAt         DateTime @default(now()) @map("created_at")
+  notes             String?
+  assister1         Player?  @relation("GoalAssister1", fields: [assister1PlayerId], references: [id])
+  assister2         Player?  @relation("GoalAssister2", fields: [assister2PlayerId], references: [id])
+  recorder          User?    @relation("GoalRecorder", fields: [createdBy], references: [id])
+  game              Game     @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  scorer            Player   @relation("GoalScorer", fields: [scorerPlayerId], references: [id])
+
+  @@map("goals")
+}
+
+model Faceoff {
+  id        String   @id @default(uuid())
+  gameId    String   @map("game_id")
+  playerId  String   @map("player_id")
+  taken     Int      @default(0)
+  won       Int      @default(0)
+  createdBy String?  @map("created_by")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  recorder  User?    @relation("FaceoffRecorder", fields: [createdBy], references: [id])
+  game      Game     @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  player    Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  @@unique([gameId, playerId])
+  @@map("faceoffs")
+}
+
+enum MemberRole {
+  member
+  admin
+}
+
+enum AttackingDirection {
+  left
+  right
+}

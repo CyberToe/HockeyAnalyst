@@ -1,9 +1,45 @@
 {
-  "name": "hockey-analytics-frontend-deploy",
+  "name": "hockey-analytics-app",
   "version": "1.0.0",
-  "description": "Frontend deployment configuration for Hockey Analytics",
+  "description": "Full-stack Hockey Analytics Application",
+  "main": "dist/index.js",
   "scripts": {
-    "build": "cd frontend && npm install && npm run build"
+    "build": "npm run build:all",
+    "build:all": "npm run build:backend && npm run build:frontend",
+    "build:backend": "tsc",
+    "build:frontend": "cd frontend && npm install && npm run build",
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:backend": "nodemon src/index.ts",
+    "dev:frontend": "cd frontend && npm run dev",
+    "start": "node dist/index.js",
+    "db:generate": "prisma generate",
+    "db:push": "prisma db push",
+    "db:studio": "prisma studio"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.7.1",
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "express-rate-limit": "^7.1.5",
+    "helmet": "^7.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "pg": "^8.11.3",
+    "typescript": "^5.3.3",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/jsonwebtoken": "^9.0.5",
+    "@types/node": "^20.10.5",
+    "@types/pg": "^8.10.9",
+    "concurrently": "^8.2.2",
+    "nodemon": "^3.0.2",
+    "prisma": "^5.7.1",
+    "ts-node": "^10.9.2"
   },
   "private": true
 }

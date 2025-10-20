@@ -1,7 +1,7 @@
 import axios from 'axios'
 import toast from 'react-hot-toast'
 
-const API_BASE_URL = (import.meta as any).env?.VITE_API_URL || 'https://gracious-sparkle-production.up.railway.app/api'
+const API_BASE_URL = (import.meta as any).env?.VITE_API_URL || '/api'
 
 export const api = axios.create({
   baseURL: API_BASE_URL,
