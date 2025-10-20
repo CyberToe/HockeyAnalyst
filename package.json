@@ -6,7 +6,7 @@
   "scripts": {
     "build": "npm run build:all",
     "build:all": "npm run build:backend && npm run build:frontend",
-    "build:backend": "tsc",
+    "build:backend": "cd backend && npx tsc",
     "build:frontend": "cd frontend && npm install && npm run build",
     "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
     "dev:backend": "nodemon src/index.ts",

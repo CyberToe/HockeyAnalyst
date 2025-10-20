@@ -1,6 +1,12 @@
 const fs = require('fs');
 const path = require('path');
 
+// Check if backend/dist exists
+if (!fs.existsSync('backend/dist')) {
+  console.error('Error: backend/dist directory does not exist. Make sure the backend build completed successfully.');
+  process.exit(1);
+}
+
 // Create the target directory
 fs.mkdirSync('api/backend-dist', { recursive: true });
 
