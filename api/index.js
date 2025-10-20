@@ -1,6 +1,13 @@
 // Vercel serverless function entry point
 module.exports = async (req, res) => {
   try {
+    // Debug logging
+    console.log('API Request:', {
+      method: req.method,
+      url: req.url,
+      headers: req.headers,
+      body: req.body
+    });
     // Enable CORS
     res.setHeader('Access-Control-Allow-Credentials', true);
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -24,12 +31,26 @@ module.exports = async (req, res) => {
       return;
     }
 
-    // For now, return a simple response for auth login
-    if (req.url === '/api/auth/login' && req.method === 'POST') {
+    // Handle auth login - check for both exact path and starts with
+    if ((req.url === '/api/auth/login' || req.url.startsWith('/api/auth/login')) && req.method === 'POST') {
       res.status(200).json({ 
         message: 'Login endpoint reached',
         timestamp: new Date().toISOString(),
+        method: req.method,
+        url: req.url,
         body: req.body
+      });
+      return;
+    }
+
+    // Handle GET requests to login (for debugging)
+    if ((req.url === '/api/auth/login' || req.url.startsWith('/api/auth/login')) && req.method === 'GET') {
+      res.status(200).json({ 
+        message: 'Login endpoint reached (GET)',
+        timestamp: new Date().toISOString(),
+        method: req.method,
+        url: req.url,
+        note: 'This should be a POST request'
       });
       return;
     }
