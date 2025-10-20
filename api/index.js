@@ -1,29 +1,14 @@
 // Vercel serverless function entry point
 const express = require('express');
 const cors = require('cors');
-const helmet = require('helmet');
-const rateLimit = require('express-rate-limit');
 const { PrismaClient } = require('@prisma/client');
-
-// Import routes from compiled backend
-const authRoutes = require('../dist/routes/auth-simple');
-const teamRoutes = require('../dist/routes/teams');
-const playerRoutes = require('../dist/routes/players');
-const gameRoutes = require('../dist/routes/games');
-const shotRoutes = require('../dist/routes/shots');
-const goalRoutes = require('../dist/routes/goals');
-const faceoffRoutes = require('../dist/routes/faceoffs');
-const analyticsRoutes = require('../dist/routes/analytics');
-
-// Import middleware
-const { errorHandler } = require('../dist/middleware/errorHandler');
-const { authenticateToken } = require('../dist/middleware/auth');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
 const app = express();
 const prisma = new PrismaClient();
 
-// Security middleware
-app.use(helmet());
+// Enable CORS
 app.use(cors({
   origin: [
     'http://localhost:5173', 
@@ -36,35 +21,178 @@ app.use(cors({
   credentials: true
 }));
 
-// Rate limiting
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
-  message: 'Too many requests from this IP, please try again later.'
-});
-app.use('/api/', limiter);
-
 // Body parsing middleware
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
-// Health check endpoint
+// Auth routes
+app.post('/api/auth/login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    
+    if (!email || !password) {
+      return res.status(400).json({ error: 'Email and password are required' });
+    }
+
+    // Find user in database
+    const user = await prisma.user.findUnique({
+      where: { email }
+    });
+
+    if (!user) {
+      return res.status(401).json({ error: 'Invalid credentials' });
+    }
+
+    // Check password
+    const isValidPassword = await bcrypt.compare(password, user.password);
+    if (!isValidPassword) {
+      return res.status(401).json({ error: 'Invalid credentials' });
+    }
+
+    // Generate JWT token
+    const token = jwt.sign(
+      { userId: user.id, email: user.email },
+      process.env.JWT_SECRET || 'fallback-secret',
+      { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
+    );
+
+    res.json({
+      data: {
+        user: {
+          id: user.id,
+          email: user.email,
+          displayName: user.displayName
+        },
+        token
+      }
+    });
+  } catch (error) {
+    console.error('Login error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.post('/api/auth/register', async (req, res) => {
+  try {
+    const { email, password, displayName } = req.body;
+    
+    if (!email || !password || !displayName) {
+      return res.status(400).json({ error: 'Email, password, and display name are required' });
+    }
+
+    // Check if user already exists
+    const existingUser = await prisma.user.findUnique({
+      where: { email }
+    });
+
+    if (existingUser) {
+      return res.status(400).json({ error: 'User already exists' });
+    }
+
+    // Hash password
+    const hashedPassword = await bcrypt.hash(password, 12);
+
+    // Create user
+    const user = await prisma.user.create({
+      data: {
+        email,
+        password: hashedPassword,
+        displayName
+      }
+    });
+
+    // Generate JWT token
+    const token = jwt.sign(
+      { userId: user.id, email: user.email },
+      process.env.JWT_SECRET || 'fallback-secret',
+      { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
+    );
+
+    res.status(201).json({
+      data: {
+        user: {
+          id: user.id,
+          email: user.email,
+          displayName: user.displayName
+        },
+        token
+      }
+    });
+  } catch (error) {
+    console.error('Register error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.get('/api/auth/me', async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ error: 'No token provided' });
+    }
+
+    const token = authHeader.substring(7);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback-secret');
+    
+    const user = await prisma.user.findUnique({
+      where: { id: decoded.userId }
+    });
+
+    if (!user) {
+      return res.status(401).json({ error: 'User not found' });
+    }
+
+    res.json({
+      id: user.id,
+      email: user.email,
+      displayName: user.displayName
+    });
+  } catch (error) {
+    console.error('Auth check error:', error);
+    res.status(401).json({ error: 'Invalid token' });
+  }
+});
+
+// Teams routes
+app.get('/api/teams', async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ error: 'No token provided' });
+    }
+
+    const token = authHeader.substring(7);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback-secret');
+    
+    const teams = await prisma.team.findMany({
+      where: {
+        members: {
+          some: {
+            userId: decoded.userId
+          }
+        }
+      },
+      include: {
+        _count: {
+          select: {
+            players: true,
+            games: true
+          }
+        }
+      }
+    });
+
+    res.json(teams);
+  } catch (error) {
+    console.error('Teams error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Health check
 app.get('/health', (req, res) => {
   res.json({ status: 'OK', timestamp: new Date().toISOString() });
 });
-
-// API routes
-app.use('/api/auth', authRoutes);
-app.use('/api/teams', authenticateToken, teamRoutes);
-app.use('/api/players', authenticateToken, playerRoutes);
-app.use('/api/games', authenticateToken, gameRoutes);
-app.use('/api/shots', authenticateToken, shotRoutes);
-app.use('/api/goals', authenticateToken, goalRoutes);
-app.use('/api/faceoffs', authenticateToken, faceoffRoutes);
-app.use('/api/analytics', authenticateToken, analyticsRoutes);
-
-// Error handling middleware
-app.use(errorHandler);
 
 // 404 handler
 app.use('*', (req, res) => {
