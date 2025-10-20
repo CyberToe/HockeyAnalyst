@@ -4,34 +4,6 @@ const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 
-// Import Prisma client to ensure it's initialized
-require('../backend/dist/lib/prisma');
-
-// Import routes (these are CommonJS modules)
-let authRoutes, teamRoutes, playerRoutes, gameRoutes, shotRoutes, goalRoutes, faceoffRoutes, analyticsRoutes;
-let authenticateToken, errorHandler;
-
-try {
-  authRoutes = require('../backend/dist/routes/auth-simple');
-  teamRoutes = require('../backend/dist/routes/teams');
-  playerRoutes = require('../backend/dist/routes/players');
-  gameRoutes = require('../backend/dist/routes/games');
-  shotRoutes = require('../backend/dist/routes/shots');
-  goalRoutes = require('../backend/dist/routes/goals');
-  faceoffRoutes = require('../backend/dist/routes/faceoffs');
-  analyticsRoutes = require('../backend/dist/routes/analytics');
-
-  // Import middleware
-  const authMiddleware = require('../backend/dist/middleware/auth');
-  const errorMiddleware = require('../backend/dist/middleware/errorHandler');
-  
-  authenticateToken = authMiddleware.authenticateToken;
-  errorHandler = errorMiddleware.errorHandler;
-} catch (error) {
-  console.error('Error importing backend modules:', error);
-  throw error;
-}
-
 const app = express();
 
 // Middleware
@@ -51,18 +23,61 @@ app.use(limiter);
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
-// Routes - remove the /api prefix since Vercel already adds it
-app.use('/auth', authRoutes);
-app.use('/teams', authenticateToken, teamRoutes);
-app.use('/players', authenticateToken, playerRoutes);
-app.use('/games', authenticateToken, gameRoutes);
-app.use('/shots', authenticateToken, shotRoutes);
-app.use('/goals', authenticateToken, goalRoutes);
-app.use('/faceoffs', authenticateToken, faceoffRoutes);
-app.use('/analytics', authenticateToken, analyticsRoutes);
+// Test endpoint for debugging
+app.get('/test', (req, res) => {
+  res.json({ 
+    message: 'API is working',
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV,
+    databaseUrl: process.env.DATABASE_URL ? 'Set' : 'Not set'
+  });
+});
 
-// Error handling middleware
-app.use(errorHandler);
+// Import and setup routes with error handling
+try {
+  // Import Prisma client first
+  require('../backend/dist/lib/prisma');
+  
+  // Import routes
+  const authRoutes = require('../backend/dist/routes/auth-simple');
+  const teamRoutes = require('../backend/dist/routes/teams');
+  const playerRoutes = require('../backend/dist/routes/players');
+  const gameRoutes = require('../backend/dist/routes/games');
+  const shotRoutes = require('../backend/dist/routes/shots');
+  const goalRoutes = require('../backend/dist/routes/goals');
+  const faceoffRoutes = require('../backend/dist/routes/faceoffs');
+  const analyticsRoutes = require('../backend/dist/routes/analytics');
+
+  // Import middleware
+  const { authenticateToken } = require('../backend/dist/middleware/auth');
+  const { errorHandler } = require('../backend/dist/middleware/errorHandler');
+
+  // Routes - remove the /api prefix since Vercel already adds it
+  app.use('/auth', authRoutes);
+  app.use('/teams', authenticateToken, teamRoutes);
+  app.use('/players', authenticateToken, playerRoutes);
+  app.use('/games', authenticateToken, gameRoutes);
+  app.use('/shots', authenticateToken, shotRoutes);
+  app.use('/goals', authenticateToken, goalRoutes);
+  app.use('/faceoffs', authenticateToken, faceoffRoutes);
+  app.use('/analytics', authenticateToken, analyticsRoutes);
+
+  // Error handling middleware
+  app.use(errorHandler);
+
+} catch (error) {
+  console.error('Error setting up API routes:', error);
+  
+  // Fallback error handler
+  app.use('*', (req, res) => {
+    console.error('API Error:', error);
+    res.status(500).json({ 
+      error: 'Internal server error',
+      message: error.message,
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
+  });
+}
 
 // 404 handler
 app.use('*', (req, res) => {
