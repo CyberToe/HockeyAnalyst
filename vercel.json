@@ -1,9 +1,16 @@
 {
   "version": 2,
-  "buildCommand": "npm run build:all && npx prisma generate && node scripts/copy-backend.js",
+  "buildCommand": "npm run build:all && npx prisma generate",
   "installCommand": "npm install",
   "outputDirectory": "frontend/dist",
   "framework": null,
+  "functions": {
+    "api/index.js": {
+      "includeFiles": [
+        "backend/dist/**"
+      ]
+    }
+  },
   "routes": [
     {
       "src": "/api/(.*)",
