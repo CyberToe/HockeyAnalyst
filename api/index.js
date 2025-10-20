@@ -3,24 +3,36 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
-const { PrismaClient } = require('@prisma/client');
 
-// Import routes
-const authRoutes = require('../backend/dist/routes/auth-simple');
-const teamRoutes = require('../backend/dist/routes/teams');
-const playerRoutes = require('../backend/dist/routes/players');
-const gameRoutes = require('../backend/dist/routes/games');
-const shotRoutes = require('../backend/dist/routes/shots');
-const goalRoutes = require('../backend/dist/routes/goals');
-const faceoffRoutes = require('../backend/dist/routes/faceoffs');
-const analyticsRoutes = require('../backend/dist/routes/analytics');
+// Import Prisma client to ensure it's initialized
+require('../backend/dist/lib/prisma');
 
-// Import middleware
-const { authenticateToken } = require('../backend/dist/middleware/auth');
-const { errorHandler } = require('../backend/dist/middleware/errorHandler');
+// Import routes (these are CommonJS modules)
+let authRoutes, teamRoutes, playerRoutes, gameRoutes, shotRoutes, goalRoutes, faceoffRoutes, analyticsRoutes;
+let authenticateToken, errorHandler;
+
+try {
+  authRoutes = require('../backend/dist/routes/auth-simple');
+  teamRoutes = require('../backend/dist/routes/teams');
+  playerRoutes = require('../backend/dist/routes/players');
+  gameRoutes = require('../backend/dist/routes/games');
+  shotRoutes = require('../backend/dist/routes/shots');
+  goalRoutes = require('../backend/dist/routes/goals');
+  faceoffRoutes = require('../backend/dist/routes/faceoffs');
+  analyticsRoutes = require('../backend/dist/routes/analytics');
+
+  // Import middleware
+  const authMiddleware = require('../backend/dist/middleware/auth');
+  const errorMiddleware = require('../backend/dist/middleware/errorHandler');
+  
+  authenticateToken = authMiddleware.authenticateToken;
+  errorHandler = errorMiddleware.errorHandler;
+} catch (error) {
+  console.error('Error importing backend modules:', error);
+  throw error;
+}
 
 const app = express();
-const prisma = new PrismaClient();
 
 // Middleware
 app.use(helmet());
@@ -39,15 +51,15 @@ app.use(limiter);
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
-// Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/teams', authenticateToken, teamRoutes);
-app.use('/api/players', authenticateToken, playerRoutes);
-app.use('/api/games', authenticateToken, gameRoutes);
-app.use('/api/shots', authenticateToken, shotRoutes);
-app.use('/api/goals', authenticateToken, goalRoutes);
-app.use('/api/faceoffs', authenticateToken, faceoffRoutes);
-app.use('/api/analytics', authenticateToken, analyticsRoutes);
+// Routes - remove the /api prefix since Vercel already adds it
+app.use('/auth', authRoutes);
+app.use('/teams', authenticateToken, teamRoutes);
+app.use('/players', authenticateToken, playerRoutes);
+app.use('/games', authenticateToken, gameRoutes);
+app.use('/shots', authenticateToken, shotRoutes);
+app.use('/goals', authenticateToken, goalRoutes);
+app.use('/faceoffs', authenticateToken, faceoffRoutes);
+app.use('/analytics', authenticateToken, analyticsRoutes);
 
 // Error handling middleware
 app.use(errorHandler);
