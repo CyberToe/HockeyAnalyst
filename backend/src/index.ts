@@ -76,36 +76,41 @@ app.use('*', (req, res) => {
   res.status(404).json({ error: 'Route not found' });
 });
 
-const PORT = process.env.PORT || 3001;
-
-app.listen(PORT, async () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-  console.log(`📊 Hockey Analytics API ready`);
+// For Vercel serverless functions, we don't start a server
+// Just export the app and handle database connection on first request
+if (process.env.NODE_ENV !== 'production' || process.env.VERCEL !== '1') {
+  // Only start server in development or non-Vercel environments
+  const PORT = process.env.PORT || 3001;
   
-  // Test database connection
-  try {
-    await prisma.$connect();
-    console.log('✅ Database connected successfully');
-    console.log('JWT_TOKEN from env:', process.env.JWT_TOKEN ? 'Set' : 'Not set');
-    console.log('All env vars with JWT:', Object.keys(process.env).filter(key => key.includes('JWT')));
-    console.log('TEST_VAR from env:', process.env.TEST_VAR ? 'Set' : 'Not set');
-    console.log('All env vars:', Object.keys(process.env).sort());
-  } catch (error) {
-    console.error('❌ Database connection failed:', error);
-  }
-});
+  app.listen(PORT, async () => {
+    console.log(`🚀 Server running on port ${PORT}`);
+    console.log(`📊 Hockey Analytics API ready`);
+    
+    // Test database connection
+    try {
+      await prisma.$connect();
+      console.log('✅ Database connected successfully');
+      console.log('JWT_TOKEN from env:', process.env.JWT_TOKEN ? 'Set' : 'Not set');
+      console.log('All env vars with JWT:', Object.keys(process.env).filter(key => key.includes('JWT')));
+      console.log('TEST_VAR from env:', process.env.TEST_VAR ? 'Set' : 'Not set');
+      console.log('All env vars:', Object.keys(process.env).sort());
+    } catch (error) {
+      console.error('❌ Database connection failed:', error);
+    }
+  });
 
-// Graceful shutdown
-process.on('SIGINT', async () => {
-  console.log('Shutting down gracefully...');
-  await prisma.$disconnect();
-  process.exit(0);
-});
+  // Graceful shutdown
+  process.on('SIGINT', async () => {
+    console.log('Shutting down gracefully...');
+    await prisma.$disconnect();
+    process.exit(0);
+  });
 
-process.on('SIGTERM', async () => {
-  console.log('Shutting down gracefully...');
-  await prisma.$disconnect();
-  process.exit(0);
-});
+  process.on('SIGTERM', async () => {
+    console.log('Shutting down gracefully...');
+    await prisma.$disconnect();
+    process.exit(0);
+  });
+}
 
 export default app;
