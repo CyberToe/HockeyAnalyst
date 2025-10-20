@@ -600,7 +600,8 @@ app.get('/api/players/teams/:teamId', async (req, res) => {
     });
 
     console.log('Found players:', players.length);
-    res.json(players);
+    console.log('Players data:', players);
+    res.json({ players: players });
   } catch (error) {
     console.error('Players error:', error);
     res.status(500).json({ 
