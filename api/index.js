@@ -1,10 +1,21 @@
 // Vercel serverless function entry point
 const express = require('express');
 const cors = require('cors');
+const { PrismaClient } = require('@prisma/client');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
 const app = express();
 
-// Simple test without database first
+// Initialize Prisma with error handling
+let prisma;
+try {
+  prisma = new PrismaClient();
+  console.log('Prisma client initialized successfully');
+} catch (error) {
+  console.error('Failed to initialize Prisma:', error);
+}
+
 console.log('API starting...');
 console.log('Environment variables:', {
   DATABASE_URL: process.env.DATABASE_URL ? 'Set' : 'Not set',
@@ -34,15 +45,57 @@ app.post('/api/auth/login', async (req, res) => {
   try {
     console.log('Login attempt:', { email: req.body.email });
     
-    // For now, return a simple success response
+    const { email, password } = req.body;
+    
+    if (!email || !password) {
+      return res.status(400).json({ error: 'Email and password are required' });
+    }
+
+    // Check if Prisma is available
+    if (!prisma) {
+      console.log('Prisma not available, using mock response');
+      return res.json({
+        data: {
+          user: {
+            id: '1',
+            email: email,
+            displayName: 'Test User'
+          },
+          token: 'test-token-' + Date.now()
+        }
+      });
+    }
+
+    // Find user in database
+    const user = await prisma.user.findUnique({
+      where: { email }
+    });
+
+    if (!user) {
+      return res.status(401).json({ error: 'Invalid credentials' });
+    }
+
+    // Check password
+    const isValidPassword = await bcrypt.compare(password, user.password);
+    if (!isValidPassword) {
+      return res.status(401).json({ error: 'Invalid credentials' });
+    }
+
+    // Generate JWT token
+    const token = jwt.sign(
+      { userId: user.id, email: user.email },
+      process.env.JWT_SECRET || 'fallback-secret',
+      { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
+    );
+
     res.json({
       data: {
         user: {
-          id: '1',
-          email: req.body.email || 'test@example.com',
-          displayName: 'Test User'
+          id: user.id,
+          email: user.email,
+          displayName: user.displayName
         },
-        token: 'test-token-' + Date.now()
+        token
       }
     });
   } catch (error) {
@@ -104,19 +157,38 @@ app.get('/api/teams', async (req, res) => {
   try {
     console.log('Teams request');
     
-    res.json([
-      {
-        id: '1',
-        name: 'Test Team 1',
-        description: 'A test team',
-        teamCode: 'TEST123',
-        createdAt: new Date().toISOString(),
+    // Check if Prisma is available
+    if (!prisma) {
+      console.log('Prisma not available, using mock teams');
+      return res.json([
+        {
+          id: '1',
+          name: 'Test Team 1',
+          description: 'A test team',
+          teamCode: 'TEST123',
+          createdAt: new Date().toISOString(),
+          _count: {
+            players: 5,
+            games: 3
+          }
+        }
+      ]);
+    }
+
+    // Get teams from database
+    const teams = await prisma.team.findMany({
+      include: {
         _count: {
-          players: 5,
-          games: 3
+          select: {
+            players: true,
+            games: true
+          }
         }
       }
-    ]);
+    });
+
+    console.log('Found teams:', teams.length);
+    res.json(teams);
   } catch (error) {
     console.error('Teams error:', error);
     res.status(500).json({ 
