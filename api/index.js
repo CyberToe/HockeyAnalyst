@@ -959,7 +959,7 @@ app.get('/api/games/:gameId', async (req, res) => {
     }
 
     console.log('Found game:', game.id);
-    res.json(game);
+    res.json({ game: game });
   } catch (error) {
     console.error('Game error:', error);
     res.status(500).json({ 
