@@ -73,16 +73,28 @@ export default function ShotTracker() {
   
 
   // Fetch game data with periods
-  const { data: gameData, isLoading } = useQuery({
+  const { data: gameData, isLoading, error: gameError } = useQuery({
     queryKey: ['game', gameId],
-    queryFn: () => gamesApi.getGame(gameId!).then(res => res.data),
+    queryFn: () => {
+      console.log('Fetching game data for gameId:', gameId);
+      return gamesApi.getGame(gameId!).then(res => {
+        console.log('Game data received:', res.data);
+        return res.data;
+      });
+    },
     enabled: !!gameId,
   })
 
   // Fetch shots data
-  const { data: shotsData, refetch: refetchShots } = useQuery({
+  const { data: shotsData, refetch: refetchShots, error: shotsError } = useQuery({
     queryKey: ['shots', gameId],
-    queryFn: () => shotsApi.getShots(gameId!).then(res => res.data),
+    queryFn: () => {
+      console.log('Fetching shots data for gameId:', gameId);
+      return shotsApi.getShots(gameId!).then(res => {
+        console.log('Shots data received:', res.data);
+        return res.data;
+      });
+    },
     enabled: !!gameId,
   })
 
@@ -167,7 +179,13 @@ export default function ShotTracker() {
 
   // Process shots data when it changes
   useEffect(() => {
+    console.log('Shots data changed:', shotsData);
+    console.log('Game data:', gameData);
+    console.log('Game error:', gameError);
+    console.log('Shots error:', shotsError);
+    
     if (shotsData?.shots) {
+      console.log('Processing shots:', shotsData.shots);
       const processedShots = shotsData.shots.map((shot: any) => ({
         id: shot.id,
         xCoord: shot.xCoord,
@@ -179,9 +197,12 @@ export default function ShotTracker() {
         takenAt: shot.takenAt,
         attackingDirectionWhenShot: shot.period.attackingDirection || 'right'
       }))
+      console.log('Processed shots:', processedShots);
       setShots(processedShots)
+    } else {
+      console.log('No shots data or shots array not found');
     }
-  }, [shotsData])
+  }, [shotsData, gameData, gameError, shotsError])
 
   // Draw the hockey rink on canvas
   const drawRink = () => {
@@ -502,6 +523,16 @@ export default function ShotTracker() {
 
   const stats = calculateStats()
 
+  // Debug logging
+  console.log('ShotTracker Debug:', {
+    gameId,
+    gameData,
+    shotsData,
+    shots: shots,
+    gameError,
+    shotsError,
+    isLoading
+  });
 
   // Draw rink when component mounts or shots change
   useEffect(() => {
