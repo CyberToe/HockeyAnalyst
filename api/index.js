@@ -240,8 +240,25 @@ app.get('/api/teams', async (req, res) => {
       ]);
     }
 
-    // Get teams from database
+    // Get teams from database for the authenticated user
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ error: 'No token provided' });
+    }
+
+    const token = authHeader.substring(7);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback-secret');
+    
+    console.log('Looking for teams for user:', decoded.userId);
+    
     const teams = await prisma.team.findMany({
+      where: {
+        members: {
+          some: {
+            userId: decoded.userId
+          }
+        }
+      },
       include: {
         _count: {
           select: {
@@ -253,6 +270,7 @@ app.get('/api/teams', async (req, res) => {
     });
 
     console.log('Found teams:', teams.length);
+    console.log('Teams data:', teams);
     res.json(teams);
   } catch (error) {
     console.error('Teams error:', error);
