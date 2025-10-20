@@ -473,6 +473,78 @@ app.post('/api/test/create-user', async (req, res) => {
   }
 });
 
+// Team detail route
+app.get('/api/teams/:teamId', async (req, res) => {
+  try {
+    console.log('Team detail request for:', req.params.teamId);
+    
+    if (!prisma) {
+      console.log('Prisma not available, using mock team');
+      return res.json({
+        id: req.params.teamId,
+        name: 'Test Team',
+        description: 'A test team',
+        teamCode: 'TEST123',
+        createdAt: new Date().toISOString(),
+        _count: {
+          players: 5,
+          games: 3
+        }
+      });
+    }
+
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ error: 'No token provided' });
+    }
+
+    const token = authHeader.substring(7);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback-secret');
+    
+    console.log('Looking for team:', req.params.teamId, 'user:', decoded.userId);
+    
+    // Check if user is a member of this team
+    const teamMembership = await prisma.teamMember.findFirst({
+      where: {
+        teamId: req.params.teamId,
+        userId: decoded.userId
+      }
+    });
+
+    if (!teamMembership) {
+      return res.status(403).json({ error: 'Access denied to this team' });
+    }
+
+    const team = await prisma.team.findUnique({
+      where: {
+        id: req.params.teamId
+      },
+      include: {
+        _count: {
+          select: {
+            players: true,
+            games: true
+          }
+        }
+      }
+    });
+
+    if (!team) {
+      return res.status(404).json({ error: 'Team not found' });
+    }
+
+    console.log('Found team:', team.name);
+    res.json(team);
+  } catch (error) {
+    console.error('Team detail error:', error);
+    res.status(500).json({ 
+      error: 'Internal server error',
+      message: error.message,
+      stack: error.stack
+    });
+  }
+});
+
 // Players routes
 app.get('/api/players/teams/:teamId', async (req, res) => {
   try {
