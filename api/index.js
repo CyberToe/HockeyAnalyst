@@ -10,10 +10,17 @@ const app = express();
 // Initialize Prisma with error handling
 let prisma;
 try {
-  prisma = new PrismaClient();
-  console.log('Prisma client initialized successfully');
+  console.log('DATABASE_URL:', process.env.DATABASE_URL ? 'Set' : 'Not set');
+  if (!process.env.DATABASE_URL) {
+    console.error('DATABASE_URL environment variable is not set');
+    prisma = null;
+  } else {
+    prisma = new PrismaClient();
+    console.log('Prisma client initialized successfully');
+  }
 } catch (error) {
   console.error('Failed to initialize Prisma:', error);
+  prisma = null;
 }
 
 console.log('API starting...');
@@ -66,20 +73,30 @@ app.post('/api/auth/login', async (req, res) => {
       });
     }
 
-    // Find user in database
-    const user = await prisma.user.findUnique({
-      where: { email }
-    });
+          // Find user in database
+          const user = await prisma.user.findUnique({
+            where: { email }
+          });
 
-    if (!user) {
-      return res.status(401).json({ error: 'Invalid credentials' });
-    }
+          console.log('User found:', user ? 'Yes' : 'No');
+          if (user) {
+            console.log('User password field:', user.password ? 'Set' : 'Not set');
+          }
 
-    // Check password
-    const isValidPassword = await bcrypt.compare(password, user.password);
-    if (!isValidPassword) {
-      return res.status(401).json({ error: 'Invalid credentials' });
-    }
+          if (!user) {
+            return res.status(401).json({ error: 'Invalid credentials' });
+          }
+
+          // Check password
+          if (!user.password) {
+            console.log('User has no password set');
+            return res.status(401).json({ error: 'Invalid credentials' });
+          }
+          
+          const isValidPassword = await bcrypt.compare(password, user.password);
+          if (!isValidPassword) {
+            return res.status(401).json({ error: 'Invalid credentials' });
+          }
 
     // Generate JWT token
     const token = jwt.sign(
