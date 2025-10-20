@@ -8,6 +8,8 @@ const backendDist = path.join('backend', 'dist');
 if (!fs.existsSync(backendDist)) {
   console.log('backend/dist not found. Building backend...');
   try {
+    // Ensure backend dependencies are installed in Vercel build environment
+    execSync('npm ci', { cwd: path.join(process.cwd(), 'backend'), stdio: 'inherit' });
     // Use npx tsc from within backend directory
     execSync('npx tsc', { cwd: path.join(process.cwd(), 'backend'), stdio: 'inherit' });
   } catch (err) {
