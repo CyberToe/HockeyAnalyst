@@ -1,5 +1,3 @@
-backend/
-**/backend/**
 node_modules/
 *.sql
 *.bat
