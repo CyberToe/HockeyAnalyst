@@ -751,6 +751,163 @@ app.get('/api/analytics/teams/:teamId/players', async (req, res) => {
   }
 });
 
+// Game analytics endpoint
+app.get('/api/analytics/games/:gameId', async (req, res) => {
+  try {
+    console.log('Game analytics request for game:', req.params.gameId);
+    console.log('Request headers:', req.headers);
+    
+    if (!prisma) {
+      console.log('Prisma not available, using mock game analytics');
+      return res.json({
+        game: {
+          id: req.params.gameId,
+          opponent: 'Test Team',
+          startTime: new Date().toISOString(),
+          goals: 3,
+          shots: 15,
+          faceoffs: 12
+        }
+      });
+    }
+
+    const authHeader = req.headers.authorization;
+    console.log('Auth header:', authHeader);
+    
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      console.log('No token provided, returning 401');
+      return res.status(401).json({ error: 'No token provided' });
+    }
+
+    const token = authHeader.substring(7);
+    console.log('Token received:', token);
+    
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback-secret');
+    console.log('Token decoded:', decoded);
+    
+    console.log('Looking for game analytics for game:', req.params.gameId, 'user:', decoded.userId);
+    
+    // Get game details
+    const game = await prisma.game.findUnique({
+      where: {
+        id: req.params.gameId
+      },
+      include: {
+        team: {
+          include: {
+            members: {
+              where: {
+                userId: decoded.userId
+              }
+            }
+          }
+        },
+        goals: {
+          include: {
+            scorer: true,
+            assister1: true,
+            assister2: true
+          }
+        },
+        shots: {
+          include: {
+            shooter: true
+          }
+        },
+        faceoffs: {
+          include: {
+            player: true
+          }
+        }
+      }
+    });
+
+    if (!game) {
+      return res.status(404).json({ error: 'Game not found' });
+    }
+
+    // Check if user is a member of this team
+    if (game.team.members.length === 0) {
+      return res.status(403).json({ error: 'Access denied to this game' });
+    }
+
+    // Calculate game analytics
+    const totalGoals = game.goals.length;
+    const totalShots = game.shots.length;
+    const totalShotsOnGoal = game.shots.filter(shot => shot.scored).length;
+    const totalFaceoffs = game.faceoffs.reduce((sum, faceoff) => sum + faceoff.taken, 0);
+    const totalFaceoffWins = game.faceoffs.reduce((sum, faceoff) => sum + faceoff.won, 0);
+
+    const gameAnalytics = {
+      id: game.id,
+      opponent: game.opponent,
+      location: game.location,
+      startTime: game.startTime,
+      teamId: game.teamId,
+      totalGoals,
+      totalShots,
+      totalShotsOnGoal,
+      shootingPercentage: totalShots > 0 ? (totalShotsOnGoal / totalShots * 100).toFixed(1) : 0,
+      totalFaceoffs,
+      totalFaceoffWins,
+      faceoffPercentage: totalFaceoffs > 0 ? (totalFaceoffWins / totalFaceoffs * 100).toFixed(1) : 0,
+      goals: game.goals.map(goal => ({
+        id: goal.id,
+        period: goal.period,
+        scorer: goal.scorer ? {
+          id: goal.scorer.id,
+          name: goal.scorer.name,
+          number: goal.scorer.number
+        } : null,
+        assister1: goal.assister1 ? {
+          id: goal.assister1.id,
+          name: goal.assister1.name,
+          number: goal.assister1.number
+        } : null,
+        assister2: goal.assister2 ? {
+          id: goal.assister2.id,
+          name: goal.assister2.name,
+          number: goal.assister2.number
+        } : null,
+        notes: goal.notes
+      })),
+      shots: game.shots.map(shot => ({
+        id: shot.id,
+        xCoord: shot.xCoord,
+        yCoord: shot.yCoord,
+        scored: shot.scored,
+        shooter: shot.shooter ? {
+          id: shot.shooter.id,
+          name: shot.shooter.name,
+          number: shot.shooter.number
+        } : null,
+        notes: shot.notes
+      })),
+      faceoffs: game.faceoffs.map(faceoff => ({
+        id: faceoff.id,
+        player: {
+          id: faceoff.player.id,
+          name: faceoff.player.name,
+          number: faceoff.player.number
+        },
+        taken: faceoff.taken,
+        won: faceoff.won
+      }))
+    };
+
+    console.log('Found game analytics for game:', game.id);
+    console.log('Game analytics data:', gameAnalytics);
+    res.json({ game: gameAnalytics });
+  } catch (error) {
+    console.error('Game analytics error:', error);
+    res.status(500).json({ 
+      error: 'Internal server error',
+      message: error.message,
+      stack: error.stack
+    });
+  }
+});
+
 // Players routes
 app.get('/api/players/teams/:teamId', async (req, res) => {
   try {
