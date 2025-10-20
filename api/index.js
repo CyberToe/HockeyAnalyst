@@ -1,4 +1,4 @@
-// Vercel API entry point
+// Vercel serverless function entry point
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
@@ -6,18 +6,18 @@ const rateLimit = require('express-rate-limit');
 const { PrismaClient } = require('@prisma/client');
 
 // Import routes from compiled backend
-const authRoutes = require('./backend/dist/routes/auth-simple');
-const teamRoutes = require('./backend/dist/routes/teams');
-const playerRoutes = require('./backend/dist/routes/players');
-const gameRoutes = require('./backend/dist/routes/games');
-const shotRoutes = require('./backend/dist/routes/shots');
-const goalRoutes = require('./backend/dist/routes/goals');
-const faceoffRoutes = require('./backend/dist/routes/faceoffs');
-const analyticsRoutes = require('./backend/dist/routes/analytics');
+const authRoutes = require('../dist/routes/auth-simple');
+const teamRoutes = require('../dist/routes/teams');
+const playerRoutes = require('../dist/routes/players');
+const gameRoutes = require('../dist/routes/games');
+const shotRoutes = require('../dist/routes/shots');
+const goalRoutes = require('../dist/routes/goals');
+const faceoffRoutes = require('../dist/routes/faceoffs');
+const analyticsRoutes = require('../dist/routes/analytics');
 
 // Import middleware
-const { errorHandler } = require('./backend/dist/middleware/errorHandler');
-const { authenticateToken } = require('./backend/dist/middleware/auth');
+const { errorHandler } = require('../dist/middleware/errorHandler');
+const { authenticateToken } = require('../dist/middleware/auth');
 
 const app = express();
 const prisma = new PrismaClient();

@@ -4,10 +4,15 @@
   "installCommand": "npm install",
   "outputDirectory": "frontend/dist",
   "framework": null,
+  "functions": {
+    "api/index.js": {
+      "runtime": "nodejs18.x"
+    }
+  },
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "/dist/index.js"
+      "dest": "/api/index.js"
     },
     {
       "handle": "filesystem"
