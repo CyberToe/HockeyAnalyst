@@ -282,6 +282,99 @@ app.get('/api/teams', async (req, res) => {
   }
 });
 
+// Debug endpoint to check user and teams
+app.get('/api/debug/user-teams', async (req, res) => {
+  try {
+    console.log('Debug: Checking user and teams...');
+    
+    if (!prisma) {
+      return res.status(500).json({ error: 'Database not available' });
+    }
+
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ error: 'No token provided' });
+    }
+
+    const token = authHeader.substring(7);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback-secret');
+    
+    console.log('Debug: User ID from token:', decoded.userId);
+    
+    // Get user details
+    const user = await prisma.user.findUnique({
+      where: { id: decoded.userId }
+    });
+    
+    console.log('Debug: User found:', user ? 'Yes' : 'No');
+    if (user) {
+      console.log('Debug: User email:', user.email);
+    }
+    
+    // Get all teams (for debugging)
+    const allTeams = await prisma.team.findMany({
+      include: {
+        members: true,
+        _count: {
+          select: {
+            players: true,
+            games: true
+          }
+        }
+      }
+    });
+    
+    console.log('Debug: Total teams in database:', allTeams.length);
+    
+    // Get user's teams
+    const userTeams = await prisma.team.findMany({
+      where: {
+        members: {
+          some: {
+            userId: decoded.userId
+          }
+        }
+      },
+      include: {
+        members: true,
+        _count: {
+          select: {
+            players: true,
+            games: true
+          }
+        }
+      }
+    });
+    
+    console.log('Debug: User teams:', userTeams.length);
+    
+    res.json({
+      user: user ? {
+        id: user.id,
+        email: user.email,
+        displayName: user.displayName
+      } : null,
+      totalTeams: allTeams.length,
+      userTeams: userTeams.length,
+      allTeams: allTeams.map(team => ({
+        id: team.id,
+        name: team.name,
+        teamCode: team.teamCode,
+        members: team.members.length,
+        memberIds: team.members.map(m => m.userId)
+      })),
+      userTeamsData: userTeams
+    });
+  } catch (error) {
+    console.error('Debug error:', error);
+    res.status(500).json({ 
+      error: 'Debug failed',
+      message: error.message,
+      stack: error.stack
+    });
+  }
+});
+
 // Test user creation endpoint (for debugging)
 app.post('/api/test/create-user', async (req, res) => {
   try {
