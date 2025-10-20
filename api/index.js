@@ -945,6 +945,11 @@ app.get('/api/games/:gameId', async (req, res) => {
               }
             }
           }
+        },
+        periods: {
+          orderBy: {
+            periodNumber: 'asc'
+          }
         }
       }
     });
@@ -1116,6 +1121,82 @@ app.get('/api/faceoffs/games/:gameId', async (req, res) => {
     res.json(faceoffs);
   } catch (error) {
     console.error('Faceoffs error:', error);
+    res.status(500).json({ 
+      error: 'Internal server error',
+      message: error.message
+    });
+  }
+});
+
+// Shots for a game
+app.get('/api/shots/games/:gameId', async (req, res) => {
+  try {
+    console.log('Shots request for game:', req.params.gameId);
+    
+    if (!prisma) {
+      console.log('Prisma not available, using mock shots');
+      return res.json([
+        {
+          id: '1',
+          xCoord: 50,
+          yCoord: 30,
+          scored: true,
+          shooter: { id: '1', name: 'Test Player', number: 7 },
+          notes: 'Test shot'
+        }
+      ]);
+    }
+
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ error: 'No token provided' });
+    }
+
+    const token = authHeader.substring(7);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback-secret');
+    
+    const game = await prisma.game.findUnique({
+      where: {
+        id: req.params.gameId
+      },
+      include: {
+        team: {
+          include: {
+            members: {
+              where: {
+                userId: decoded.userId
+              }
+            }
+          }
+        }
+      }
+    });
+
+    if (!game) {
+      return res.status(404).json({ error: 'Game not found' });
+    }
+
+    // Check if user is a member of this team
+    if (game.team.members.length === 0) {
+      return res.status(403).json({ error: 'Access denied to this game' });
+    }
+
+    const shots = await prisma.shot.findMany({
+      where: {
+        gameId: req.params.gameId
+      },
+      include: {
+        shooter: true
+      },
+      orderBy: {
+        takenAt: 'asc'
+      }
+    });
+
+    console.log('Found shots:', shots.length);
+    res.json(shots);
+  } catch (error) {
+    console.error('Shots error:', error);
     res.status(500).json({ 
       error: 'Internal server error',
       message: error.message
