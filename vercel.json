@@ -4,15 +4,10 @@
   "installCommand": "npm install",
   "outputDirectory": "frontend/dist",
   "framework": null,
-  "functions": {
-    "backend/dist/index.js": {
-      "runtime": "@vercel/node@3.0.7"
-    }
-  },
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "/backend/dist/index.js"
+      "dest": "/api/index.js"
     },
     {
       "handle": "filesystem"
