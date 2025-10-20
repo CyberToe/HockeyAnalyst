@@ -572,12 +572,18 @@ app.get('/api/players/teams/:teamId', async (req, res) => {
     }
 
     const authHeader = req.headers.authorization;
+    console.log('Auth header:', authHeader);
+    
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      console.log('No token provided, returning 401');
       return res.status(401).json({ error: 'No token provided' });
     }
 
     const token = authHeader.substring(7);
+    console.log('Token received:', token);
+    
     const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback-secret');
+    console.log('Token decoded:', decoded);
     
     console.log('Looking for players for team:', req.params.teamId, 'user:', decoded.userId);
     
@@ -623,6 +629,28 @@ app.get('/api/test/players', (req, res) => {
       { id: '2', name: 'Test Player 2', number: 12 }
     ]
   });
+});
+
+// Test players endpoint without auth
+app.get('/api/test/players/teams/:teamId', (req, res) => {
+  console.log('Test players endpoint called for team:', req.params.teamId);
+  res.json({
+    players: [
+      { id: '1', name: 'Test Player 1', number: 7, teamId: req.params.teamId },
+      { id: '2', name: 'Test Player 2', number: 12, teamId: req.params.teamId }
+    ]
+  });
+});
+
+// Debug endpoint to see all requests
+app.use('/api/debug/requests', (req, res, next) => {
+  console.log('=== REQUEST DEBUG ===');
+  console.log('Method:', req.method);
+  console.log('URL:', req.url);
+  console.log('Headers:', req.headers);
+  console.log('Body:', req.body);
+  console.log('===================');
+  next();
 });
 
 // Health check
