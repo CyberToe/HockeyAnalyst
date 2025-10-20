@@ -1194,6 +1194,7 @@ app.get('/api/shots/games/:gameId', async (req, res) => {
     });
 
     console.log('Found shots:', shots.length);
+    console.log('Shots data:', shots);
     res.json(shots);
   } catch (error) {
     console.error('Shots error:', error);
@@ -1371,6 +1372,26 @@ app.get('/api/test/players', (req, res) => {
       { id: '2', name: 'Test Player 2', number: 12 }
     ]
   });
+});
+
+// Test shots endpoint
+app.get('/api/test/shots', (req, res) => {
+  res.json([
+    {
+      id: '1',
+      xCoord: 50,
+      yCoord: 30,
+      scored: true,
+      shooter: { id: '1', name: 'Test Player', number: 7 }
+    },
+    {
+      id: '2',
+      xCoord: 70,
+      yCoord: 60,
+      scored: false,
+      shooter: { id: '2', name: 'Test Player 2', number: 12 }
+    }
+  ]);
 });
 
 // Test players endpoint without auth
