@@ -6,9 +6,7 @@
   "framework": null,
   "functions": {
     "api/index.js": {
-      "includeFiles": [
-        "backend/dist/**"
-      ]
+      "includeFiles": "backend/dist/**"
     }
   },
   "routes": [
