@@ -2,6 +2,7 @@
   "version": 2,
   "buildCommand": "npm run build:all",
   "installCommand": "npm install",
+  "outputDirectory": "frontend/dist",
   "framework": null,
   "routes": [
     {
@@ -13,7 +14,7 @@
     },
     {
       "src": "/(.*)",
-      "dest": "/frontend/dist/index.html"
+      "dest": "/index.html"
     }
   ]
 }
