@@ -190,7 +190,10 @@ export default function ShotTracker() {
         hasTeam: !!game.team,
         hasPlayers: !!game.team?.players,
         playerCount: game.team?.players?.length || 0,
-        players: game.team?.players
+        players: game.team?.players,
+        teamId: game.team?.id,
+        teamName: game.team?.name,
+        fullGameData: game
       })
     }
   }, [game])
@@ -766,7 +769,17 @@ export default function ShotTracker() {
             ))
           ) : (
             <div className="text-xs text-gray-500 text-center py-2">
-              No players found
+              <div>No players found</div>
+              <div className="mt-1">
+                <a 
+                  href={`/teams/${game.team?.id}`} 
+                  className="text-blue-600 hover:text-blue-800 underline"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Add players to your team
+                </a>
+              </div>
             </div>
           )}
         </div>

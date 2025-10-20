@@ -116,6 +116,28 @@ router.get('/:gameId', async (req: AuthRequest, res, next) => {
       return res.status(403).json({ error: 'Access denied' });
     }
 
+    // Debug: Log the game data to see what's being returned
+    console.log('Game API Response:', {
+      hasTeam: !!game.team,
+      hasPlayers: !!game.team?.players,
+      playerCount: game.team?.players?.length || 0,
+      teamId: game.team?.id,
+      teamName: game.team?.name,
+      players: game.team?.players
+    });
+
+    // Debug: Also check players directly from the database
+    if (game.team) {
+      const directPlayers = await prisma.player.findMany({
+        where: { teamId: game.team.id }
+      });
+      console.log('Direct players query:', {
+        teamId: game.team.id,
+        playerCount: directPlayers.length,
+        players: directPlayers
+      });
+    }
+
     res.json({ game });
   } catch (error) {
     next(error);
