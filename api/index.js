@@ -14,19 +14,19 @@ const rateLimit = require('express-rate-limit');
 // Import Prisma client
 const { PrismaClient } = require('@prisma/client');
 
-// Import routes
-const authRoutes = require('./routes/auth-simple');
-const teamRoutes = require('./routes/teams');
-const playerRoutes = require('./routes/players');
-const gameRoutes = require('./routes/games');
-const shotRoutes = require('./routes/shots');
-const goalRoutes = require('./routes/goals');
-const faceoffRoutes = require('./routes/faceoffs');
-const analyticsRoutes = require('./routes/analytics');
+// Import routes from backend compiled files
+const authRoutes = require('../backend/src/routes/auth-simple');
+const teamRoutes = require('../backend/src/routes/teams');
+const playerRoutes = require('../backend/src/routes/players');
+const gameRoutes = require('../backend/src/routes/games');
+const shotRoutes = require('../backend/src/routes/shots');
+const goalRoutes = require('../backend/src/routes/goals');
+const faceoffRoutes = require('../backend/src/routes/faceoffs');
+const analyticsRoutes = require('../backend/src/routes/analytics');
 
-// Import middleware
-const { errorHandler } = require('./middleware/errorHandler');
-const { authenticateToken } = require('./middleware/auth');
+// Import middleware from backend compiled files
+const { errorHandler } = require('../backend/src/middleware/errorHandler');
+const { authenticateToken } = require('../backend/src/middleware/auth');
 
 const app = express();
 const prisma = new PrismaClient();
