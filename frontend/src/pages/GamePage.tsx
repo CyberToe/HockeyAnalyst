@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { useQuery, useMutation } from '@tanstack/react-query'
-import { gamesApi, goalsApi, faceoffsApi, shotsApi } from '../lib/api'
+import { gamesApi, goalsApi, faceoffsApi } from '../lib/api'
 import { ChevronDownIcon } from '@heroicons/react/24/outline'
 import ShotTracker from '../components/ShotTracker'
 import toast from 'react-hot-toast'
@@ -176,12 +176,6 @@ export default function GamePage() {
     enabled: !!gameId,
   })
 
-  // Fetch shots data
-  const { data: shotsData, refetch: refetchShots } = useQuery({
-    queryKey: ['shots', gameId],
-    queryFn: () => shotsApi.getShots(gameId!).then(res => res.data),
-    enabled: !!gameId,
-  })
 
   // Add player to faceoffs mutation
   const addPlayerToFaceoffsMutation = useMutation({
@@ -299,11 +293,7 @@ export default function GamePage() {
         )}
 
         {selectedTracker === 'shot-tracker' ? (
-          <ShotTracker 
-            gameId={gameId!}
-            shots={shotsData || []}
-            onShotAdded={() => refetchShots()}
-          />
+          <ShotTracker />
         ) : selectedTracker === 'goals-assists' ? (
           <div className="space-y-6">
             {/* Goals and Assists Section */}
