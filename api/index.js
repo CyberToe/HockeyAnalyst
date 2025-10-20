@@ -88,12 +88,12 @@ app.post('/api/auth/login', async (req, res) => {
           }
 
           // Check password
-          if (!user.password) {
+          if (!user.passwordHash) {
             console.log('User has no password set');
             return res.status(401).json({ error: 'Invalid credentials' });
           }
           
-          const isValidPassword = await bcrypt.compare(password, user.password);
+          const isValidPassword = await bcrypt.compare(password, user.passwordHash);
           if (!isValidPassword) {
             return res.status(401).json({ error: 'Invalid credentials' });
           }
@@ -129,15 +129,63 @@ app.post('/api/auth/register', async (req, res) => {
   try {
     console.log('Register attempt:', { email: req.body.email });
     
-    // For now, return a simple success response
+    // Check if Prisma is available
+    if (!prisma) {
+      console.log('Prisma not available, using mock response');
+      return res.status(201).json({
+        data: {
+          user: {
+            id: '1',
+            email: req.body.email || 'test@example.com',
+            displayName: req.body.displayName || 'Test User'
+          },
+          token: 'test-token-' + Date.now()
+        }
+      });
+    }
+
+    const { email, password, displayName } = req.body;
+    
+    if (!email || !password || !displayName) {
+      return res.status(400).json({ error: 'Email, password, and display name are required' });
+    }
+
+    // Check if user already exists
+    const existingUser = await prisma.user.findUnique({
+      where: { email }
+    });
+
+    if (existingUser) {
+      return res.status(400).json({ error: 'User already exists' });
+    }
+
+    // Hash password
+    const hashedPassword = await bcrypt.hash(password, 12);
+
+    // Create user
+    const user = await prisma.user.create({
+      data: {
+        email,
+        passwordHash: hashedPassword,
+        displayName
+      }
+    });
+
+    // Generate JWT token
+    const token = jwt.sign(
+      { userId: user.id, email: user.email },
+      process.env.JWT_SECRET || 'fallback-secret',
+      { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
+    );
+
     res.status(201).json({
       data: {
         user: {
-          id: '1',
-          email: req.body.email || 'test@example.com',
-          displayName: req.body.displayName || 'Test User'
+          id: user.id,
+          email: user.email,
+          displayName: user.displayName
         },
-        token: 'test-token-' + Date.now()
+        token
       }
     });
   } catch (error) {
@@ -220,6 +268,8 @@ app.get('/api/teams', async (req, res) => {
 app.post('/api/test/create-user', async (req, res) => {
   try {
     console.log('Creating test user...');
+    console.log('Request body:', req.body);
+    console.log('Request headers:', req.headers);
     
     if (!prisma) {
       return res.status(500).json({ error: 'Database not available' });
@@ -227,8 +277,13 @@ app.post('/api/test/create-user', async (req, res) => {
 
     const { email, password, displayName } = req.body;
     
+    console.log('Parsed fields:', { email, password: password ? 'Set' : 'Not set', displayName });
+    
     if (!email || !password || !displayName) {
-      return res.status(400).json({ error: 'Email, password, and display name are required' });
+      return res.status(400).json({ 
+        error: 'Email, password, and display name are required',
+        received: { email, password: password ? 'Set' : 'Not set', displayName }
+      });
     }
 
     // Check if user already exists
@@ -247,7 +302,7 @@ app.post('/api/test/create-user', async (req, res) => {
     const user = await prisma.user.create({
       data: {
         email,
-        password: hashedPassword,
+        passwordHash: hashedPassword,
         displayName
       }
     });
