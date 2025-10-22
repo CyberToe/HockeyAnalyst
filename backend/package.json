@@ -1,5 +1,5 @@
 {
-  "name": "hockey-analytics-backend",
+  "name": "hockey-analytics-backend-v2",
   "version": "1.0.0",
   "description": "Backend API for Hockey Analytics Tracking Application",
   "main": "dist/index.js",
