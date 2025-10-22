@@ -13,13 +13,14 @@ interface CreateTeamModalProps {
 interface CreateTeamForm {
   name: string
   description?: string
-  imageUrl?: string
+  imageFile?: File
   type: 'BASIC_FREE' | 'STANDARD_MONTHLY'
   state: 'ACTIVE' | 'DISABLED'
 }
 
 export default function CreateTeamModal({ isOpen, onClose, onSuccess }: CreateTeamModalProps) {
   const [isLoading, setIsLoading] = useState(false)
+  const [imagePreview, setImagePreview] = useState<string | null>(null)
 
   const {
     register,
@@ -33,12 +34,45 @@ export default function CreateTeamModal({ isOpen, onClose, onSuccess }: CreateTe
     }
   })
 
+  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (file) {
+      const reader = new FileReader()
+      reader.onload = (e) => {
+        setImagePreview(e.target?.result as string)
+      }
+      reader.readAsDataURL(file)
+    }
+  }
+
   const onSubmit = async (data: CreateTeamForm) => {
     try {
       setIsLoading(true)
-      await teamsApi.createTeam(data)
+      
+      // Convert image file to base64 for now (in production, upload to cloud storage)
+      let imageUrl = undefined
+      if (data.imageFile) {
+        const reader = new FileReader()
+        reader.onload = (e) => {
+          imageUrl = e.target?.result as string
+        }
+        reader.readAsDataURL(data.imageFile)
+        // Wait for the reader to complete
+        await new Promise(resolve => reader.onloadend = resolve)
+      }
+      
+      const teamData = {
+        name: data.name,
+        description: data.description,
+        imageUrl,
+        type: data.type,
+        state: data.state
+      }
+      
+      await teamsApi.createTeam(teamData)
       toast.success('Team created successfully!')
       reset()
+      setImagePreview(null)
       onSuccess()
     } catch (error) {
       // Error is handled by API interceptor
@@ -106,24 +140,24 @@ export default function CreateTeamModal({ isOpen, onClose, onSuccess }: CreateTe
                 </div>
 
                 <div>
-                  <label htmlFor="imageUrl" className="block text-sm font-medium text-gray-700">
-                    Team Image URL
+                  <label htmlFor="imageFile" className="block text-sm font-medium text-gray-700">
+                    Team Image
                   </label>
                   <input
-                    {...register('imageUrl', {
-                      pattern: {
-                        value: /^https?:\/\/.+/,
-                        message: 'Please enter a valid URL starting with http:// or https://',
-                      },
-                    })}
-                    type="url"
-                    className={`mt-1 block w-full px-3 py-2 border ${
-                      errors.imageUrl ? 'border-red-300' : 'border-gray-300'
-                    } rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm`}
-                    placeholder="https://example.com/team-image.jpg (optional)"
+                    {...register('imageFile')}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageChange}
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
                   />
-                  {errors.imageUrl && (
-                    <p className="mt-1 text-sm text-red-600">{errors.imageUrl.message}</p>
+                  {imagePreview && (
+                    <div className="mt-2">
+                      <img 
+                        src={imagePreview} 
+                        alt="Team image preview" 
+                        className="h-20 w-20 object-cover rounded-lg"
+                      />
+                    </div>
                   )}
                 </div>
 

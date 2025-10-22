@@ -62,11 +62,11 @@ export const authApi = {
 // Teams API
 export const teamsApi = {
   getTeams: () => api.get('/teams'),
-  createTeam: (data: { name: string; description?: string }) =>
+  createTeam: (data: { name: string; description?: string; imageUrl?: string; type?: string; state?: string }) =>
     api.post('/teams', data),
   joinTeam: (data: { teamCode: string }) => api.post('/teams/join', data),
   getTeam: (teamId: string) => api.get(`/teams/${teamId}`),
-  updateTeam: (teamId: string, data: { name?: string; description?: string }) =>
+  updateTeam: (teamId: string, data: { name?: string; description?: string; imageUrl?: string; type?: string; state?: string }) =>
     api.put(`/teams/${teamId}`, data),
   deleteTeam: (teamId: string, confirm?: boolean) =>
     api.delete(`/teams/${teamId}`, { data: { confirm } }),
