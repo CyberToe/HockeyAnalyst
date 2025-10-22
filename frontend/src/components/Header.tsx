@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { Bars3Icon, XMarkIcon, ArrowRightOnRectangleIcon } from '@heroicons/react/24/outline'
 import { useAuthStore } from '../stores/authStore'
+import NavigationContent from './NavigationContent'
 
 export default function Header() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -87,7 +88,11 @@ export default function Header() {
                 <XMarkIcon className="h-6 w-6" aria-hidden="true" />
               </button>
             </div>
-            {/* Mobile navigation would go here - simplified for now */}
+            
+            {/* Mobile navigation content */}
+            <div className="flex-1 overflow-y-auto py-4">
+              <NavigationContent onNavigate={() => setSidebarOpen(false)} />
+            </div>
           </div>
         </div>
       )}
