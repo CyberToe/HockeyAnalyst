@@ -15,7 +15,6 @@ interface CreateTeamForm {
   description?: string
   imageFile?: File
   type: 'BASIC_FREE' | 'STANDARD_MONTHLY'
-  state: 'ACTIVE' | 'DISABLED'
 }
 
 export default function CreateTeamModal({ isOpen, onClose, onSuccess }: CreateTeamModalProps) {
@@ -29,8 +28,7 @@ export default function CreateTeamModal({ isOpen, onClose, onSuccess }: CreateTe
     formState: { errors },
   } = useForm<CreateTeamForm>({
     defaultValues: {
-      type: 'BASIC_FREE',
-      state: 'ACTIVE'
+      type: 'BASIC_FREE'
     }
   })
 
@@ -66,7 +64,7 @@ export default function CreateTeamModal({ isOpen, onClose, onSuccess }: CreateTe
         description: data.description,
         imageUrl,
         type: data.type,
-        state: data.state
+        state: 'ACTIVE' // Always set to active for new teams
       }
       
       await teamsApi.createTeam(teamData)
@@ -174,18 +172,6 @@ export default function CreateTeamModal({ isOpen, onClose, onSuccess }: CreateTe
                   </select>
                 </div>
 
-                <div>
-                  <label htmlFor="state" className="block text-sm font-medium text-gray-700">
-                    Team State
-                  </label>
-                  <select
-                    {...register('state')}
-                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
-                  >
-                    <option value="ACTIVE">Active</option>
-                    <option value="DISABLED">Disabled</option>
-                  </select>
-                </div>
               </div>
 
               <div className="mt-6 sm:flex sm:flex-row-reverse">
