@@ -29,6 +29,9 @@ model Team {
   name        String
   description String?
   teamCode    String       @unique @map("team_code")
+  imageUrl    String?      @map("image_url")
+  type        TeamType     @default(BASIC_FREE)
+  state       TeamState    @default(ACTIVE)
   createdBy   String       @map("created_by")
   createdAt   DateTime     @default(now()) @map("created_at")
   deleted     Boolean      @default(false)
@@ -169,4 +172,14 @@ enum MemberRole {
 enum AttackingDirection {
   left
   right
+}
+
+enum TeamType {
+  BASIC_FREE
+  STANDARD_MONTHLY
+}
+
+enum TeamState {
+  ACTIVE
+  DISABLED
 }

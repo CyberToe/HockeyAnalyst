@@ -13,6 +13,9 @@ interface CreateTeamModalProps {
 interface CreateTeamForm {
   name: string
   description?: string
+  imageUrl?: string
+  type: 'BASIC_FREE' | 'STANDARD_MONTHLY'
+  state: 'ACTIVE' | 'DISABLED'
 }
 
 export default function CreateTeamModal({ isOpen, onClose, onSuccess }: CreateTeamModalProps) {
@@ -23,7 +26,12 @@ export default function CreateTeamModal({ isOpen, onClose, onSuccess }: CreateTe
     handleSubmit,
     reset,
     formState: { errors },
-  } = useForm<CreateTeamForm>()
+  } = useForm<CreateTeamForm>({
+    defaultValues: {
+      type: 'BASIC_FREE',
+      state: 'ACTIVE'
+    }
+  })
 
   const onSubmit = async (data: CreateTeamForm) => {
     try {
@@ -95,6 +103,54 @@ export default function CreateTeamModal({ isOpen, onClose, onSuccess }: CreateTe
                   {errors.description && (
                     <p className="mt-1 text-sm text-red-600">{errors.description.message}</p>
                   )}
+                </div>
+
+                <div>
+                  <label htmlFor="imageUrl" className="block text-sm font-medium text-gray-700">
+                    Team Image URL
+                  </label>
+                  <input
+                    {...register('imageUrl', {
+                      pattern: {
+                        value: /^https?:\/\/.+/,
+                        message: 'Please enter a valid URL starting with http:// or https://',
+                      },
+                    })}
+                    type="url"
+                    className={`mt-1 block w-full px-3 py-2 border ${
+                      errors.imageUrl ? 'border-red-300' : 'border-gray-300'
+                    } rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm`}
+                    placeholder="https://example.com/team-image.jpg (optional)"
+                  />
+                  {errors.imageUrl && (
+                    <p className="mt-1 text-sm text-red-600">{errors.imageUrl.message}</p>
+                  )}
+                </div>
+
+                <div>
+                  <label htmlFor="type" className="block text-sm font-medium text-gray-700">
+                    Team Type
+                  </label>
+                  <select
+                    {...register('type')}
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                  >
+                    <option value="BASIC_FREE">Basic - Free</option>
+                    <option value="STANDARD_MONTHLY">Standard - Monthly Subscription</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label htmlFor="state" className="block text-sm font-medium text-gray-700">
+                    Team State
+                  </label>
+                  <select
+                    {...register('state')}
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                  >
+                    <option value="ACTIVE">Active</option>
+                    <option value="DISABLED">Disabled</option>
+                  </select>
                 </div>
               </div>
 

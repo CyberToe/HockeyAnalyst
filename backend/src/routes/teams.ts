@@ -48,7 +48,7 @@ router.get('/', async (req: AuthRequest, res, next) => {
 // Create new team
 router.post('/', validateSchema(createTeamSchema), async (req: AuthRequest, res, next) => {
   try {
-    const { name, description } = req.body;
+    const { name, description, imageUrl, type, state } = req.body;
 
     // Generate a unique team code
     const generateTeamCode = () => {
@@ -77,6 +77,9 @@ router.post('/', validateSchema(createTeamSchema), async (req: AuthRequest, res,
       data: {
         name,
         description,
+        imageUrl,
+        type: type || 'BASIC_FREE',
+        state: state || 'ACTIVE',
         teamCode,
         createdBy: req.userId!,
         members: {
@@ -245,13 +248,16 @@ router.get('/:teamId', async (req: AuthRequest, res, next) => {
 router.put('/:teamId', requireAdmin, validateSchema(updateTeamSchema), async (req: AuthRequest, res, next) => {
   try {
     const { teamId } = req.params;
-    const { name, description } = req.body;
+    const { name, description, imageUrl, type, state } = req.body;
 
     const team = await prisma.team.update({
       where: { id: teamId },
       data: {
         ...(name && { name }),
-        ...(description !== undefined && { description })
+        ...(description !== undefined && { description }),
+        ...(imageUrl !== undefined && { imageUrl }),
+        ...(type && { type }),
+        ...(state && { state })
       },
       include: {
         members: {

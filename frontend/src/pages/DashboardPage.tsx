@@ -115,12 +115,38 @@ export default function DashboardPage() {
               <div className="p-6">
                 <div className="flex items-center">
                   <div className="flex-shrink-0">
-                    <UserGroupIcon className="h-8 w-8 text-primary-600" />
+                    {team.imageUrl ? (
+                      <img 
+                        src={team.imageUrl} 
+                        alt={`${team.name} team image`}
+                        className="h-8 w-8 rounded-lg object-cover"
+                      />
+                    ) : (
+                      <UserGroupIcon className="h-8 w-8 text-primary-600" />
+                    )}
                   </div>
                   <div className="ml-4 flex-1">
-                    <h3 className="text-lg font-medium text-gray-900">
-                      {team.name}
-                    </h3>
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-lg font-medium text-gray-900">
+                        {team.name}
+                      </h3>
+                      <div className="flex items-center space-x-2">
+                        <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                          team.type === 'STANDARD_MONTHLY' 
+                            ? 'bg-purple-100 text-purple-800' 
+                            : 'bg-green-100 text-green-800'
+                        }`}>
+                          {team.type === 'STANDARD_MONTHLY' ? 'Premium' : 'Free'}
+                        </span>
+                        <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                          team.state === 'ACTIVE' 
+                            ? 'bg-green-100 text-green-800' 
+                            : 'bg-red-100 text-red-800'
+                        }`}>
+                          {team.state === 'ACTIVE' ? 'Active' : 'Disabled'}
+                        </span>
+                      </div>
+                    </div>
                     {team.description && (
                       <p className="text-sm text-gray-500 mt-1">
                         {team.description}
