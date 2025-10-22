@@ -94,7 +94,17 @@ export default function NavigationContent({ onNavigate }: NavigationContentProps
                 className="w-full flex items-center justify-between px-2 py-2 text-sm font-medium text-gray-600 rounded-md hover:bg-gray-50 hover:text-gray-900 transition-colors duration-200"
               >
                 <div className="flex items-center">
-                  <UserGroupIcon className="mr-3 flex-shrink-0 h-5 w-5" />
+                  <div className="mr-3 flex-shrink-0 h-5 w-5 flex items-center justify-center">
+                    {team.imageUrl ? (
+                      <img 
+                        src={team.imageUrl} 
+                        alt={`${team.name} team logo`}
+                        className="h-5 w-5 rounded object-cover"
+                      />
+                    ) : (
+                      <UserGroupIcon className="h-5 w-5" />
+                    )}
+                  </div>
                   {team.name}
                 </div>
                 {expandedTeams.has(team.id) ? (
