@@ -160,10 +160,16 @@ export default function DashboardPage() {
 
                 <div className="mt-6 flex space-x-3">
                   <Link
-                    to={`/teams/${team.id}`}
+                    to={`/teams/${team.id}/players`}
                     className="flex-1 bg-primary-600 text-white text-center px-3 py-2 rounded-md text-sm font-medium hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
                   >
-                    Manage Team
+                    Players
+                  </Link>
+                  <Link
+                    to={`/teams/${team.id}/games`}
+                    className="flex-1 bg-primary-600 text-white text-center px-3 py-2 rounded-md text-sm font-medium hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+                  >
+                    Games
                   </Link>
                   <Link
                     to={`/teams/${team.id}/analytics`}
