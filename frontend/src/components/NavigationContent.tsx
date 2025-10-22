@@ -81,13 +81,13 @@ export default function NavigationContent({ onNavigate }: NavigationContentProps
         </NavLink>
       ))}
 
-      {/* Teams Section */}
-      {teamsData?.teams && teamsData.teams.length > 0 && (
+      {/* Teams Section - Only show active teams */}
+      {teamsData?.teams && teamsData.teams.filter((team: any) => team.state === 'ACTIVE').length > 0 && (
         <div className="mt-4">
           <div className="px-2 py-1 text-xs font-semibold text-gray-500 uppercase tracking-wider">
             Teams
           </div>
-          {teamsData.teams.map((team: any) => (
+          {teamsData.teams.filter((team: any) => team.state === 'ACTIVE').map((team: any) => (
             <div key={team.id} className="mt-1">
               <button
                 onClick={() => toggleTeam(team.id)}

@@ -7,7 +7,9 @@ import {
   UserPlusIcon,
   ChartBarIcon,
   CalendarIcon,
-  ClipboardDocumentIcon
+  ClipboardDocumentIcon,
+  ChevronDownIcon,
+  ChevronRightIcon
 } from '@heroicons/react/24/outline'
 import { teamsApi } from '../lib/api'
 import CreateTeamModal from '../components/CreateTeamModal'
@@ -17,6 +19,7 @@ import toast from 'react-hot-toast'
 export default function DashboardPage() {
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [showJoinModal, setShowJoinModal] = useState(false)
+  const [disabledTeamsCollapsed, setDisabledTeamsCollapsed] = useState(true)
 
   const copyTeamCode = async (teamCode: string) => {
     try {
@@ -260,10 +263,22 @@ export default function DashboardPage() {
           {/* Disabled Teams */}
           {disabledTeams.length > 0 && (
             <div>
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Disabled Teams</h3>
-              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                {disabledTeams.map(renderTeamTile)}
-              </div>
+              <button
+                onClick={() => setDisabledTeamsCollapsed(!disabledTeamsCollapsed)}
+                className="flex items-center text-lg font-medium text-gray-900 mb-4 hover:text-gray-700 transition-colors duration-200"
+              >
+                <span className="mr-2">Disabled Teams ({disabledTeams.length})</span>
+                {disabledTeamsCollapsed ? (
+                  <ChevronRightIcon className="h-5 w-5" />
+                ) : (
+                  <ChevronDownIcon className="h-5 w-5" />
+                )}
+              </button>
+              {!disabledTeamsCollapsed && (
+                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                  {disabledTeams.map(renderTeamTile)}
+                </div>
+              )}
             </div>
           )}
         </div>
