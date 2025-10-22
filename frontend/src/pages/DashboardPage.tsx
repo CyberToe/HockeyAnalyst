@@ -56,6 +56,22 @@ export default function DashboardPage() {
     }
   }
 
+  const updateTeamImage = async (teamId: string, imageFile: File) => {
+    try {
+      // Convert image file to base64
+      const reader = new FileReader()
+      reader.onload = async (e) => {
+        const imageUrl = e.target?.result as string
+        await teamsApi.updateTeam(teamId, { imageUrl })
+        toast.success('Team image updated successfully!')
+        refetch()
+      }
+      reader.readAsDataURL(imageFile)
+    } catch (error) {
+      // Error is handled by API interceptor
+    }
+  }
+
   const { data: teamsData, isLoading, refetch } = useQuery({
     queryKey: ['teams'],
     queryFn: () => teamsApi.getTeams().then(res => res.data),
@@ -69,7 +85,7 @@ export default function DashboardPage() {
     <div key={team.id} className="bg-white overflow-hidden shadow rounded-lg">
       <div className="p-6">
         <div className="flex items-center">
-          <div className="flex-shrink-0">
+          <div className="flex-shrink-0 relative">
             {team.imageUrl ? (
               <img 
                 src={team.imageUrl} 
@@ -79,6 +95,18 @@ export default function DashboardPage() {
             ) : (
               <UserGroupIcon className="h-8 w-8 text-primary-600" />
             )}
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => {
+                const file = e.target.files?.[0]
+                if (file) {
+                  updateTeamImage(team.id, file)
+                }
+              }}
+              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+              title="Click to update team image"
+            />
           </div>
           <div className="ml-4 flex-1">
             <div className="flex items-center justify-between">
@@ -167,13 +195,6 @@ export default function DashboardPage() {
               Disable
             </button>
           )}
-          <button
-            onClick={() => deleteTeam(team.id, team.name)}
-            className="bg-red-100 text-red-700 px-3 py-2 rounded-md text-sm font-medium hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-            title="Delete team"
-          >
-            <TrashIcon className="h-4 w-4" />
-          </button>
         </div>
       </div>
     </div>
