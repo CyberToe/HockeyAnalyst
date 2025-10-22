@@ -7,8 +7,7 @@ import {
   UserPlusIcon,
   ChartBarIcon,
   CalendarIcon,
-  ClipboardDocumentIcon,
-  TrashIcon
+  ClipboardDocumentIcon
 } from '@heroicons/react/24/outline'
 import { teamsApi } from '../lib/api'
 import CreateTeamModal from '../components/CreateTeamModal'
@@ -28,19 +27,6 @@ export default function DashboardPage() {
     }
   }
 
-  const deleteTeam = async (teamId: string, teamName: string) => {
-    if (!window.confirm(`Are you sure you want to delete "${teamName}"? This action cannot be undone.`)) {
-      return
-    }
-
-    try {
-      await teamsApi.deleteTeam(teamId, true)
-      toast.success('Team deleted successfully!')
-      refetch()
-    } catch (error) {
-      // Error is handled by API interceptor
-    }
-  }
 
   const disableTeam = async (teamId: string, teamName: string) => {
     if (!window.confirm(`Are you sure you want to disable "${teamName}"? Disabled teams will be moved to the disabled section.`)) {
