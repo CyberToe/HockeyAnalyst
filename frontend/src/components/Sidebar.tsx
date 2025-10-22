@@ -1,4 +1,4 @@
-import { NavLink } from 'react-router-dom'
+import { NavLink, useLocation } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { teamsApi } from '../lib/api'
 import { 
@@ -9,7 +9,7 @@ import {
   ChevronDownIcon,
   ChartBarIcon
 } from '@heroicons/react/24/outline'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: HomeIcon },
@@ -17,12 +17,26 @@ const navigation = [
 
 export default function Sidebar() {
   const [expandedTeams, setExpandedTeams] = useState<Set<string>>(new Set())
+  const location = useLocation()
 
   // Fetch user's teams
   const { data: teamsData } = useQuery({
     queryKey: ['teams'],
     queryFn: () => teamsApi.getTeams().then(res => res.data),
   })
+
+  // Auto-expand team when navigating to team-specific pages
+  useEffect(() => {
+    const path = location.pathname
+    const teamMatch = path.match(/^\/teams\/([^\/]+)/)
+    if (teamMatch && teamsData?.teams) {
+      const teamId = teamMatch[1]
+      const teamExists = teamsData.teams.some((team: any) => team.id === teamId)
+      if (teamExists && !expandedTeams.has(teamId)) {
+        setExpandedTeams(prev => new Set([...prev, teamId]))
+      }
+    }
+  }, [location.pathname, teamsData?.teams, expandedTeams])
 
   const toggleTeam = (teamId: string) => {
     const newExpanded = new Set(expandedTeams)
