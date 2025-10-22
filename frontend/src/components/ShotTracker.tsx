@@ -308,8 +308,8 @@ export default function ShotTracker() {
       let x = shot.xCoord
       let y = shot.yCoord
 
-      // If showing all periods and current attacking direction is different from when shot was taken, flip coordinates
-      if (selectedPeriod === 'all' && attackingDirection !== shot.attackingDirectionWhenShot) {
+      // If current attacking direction is different from when shot was taken, flip coordinates
+      if (attackingDirection !== shot.attackingDirectionWhenShot) {
         x = width - x
       }
 
@@ -427,8 +427,8 @@ export default function ShotTracker() {
     for (const shot of filteredShots) {
       let shotX = shot.xCoord
       
-      // If showing all periods and current attacking direction is different from when shot was taken, flip coordinates
-      if (selectedPeriod === 'all' && attackingDirection !== shot.attackingDirectionWhenShot) {
+      // If current attacking direction is different from when shot was taken, flip coordinates
+      if (attackingDirection !== shot.attackingDirectionWhenShot) {
         shotX = canvas.width - shotX
       }
 
