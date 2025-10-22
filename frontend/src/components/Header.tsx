@@ -72,8 +72,12 @@ export default function Header() {
           <div className="fixed inset-y-0 left-0 flex w-64 flex-col bg-white">
             <div className="flex h-16 items-center justify-between px-4">
               <div className="flex items-center">
-                <div className="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center">
-                  <span className="text-white font-bold text-sm">🏒</span>
+                <div className="w-8 h-8 flex items-center justify-center">
+                  <img 
+                    src="/images/logo.jpg" 
+                    alt="Hockey Analytics Logo" 
+                    className="w-8 h-8 rounded-lg object-cover"
+                  />
                 </div>
                 <span className="ml-2 text-xl font-bold text-gray-900">
                   Hockey Analytics

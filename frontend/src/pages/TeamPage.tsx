@@ -143,7 +143,11 @@ export default function TeamPage() {
           <div className="p-5">
             <div className="flex items-center">
               <div className="flex-shrink-0">
-                <span className="text-2xl">🏒</span>
+                <img 
+                  src="/images/logo.jpg" 
+                  alt="Hockey Analytics Logo" 
+                  className="h-8 w-8 rounded-lg object-cover"
+                />
               </div>
               <div className="ml-5 w-0 flex-1">
                 <dl>
