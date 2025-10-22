@@ -644,95 +644,104 @@ export default function ShotTracker() {
         </div>
       </div>
 
-      {/* Scoring Section with Period and Attacking Direction */}
+      {/* Control Buttons Section */}
       <div className="mb-6">
-        <h3 className="text-sm font-medium text-gray-700 mb-3">Scoring & Period Selection</h3>
-        <div className="flex flex-wrap items-center gap-4">
-          {/* Scoring Buttons */}
-          <div className="flex space-x-2">
-            <button
-              onClick={() => setScoringMode('SCORE')}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                scoringMode === 'SCORE'
-                  ? 'bg-green-600 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
-            >
-              SCORE
-            </button>
-            <button
-              onClick={() => setScoringMode('MISS')}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                scoringMode === 'MISS'
-                  ? 'bg-red-600 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
-            >
-              MISS
-            </button>
+        <h3 className="text-sm font-medium text-gray-700 mb-3">Controls</h3>
+        <div className="flex flex-wrap items-center gap-6">
+          {/* Scoring Group */}
+          <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
+            <div className="text-xs font-medium text-gray-600 mb-2">Scoring</div>
+            <div className="flex space-x-2">
+              <button
+                onClick={() => setScoringMode('SCORE')}
+                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                  scoringMode === 'SCORE'
+                    ? 'bg-green-600 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                SCORE
+              </button>
+              <button
+                onClick={() => setScoringMode('MISS')}
+                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                  scoringMode === 'MISS'
+                    ? 'bg-red-600 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                MISS
+              </button>
+            </div>
           </div>
 
-          {/* Period Selection Buttons */}
-          <div className="flex space-x-2">
-            <button
-              onClick={() => setSelectedPeriod(1)}
-              className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                selectedPeriod === 1
-                  ? 'bg-primary-600 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
-            >
-              Period 1
-            </button>
-            <button
-              onClick={() => setSelectedPeriod(2)}
-              className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                selectedPeriod === 2
-                  ? 'bg-primary-600 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
-            >
-              Period 2
-            </button>
-            <button
-              onClick={() => setSelectedPeriod(3)}
-              className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                selectedPeriod === 3
-                  ? 'bg-primary-600 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
-            >
-              Period 3
-            </button>
-            <button
-              onClick={() => setSelectedPeriod('all')}
-              className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                selectedPeriod === 'all'
-                  ? 'bg-primary-600 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
-            >
-              All
-            </button>
+          {/* Period Selection Group */}
+          <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
+            <div className="text-xs font-medium text-gray-600 mb-2">Period</div>
+            <div className="flex space-x-2">
+              <button
+                onClick={() => setSelectedPeriod(1)}
+                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  selectedPeriod === 1
+                    ? 'bg-primary-600 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                Period 1
+              </button>
+              <button
+                onClick={() => setSelectedPeriod(2)}
+                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  selectedPeriod === 2
+                    ? 'bg-primary-600 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                Period 2
+              </button>
+              <button
+                onClick={() => setSelectedPeriod(3)}
+                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  selectedPeriod === 3
+                    ? 'bg-primary-600 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                Period 3
+              </button>
+              <button
+                onClick={() => setSelectedPeriod('all')}
+                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  selectedPeriod === 'all'
+                    ? 'bg-primary-600 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                All
+              </button>
+            </div>
           </div>
 
-          {/* Attacking Direction Button */}
-          <button
-            onClick={() => updateAttackingDirection(attackingDirection === 'right' ? 'left' : 'right')}
-            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-              attackingDirection === 'right'
-                ? 'bg-green-600 text-white hover:bg-green-700'
-                : 'bg-blue-600 text-white hover:bg-blue-700'
-            } ${(updateMultiplePeriodsMutation.isPending || createPeriodsMutation.isPending) ? 'opacity-50 cursor-not-allowed' : ''}`}
-            disabled={updateMultiplePeriodsMutation.isPending || createPeriodsMutation.isPending}
-          >
-            {updateMultiplePeriodsMutation.isPending 
-              ? 'Updating...' 
-              : createPeriodsMutation.isPending
-              ? 'Creating Periods...'
-              : attackingDirection === 'right' ? 'Attacking Right' : 'Attacking Left'
-            }
-          </button>
+          {/* Attacking Direction Group */}
+          <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
+            <div className="text-xs font-medium text-gray-600 mb-2">Attacking Direction</div>
+            <button
+              onClick={() => updateAttackingDirection(attackingDirection === 'right' ? 'left' : 'right')}
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                attackingDirection === 'right'
+                  ? 'bg-green-600 text-white hover:bg-green-700'
+                  : 'bg-blue-600 text-white hover:bg-blue-700'
+              } ${(updateMultiplePeriodsMutation.isPending || createPeriodsMutation.isPending) ? 'opacity-50 cursor-not-allowed' : ''}`}
+              disabled={updateMultiplePeriodsMutation.isPending || createPeriodsMutation.isPending}
+            >
+              {updateMultiplePeriodsMutation.isPending 
+                ? 'Updating...' 
+                : createPeriodsMutation.isPending
+                ? 'Creating Periods...'
+                : attackingDirection === 'right' ? 'Attacking Right' : 'Attacking Left'
+              }
+            </button>
+          </div>
         </div>
       </div>
 
