@@ -109,8 +109,8 @@ export default function DashboardPage() {
                     : 'bg-purple-100 text-purple-800'
                 }`}>
                   {team.type === 'BASIC_FREE' ? 'Free' : 
-                   team.type === 'STANDARD_MONTHLY' ? 'Premium Monthly' :
-                   team.type === 'STANDARD_YEARLY' ? 'Premium Yearly' : 'Premium'}
+                   team.type === 'STANDARD_MONTHLY' ? 'Standard Monthly' :
+                   team.type === 'STANDARD_YEARLY' ? 'Standard Yearly' : 'Standard'}
                 </span>
                 <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
                   team.state === 'ACTIVE' 
@@ -161,13 +161,23 @@ export default function DashboardPage() {
         <div className="mt-6 flex space-x-3">
           <Link
             to={`/teams/${team.id}/players`}
-            className="flex-1 bg-primary-600 text-white text-center px-3 py-2 rounded-md text-sm font-medium hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+            className={`flex-1 text-center px-3 py-2 rounded-md text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 ${
+              team.state === 'DISABLED' 
+                ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
+                : 'bg-primary-600 text-white hover:bg-primary-700'
+            }`}
+            onClick={team.state === 'DISABLED' ? (e) => e.preventDefault() : undefined}
           >
             Players
           </Link>
           <Link
             to={`/teams/${team.id}/games`}
-            className="flex-1 bg-primary-600 text-white text-center px-3 py-2 rounded-md text-sm font-medium hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+            className={`flex-1 text-center px-3 py-2 rounded-md text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 ${
+              team.state === 'DISABLED' 
+                ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
+                : 'bg-primary-600 text-white hover:bg-primary-700'
+            }`}
+            onClick={team.state === 'DISABLED' ? (e) => e.preventDefault() : undefined}
           >
             Games
           </Link>
