@@ -20,6 +20,8 @@ export default function DashboardPage() {
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [showJoinModal, setShowJoinModal] = useState(false)
   const [disabledTeamsCollapsed, setDisabledTeamsCollapsed] = useState(true)
+  const [showDisableConfirm, setShowDisableConfirm] = useState(false)
+  const [teamToDisable, setTeamToDisable] = useState<{id: string, name: string} | null>(null)
 
   const copyTeamCode = async (teamCode: string) => {
     try {
@@ -31,18 +33,28 @@ export default function DashboardPage() {
   }
 
 
-  const disableTeam = async (teamId: string, teamName: string) => {
-    if (!window.confirm(`Are you sure you want to disable "${teamName}"? Disabled teams will be moved to the disabled section.`)) {
-      return
-    }
+  const handleDisableClick = (teamId: string, teamName: string) => {
+    setTeamToDisable({ id: teamId, name: teamName })
+    setShowDisableConfirm(true)
+  }
+
+  const confirmDisableTeam = async () => {
+    if (!teamToDisable) return
 
     try {
-      await teamsApi.updateTeam(teamId, { state: 'DISABLED' })
+      await teamsApi.updateTeam(teamToDisable.id, { state: 'DISABLED' })
       toast.success('Team disabled successfully!')
       refetch()
+      setShowDisableConfirm(false)
+      setTeamToDisable(null)
     } catch (error) {
       // Error is handled by API interceptor
     }
+  }
+
+  const cancelDisableTeam = () => {
+    setShowDisableConfirm(false)
+    setTeamToDisable(null)
   }
 
   const updateTeamImage = async (teamId: string, imageFile: File) => {
@@ -189,7 +201,7 @@ export default function DashboardPage() {
           </Link>
           {team.state === 'ACTIVE' && (
             <button
-              onClick={() => disableTeam(team.id, team.name)}
+              onClick={() => handleDisableClick(team.id, team.name)}
               className="bg-yellow-100 text-yellow-700 px-3 py-2 rounded-md text-sm font-medium hover:bg-yellow-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500"
               title="Disable team"
             >
@@ -314,6 +326,56 @@ export default function DashboardPage() {
           refetch()
         }}
       />
+
+      {/* Disable Team Confirmation Modal */}
+      {showDisableConfirm && (
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          <div className="flex min-h-full items-center justify-center p-4">
+            {/* Background overlay */}
+            <div 
+              className="fixed inset-0 bg-gray-500 bg-opacity-75"
+              onClick={cancelDisableTeam}
+            />
+            
+            {/* Modal content */}
+            <div className="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6">
+              <div className="sm:flex sm:items-start">
+                <div className="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-yellow-100 sm:mx-0 sm:h-10 sm:w-10">
+                  <svg className="h-6 w-6 text-yellow-600" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+                  </svg>
+                </div>
+                <div className="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left">
+                  <h3 className="text-lg font-medium leading-6 text-gray-900">
+                    Disable Team
+                  </h3>
+                  <div className="mt-2">
+                    <p className="text-sm text-gray-500">
+                      Are you sure you want to disable "{teamToDisable?.name}"? Disabled teams will be moved to the disabled section.
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div className="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
+                <button
+                  type="button"
+                  onClick={confirmDisableTeam}
+                  className="inline-flex w-full justify-center rounded-md border border-transparent bg-yellow-600 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 sm:ml-3 sm:w-auto sm:text-sm"
+                >
+                  Disable Team
+                </button>
+                <button
+                  type="button"
+                  onClick={cancelDisableTeam}
+                  className="mt-3 inline-flex w-full justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-base font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 sm:mt-0 sm:w-auto sm:text-sm"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
