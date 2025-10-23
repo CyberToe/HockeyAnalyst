@@ -57,6 +57,8 @@ export const authApi = {
     api.post('/auth/login', data),
   refresh: () => api.post('/auth/refresh'),
   getMe: () => api.get('/auth/me'),
+  updateProfile: (data: { displayName?: string; email?: string }) =>
+    api.put('/auth/me', data),
 }
 
 // Teams API

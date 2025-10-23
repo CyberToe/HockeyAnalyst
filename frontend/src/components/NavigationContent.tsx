@@ -7,12 +7,14 @@ import {
   CalendarDaysIcon,
   ChevronRightIcon,
   ChevronDownIcon,
-  ChartBarIcon
+  ChartBarIcon,
+  UserIcon
 } from '@heroicons/react/24/outline'
 import { useState, useEffect } from 'react'
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: HomeIcon },
+  { name: 'Profile', href: '/profile', icon: UserIcon },
 ]
 
 interface NavigationContentProps {

@@ -126,4 +126,46 @@ router.get('/me', authenticateToken, async (req: AuthRequest, res) => {
   }
 });
 
+// Update user profile
+router.put('/me', authenticateToken, async (req: AuthRequest, res) => {
+  try {
+    const { displayName, email } = req.body;
+
+    // Check if email is being changed and if it's already taken
+    if (email) {
+      const existingUser = await prisma.user.findUnique({
+        where: { email }
+      });
+
+      if (existingUser && existingUser.id !== req.userId) {
+        return res.status(400).json({ error: 'Email already in use' });
+      }
+    }
+
+    // Update user profile
+    const updatedUser = await prisma.user.update({
+      where: { id: req.userId },
+      data: {
+        ...(displayName !== undefined && { displayName }),
+        ...(email !== undefined && { email })
+      },
+      select: {
+        id: true,
+        email: true,
+        displayName: true,
+        createdAt: true,
+        lastLoginAt: true
+      }
+    });
+
+    return res.json({ 
+      message: 'Profile updated successfully',
+      user: updatedUser 
+    });
+  } catch (error) {
+    console.error('Profile update error:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 export default router;

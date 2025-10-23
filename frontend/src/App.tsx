@@ -10,6 +10,7 @@ import TeamPlayersPage from './pages/TeamPlayersPage'
 import TeamGamesPage from './pages/TeamGamesPage'
 import GamePage from './pages/GamePage'
 import AnalyticsPage from './pages/AnalyticsPage'
+import ProfilePage from './pages/ProfilePage'
 import ProtectedRoute from './components/ProtectedRoute'
 
 function App() {
@@ -35,6 +36,7 @@ function App() {
       <Route path="/" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
         <Route index element={<Navigate to="/dashboard" replace />} />
         <Route path="dashboard" element={<DashboardPage />} />
+        <Route path="profile" element={<ProfilePage />} />
         <Route path="teams/:teamId" element={<TeamPage />} />
         <Route path="teams/:teamId/players" element={<TeamPlayersPage />} />
         <Route path="teams/:teamId/games" element={<TeamGamesPage />} />

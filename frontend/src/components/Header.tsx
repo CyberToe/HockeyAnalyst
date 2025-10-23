@@ -21,6 +21,7 @@ export default function Header() {
     if (path.includes('/teams/') && path.includes('/analytics')) return 'Team Analytics'
     if (path.includes('/teams/')) return 'Team Management'
     if (path.includes('/dashboard')) return 'Dashboard'
+    if (path.includes('/profile')) return 'Profile Settings'
     if (path.includes('/analytics')) return 'Analytics'
     if (path.includes('/settings')) return 'Settings'
     return 'Hockey Analytics'
@@ -46,14 +47,18 @@ export default function Header() {
         <div className="flex items-center space-x-4">
           {/* User info and signout */}
           <div className="flex items-center space-x-3">
-            <div className="text-right">
+            <button
+              onClick={() => navigate('/profile')}
+              className="text-right hover:bg-gray-50 rounded-md px-3 py-2 transition-colors duration-200"
+              title="View profile"
+            >
               <p className="text-sm font-medium text-gray-700">
                 {user?.displayName || user?.email}
               </p>
               <p className="text-xs text-gray-500">
                 {user?.email}
               </p>
-            </div>
+            </button>
             <button
               onClick={handleLogout}
               className="flex items-center px-3 py-2 text-sm font-medium text-gray-600 rounded-md hover:bg-gray-50 hover:text-gray-900 transition-colors duration-200"

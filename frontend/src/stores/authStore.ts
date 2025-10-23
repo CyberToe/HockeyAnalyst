@@ -21,6 +21,7 @@ interface AuthActions {
   logout: () => void
   checkAuth: () => Promise<void>
   setLoading: (loading: boolean) => void
+  updateProfile: (data: { displayName?: string; email?: string }) => Promise<void>
 }
 
 type AuthStore = AuthState & AuthActions
@@ -123,6 +124,22 @@ export const useAuthStore = create<AuthStore>()(
 
       setLoading: (loading: boolean) => {
         set({ isLoading: loading })
+      },
+
+      updateProfile: async (data: { displayName?: string; email?: string }) => {
+        try {
+          set({ isLoading: true })
+          const response = await authApi.updateProfile(data)
+          const { user } = response.data
+          
+          set({
+            user,
+            isLoading: false,
+          })
+        } catch (error) {
+          set({ isLoading: false })
+          throw error
+        }
       },
 
       clearStorage: () => {
