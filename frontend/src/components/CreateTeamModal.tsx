@@ -23,6 +23,7 @@ export default function CreateTeamModal({ isOpen, onClose, onSuccess }: CreateTe
   const [imagePreview, setImagePreview] = useState<string | null>(null)
   const [currentStep, setCurrentStep] = useState<'form' | 'subscription'>('form')
   const [selectedSubscription, setSelectedSubscription] = useState<SubscriptionType | null>(null)
+  const [formData, setFormData] = useState<CreateTeamForm | null>(null)
 
   const {
     register,
@@ -42,53 +43,52 @@ export default function CreateTeamModal({ isOpen, onClose, onSuccess }: CreateTe
     }
   }
 
-  const onFormSubmit = () => {
-    // Move to subscription selection step
+  const onFormSubmit = (data: CreateTeamForm) => {
+    // Store form data and move to subscription selection step
+    setFormData(data)
     setCurrentStep('subscription')
   }
 
   const onSubscriptionSelect = async (subscriptionType: SubscriptionType) => {
+    if (!formData) {
+      console.error('No form data available')
+      return
+    }
+
     try {
       setIsLoading(true)
       setSelectedSubscription(subscriptionType)
       
-      // Get form data from the form state
-      const form = document.querySelector('form') as HTMLFormElement
-      if (form) {
-        const formDataObj = new FormData(form)
-        const name = formDataObj.get('name') as string
-        const description = formDataObj.get('description') as string
-        const imageFile = formDataObj.get('imageFile') as File
-        
-        // Convert image file to base64 for now (in production, upload to cloud storage)
-        let imageUrl = undefined
-        if (imageFile && imageFile.size > 0) {
-          const reader = new FileReader()
-          reader.onload = (e) => {
-            imageUrl = e.target?.result as string
-          }
-          reader.readAsDataURL(imageFile)
-          // Wait for the reader to complete
-          await new Promise(resolve => reader.onloadend = resolve)
+      // Convert image file to base64 for now (in production, upload to cloud storage)
+      let imageUrl = undefined
+      if (formData.imageFile && formData.imageFile.size > 0) {
+        const reader = new FileReader()
+        reader.onload = (e) => {
+          imageUrl = e.target?.result as string
         }
-        
-        const teamData = {
-          name,
-          description,
-          imageUrl,
-          type: subscriptionType,
-          state: 'ACTIVE' // Always set to active for new teams
-        }
-        
-        await teamsApi.createTeam(teamData)
-        toast.success('Team created successfully!')
-        reset()
-        setImagePreview(null)
-        setCurrentStep('form')
-        setSelectedSubscription(null)
-        onSuccess()
+        reader.readAsDataURL(formData.imageFile)
+        // Wait for the reader to complete
+        await new Promise(resolve => reader.onloadend = resolve)
       }
+      
+      const teamData = {
+        name: formData.name,
+        description: formData.description,
+        imageUrl,
+        type: subscriptionType,
+        state: 'ACTIVE' // Always set to active for new teams
+      }
+      
+      await teamsApi.createTeam(teamData)
+      toast.success('Team created successfully!')
+      reset()
+      setImagePreview(null)
+      setCurrentStep('form')
+      setSelectedSubscription(null)
+      setFormData(null)
+      onSuccess()
     } catch (error) {
+      console.error('Error creating team:', error)
       // Error is handled by API interceptor
     } finally {
       setIsLoading(false)
@@ -100,6 +100,7 @@ export default function CreateTeamModal({ isOpen, onClose, onSuccess }: CreateTe
     setCurrentStep('form')
     setSelectedSubscription(null)
     setImagePreview(null)
+    setFormData(null)
     onClose()
   }
 
@@ -202,7 +203,7 @@ export default function CreateTeamModal({ isOpen, onClose, onSuccess }: CreateTe
         </form>
       ) : (
         <div className="mt-6">
-          <div className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Standard Team Option */}
             <div className="border border-gray-200 rounded-lg p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Standard Team</h3>
@@ -210,7 +211,7 @@ export default function CreateTeamModal({ isOpen, onClose, onSuccess }: CreateTe
               
               <div className="space-y-3 mb-6">
                 <div className="flex items-center">
-                  <span className="text-2xl mr-3">🎮</span>
+                  <span className="text-2xl mr-3">🏒</span>
                   <span className="text-sm text-gray-700">Unlimited Games</span>
                 </div>
                 <div className="flex items-center">
@@ -256,7 +257,7 @@ export default function CreateTeamModal({ isOpen, onClose, onSuccess }: CreateTe
               
               <div className="space-y-3 mb-6">
                 <div className="flex items-center">
-                  <span className="text-2xl mr-3">🎮</span>
+                  <span className="text-2xl mr-3">🏒</span>
                   <span className="text-sm text-gray-700">1 Game</span>
                 </div>
                 <div className="flex items-center">
