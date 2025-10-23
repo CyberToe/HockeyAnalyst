@@ -104,11 +104,13 @@ export default function DashboardPage() {
               </h3>
               <div className="flex items-center space-x-2">
                 <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                  team.type === 'STANDARD_MONTHLY' 
-                    ? 'bg-purple-100 text-purple-800' 
-                    : 'bg-green-100 text-green-800'
+                  team.type === 'BASIC_FREE' 
+                    ? 'bg-green-100 text-green-800' 
+                    : 'bg-purple-100 text-purple-800'
                 }`}>
-                  {team.type === 'STANDARD_MONTHLY' ? 'Premium' : 'Free'}
+                  {team.type === 'BASIC_FREE' ? 'Free' : 
+                   team.type === 'STANDARD_MONTHLY' ? 'Premium Monthly' :
+                   team.type === 'STANDARD_YEARLY' ? 'Premium Yearly' : 'Premium'}
                 </span>
                 <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
                   team.state === 'ACTIVE' 
