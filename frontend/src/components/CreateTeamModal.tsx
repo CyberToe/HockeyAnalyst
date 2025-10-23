@@ -42,7 +42,7 @@ export default function CreateTeamModal({ isOpen, onClose, onSuccess }: CreateTe
     }
   }
 
-  const onFormSubmit = (data: CreateTeamForm) => {
+  const onFormSubmit = () => {
     // Move to subscription selection step
     setCurrentStep('subscription')
   }
@@ -53,7 +53,6 @@ export default function CreateTeamModal({ isOpen, onClose, onSuccess }: CreateTe
       setSelectedSubscription(subscriptionType)
       
       // Get form data from the form state
-      const formData = new FormData()
       const form = document.querySelector('form') as HTMLFormElement
       if (form) {
         const formDataObj = new FormData(form)
