@@ -31,6 +31,14 @@ export default function NavigationContent({ onNavigate }: NavigationContentProps
     queryFn: () => teamsApi.getTeams().then(res => res.data),
   })
 
+  // Debug logging
+  console.log('Teams data:', teamsData)
+  if (teamsData?.teams) {
+    console.log('Active teams:', teamsData.teams.filter((team: any) => team.state === 'ACTIVE'))
+    console.log('Disabled teams:', teamsData.teams.filter((team: any) => team.state === 'DISABLED'))
+    console.log('All team states:', teamsData.teams.map((team: any) => ({ name: team.name, state: team.state })))
+  }
+
   // Auto-expand team when navigating to team-specific pages
   useEffect(() => {
     const path = location.pathname
@@ -171,7 +179,7 @@ export default function NavigationContent({ onNavigate }: NavigationContentProps
           )}
 
           {/* Disabled Teams */}
-          {teamsData.teams.filter((team: any) => team.state === 'DISABLED').length > 0 && (
+          {(teamsData.teams.filter((team: any) => team.state === 'DISABLED').length > 0 || true) && (
             <div className="mt-4">
               <button
                 onClick={() => toggleTeam('disabled')}
@@ -194,22 +202,28 @@ export default function NavigationContent({ onNavigate }: NavigationContentProps
               
               {expandedTeams.has('disabled') && (
                 <div className="ml-4 space-y-1 mt-2">
-                  {teamsData.teams.filter((team: any) => team.state === 'DISABLED').map((team: any) => (
-                    <div key={team.id} className="flex items-center px-2 py-2 text-sm text-gray-400">
-                      <div className="mr-3 flex-shrink-0 h-4 w-4 flex items-center justify-center">
-                        {team.imageUrl ? (
-                          <img 
-                            src={team.imageUrl} 
-                            alt={`${team.name} team logo`}
-                            className="h-4 w-4 rounded object-cover opacity-50"
-                          />
-                        ) : (
-                          <UserGroupIcon className="h-4 w-4" />
-                        )}
+                  {teamsData.teams.filter((team: any) => team.state === 'DISABLED').length > 0 ? (
+                    teamsData.teams.filter((team: any) => team.state === 'DISABLED').map((team: any) => (
+                      <div key={team.id} className="flex items-center px-2 py-2 text-sm text-gray-400">
+                        <div className="mr-3 flex-shrink-0 h-4 w-4 flex items-center justify-center">
+                          {team.imageUrl ? (
+                            <img 
+                              src={team.imageUrl} 
+                              alt={`${team.name} team logo`}
+                              className="h-4 w-4 rounded object-cover opacity-50"
+                            />
+                          ) : (
+                            <UserGroupIcon className="h-4 w-4" />
+                          )}
+                        </div>
+                        <span className="text-gray-400">{team.name}</span>
                       </div>
-                      <span className="text-gray-400">{team.name}</span>
+                    ))
+                  ) : (
+                    <div className="px-2 py-2 text-sm text-gray-400 italic">
+                      No disabled teams
                     </div>
-                  ))}
+                  )}
                 </div>
               )}
             </div>
