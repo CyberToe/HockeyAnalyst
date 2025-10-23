@@ -31,13 +31,6 @@ export default function NavigationContent({ onNavigate }: NavigationContentProps
     queryFn: () => teamsApi.getTeams().then(res => res.data),
   })
 
-  // Debug logging
-  console.log('Teams data:', teamsData)
-  if (teamsData?.teams) {
-    console.log('Active teams:', teamsData.teams.filter((team: any) => team.state === 'ACTIVE'))
-    console.log('Disabled teams:', teamsData.teams.filter((team: any) => team.state === 'DISABLED'))
-    console.log('All team states:', teamsData.teams.map((team: any) => ({ name: team.name, state: team.state })))
-  }
 
   // Auto-expand team when navigating to team-specific pages
   useEffect(() => {
@@ -179,53 +172,71 @@ export default function NavigationContent({ onNavigate }: NavigationContentProps
           )}
 
           {/* Disabled Teams */}
-          {(teamsData.teams.filter((team: any) => team.state === 'DISABLED').length > 0 || true) && (
+          {teamsData.teams.filter((team: any) => team.state === 'DISABLED').length > 0 && (
             <div className="mt-4">
-              <button
-                onClick={() => toggleTeam('disabled')}
-                className="w-full flex items-center justify-between px-2 py-2 text-sm font-medium text-gray-500 rounded-md hover:bg-gray-50 hover:text-gray-700 transition-colors duration-200"
-              >
-                <div className="flex items-center">
-                  <div className="mr-3 flex-shrink-0 h-5 w-5 flex items-center justify-center">
-                    <UserGroupIcon className="h-5 w-5 text-gray-400" />
-                  </div>
-                  <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                    Disabled Teams
-                  </span>
-                </div>
-                {expandedTeams.has('disabled') ? (
-                  <ChevronDownIcon className="h-4 w-4" />
-                ) : (
-                  <ChevronRightIcon className="h-4 w-4" />
-                )}
-              </button>
-              
-              {expandedTeams.has('disabled') && (
-                <div className="ml-4 space-y-1 mt-2">
-                  {teamsData.teams.filter((team: any) => team.state === 'DISABLED').length > 0 ? (
-                    teamsData.teams.filter((team: any) => team.state === 'DISABLED').map((team: any) => (
-                      <div key={team.id} className="flex items-center px-2 py-2 text-sm text-gray-400">
-                        <div className="mr-3 flex-shrink-0 h-4 w-4 flex items-center justify-center">
-                          {team.imageUrl ? (
-                            <img 
-                              src={team.imageUrl} 
-                              alt={`${team.name} team logo`}
-                              className="h-4 w-4 rounded object-cover opacity-50"
-                            />
-                          ) : (
-                            <UserGroupIcon className="h-4 w-4" />
-                          )}
-                        </div>
-                        <span className="text-gray-400">{team.name}</span>
+              <div className="px-2 py-1 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                Disabled Teams
+              </div>
+              {teamsData.teams.filter((team: any) => team.state === 'DISABLED').map((team: any) => (
+                <div key={team.id} className="mt-1">
+                  <button
+                    onClick={() => toggleTeam(team.id)}
+                    className="w-full flex items-center justify-between px-2 py-2 text-sm font-medium text-gray-500 rounded-md hover:bg-gray-50 hover:text-gray-700 transition-colors duration-200"
+                  >
+                    <div className="flex items-center">
+                      <div className="mr-3 flex-shrink-0 h-5 w-5 flex items-center justify-center">
+                        {team.imageUrl ? (
+                          <img 
+                            src={team.imageUrl} 
+                            alt={`${team.name} team logo`}
+                            className="h-5 w-5 rounded object-cover opacity-60"
+                          />
+                        ) : (
+                          <UserGroupIcon className="h-5 w-5 text-gray-400" />
+                        )}
                       </div>
-                    ))
-                  ) : (
-                    <div className="px-2 py-2 text-sm text-gray-400 italic">
-                      No disabled teams
+                      <span className="text-gray-500">{team.name}</span>
+                    </div>
+                    {expandedTeams.has(team.id) ? (
+                      <ChevronDownIcon className="h-4 w-4" />
+                    ) : (
+                      <ChevronRightIcon className="h-4 w-4" />
+                    )}
+                  </button>
+                  
+                  {expandedTeams.has(team.id) && (
+                    <div className="ml-4 space-y-1">
+                      {/* Only Analytics available for disabled teams */}
+                      <NavLink
+                        to={`/teams/${team.id}/analytics`}
+                        onClick={handleNavClick}
+                        className={({ isActive }) =>
+                          `group flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors duration-200 ${
+                            isActive
+                              ? 'bg-primary-100 text-primary-900'
+                              : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                          }`
+                        }
+                      >
+                        <ChartBarIcon className="mr-3 flex-shrink-0 h-4 w-4" />
+                        Analytics
+                      </NavLink>
+                      
+                      {/* Disabled options with visual indication */}
+                      <div className="flex items-center px-2 py-2 text-sm text-gray-400 cursor-not-allowed">
+                        <UserGroupIcon className="mr-3 flex-shrink-0 h-4 w-4" />
+                        <span className="line-through">Players</span>
+                        <span className="ml-2 text-xs">(Disabled)</span>
+                      </div>
+                      <div className="flex items-center px-2 py-2 text-sm text-gray-400 cursor-not-allowed">
+                        <CalendarDaysIcon className="mr-3 flex-shrink-0 h-4 w-4" />
+                        <span className="line-through">Games</span>
+                        <span className="ml-2 text-xs">(Disabled)</span>
+                      </div>
                     </div>
                   )}
                 </div>
-              )}
+              ))}
             </div>
           )}
         </div>
