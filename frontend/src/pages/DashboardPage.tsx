@@ -81,6 +81,9 @@ export default function DashboardPage() {
   const teams = teamsData?.teams || []
   const activeTeams = teams.filter((team: any) => team.state === 'ACTIVE')
   const disabledTeams = teams.filter((team: any) => team.state === 'DISABLED')
+  
+  console.log('Disabled teams count:', disabledTeams.length)
+  console.log('Disabled teams collapsed state:', disabledTeamsCollapsed)
 
   const renderTeamTile = (team: any) => (
     <div key={team.id} className="bg-white overflow-hidden shadow rounded-lg">
@@ -288,7 +291,10 @@ export default function DashboardPage() {
           {disabledTeams.length > 0 && (
             <div>
               <button
-                onClick={() => setDisabledTeamsCollapsed(!disabledTeamsCollapsed)}
+                onClick={() => {
+                  console.log('Current collapsed state:', disabledTeamsCollapsed)
+                  setDisabledTeamsCollapsed(!disabledTeamsCollapsed)
+                }}
                 className="flex items-center text-lg font-medium text-gray-900 mb-4 hover:text-gray-700 transition-colors duration-200"
               >
                 <span className="mr-2">Disabled Teams ({disabledTeams.length})</span>
