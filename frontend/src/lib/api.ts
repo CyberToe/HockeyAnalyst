@@ -74,6 +74,8 @@ export const teamsApi = {
     api.delete(`/teams/${teamId}`, { data: { confirm } }),
   promoteUser: (teamId: string, userId: string) =>
     api.post(`/teams/${teamId}/promote`, { userId }),
+  demoteUser: (teamId: string, userId: string) =>
+    api.post(`/teams/${teamId}/demote`, { userId }),
   removeMember: (teamId: string, userId: string) =>
     api.delete(`/teams/${teamId}/members/${userId}`),
 }

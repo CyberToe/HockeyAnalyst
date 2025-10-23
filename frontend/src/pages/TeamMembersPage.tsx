@@ -14,6 +14,7 @@ export default function TeamMembersPage() {
   const { teamId } = useParams<{ teamId: string }>()
   const navigate = useNavigate()
   const [showPromoteConfirm, setShowPromoteConfirm] = useState(false)
+  const [showDemoteConfirm, setShowDemoteConfirm] = useState(false)
   const [showRemoveConfirm, setShowRemoveConfirm] = useState(false)
   const [selectedMember, setSelectedMember] = useState<any>(null)
 
@@ -33,6 +34,20 @@ export default function TeamMembersPage() {
     },
     onError: () => {
       toast.error('Failed to promote member')
+    }
+  })
+
+  const demoteMemberMutation = useMutation({
+    mutationFn: (userId: string) => teamsApi.demoteUser(teamId!, userId),
+    onSuccess: () => {
+      toast.success('Manager demoted to member successfully!')
+      refetch()
+      setShowDemoteConfirm(false)
+      setSelectedMember(null)
+    },
+    onError: (error: any) => {
+      const message = error.response?.data?.error || 'Failed to demote manager'
+      toast.error(message)
     }
   })
 
@@ -57,8 +72,13 @@ export default function TeamMembersPage() {
     )
   }
 
-  const team = teamData?.team
-  const members = teamData?.members || []
+  // Try different possible data structures
+  const team = teamData?.team || teamData
+  const members = teamData?.members || teamData?.teamMembers || []
+  
+  console.log('Team data response:', teamData)
+  console.log('Team:', team)
+  console.log('Members:', members)
 
   if (!team) {
     return (
@@ -79,6 +99,17 @@ export default function TeamMembersPage() {
     setShowPromoteConfirm(true)
   }
 
+  const handleDemoteClick = (member: any) => {
+    // Check if this is the last manager
+    const managerCount = members.filter((m: any) => m.role === 'admin').length
+    if (managerCount <= 1) {
+      toast.error('Cannot demote the last manager of the team')
+      return
+    }
+    setSelectedMember(member)
+    setShowDemoteConfirm(true)
+  }
+
   const handleRemoveClick = (member: any) => {
     setSelectedMember(member)
     setShowRemoveConfirm(true)
@@ -87,6 +118,12 @@ export default function TeamMembersPage() {
   const confirmPromote = () => {
     if (selectedMember) {
       promoteMemberMutation.mutate(selectedMember.user.id)
+    }
+  }
+
+  const confirmDemote = () => {
+    if (selectedMember) {
+      demoteMemberMutation.mutate(selectedMember.user.id)
     }
   }
 
@@ -165,14 +202,23 @@ export default function TeamMembersPage() {
                 </div>
               </div>
               
-              {isManager && member.role !== 'admin' && (
+              {isManager && (
                 <div className="flex space-x-2">
-                  <button
-                    onClick={() => handlePromoteClick(member)}
-                    className="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded text-yellow-700 bg-yellow-100 hover:bg-yellow-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500"
-                  >
-                    Promote to Manager
-                  </button>
+                  {member.role === 'admin' ? (
+                    <button
+                      onClick={() => handleDemoteClick(member)}
+                      className="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded text-orange-700 bg-orange-100 hover:bg-orange-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
+                    >
+                      Demote to Member
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => handlePromoteClick(member)}
+                      className="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded text-yellow-700 bg-yellow-100 hover:bg-yellow-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500"
+                    >
+                      Promote to Manager
+                    </button>
+                  )}
                   <button
                     onClick={() => handleRemoveClick(member)}
                     className="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded text-red-700 bg-red-100 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
@@ -223,6 +269,52 @@ export default function TeamMembersPage() {
                 <button
                   type="button"
                   onClick={() => setShowPromoteConfirm(false)}
+                  className="mt-3 inline-flex w-full justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-base font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 sm:mt-0 sm:w-auto sm:text-sm"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Demote Confirmation Modal */}
+      {showDemoteConfirm && (
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          <div className="flex min-h-full items-center justify-center p-4">
+            <div className="fixed inset-0 bg-gray-500 bg-opacity-75" onClick={() => setShowDemoteConfirm(false)} />
+            <div className="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6">
+              <div className="sm:flex sm:items-start">
+                <div className="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-orange-100 sm:mx-0 sm:h-10 sm:w-10">
+                  <svg className="h-6 w-6 text-orange-600" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                  </svg>
+                </div>
+                <div className="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left">
+                  <h3 className="text-lg font-medium leading-6 text-gray-900">
+                    Demote Manager
+                  </h3>
+                  <div className="mt-2">
+                    <p className="text-sm text-gray-500">
+                      Are you sure you want to demote "{selectedMember?.user.displayName || selectedMember?.user.email}" from manager to member? 
+                      They will lose manager permissions.
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div className="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
+                <button
+                  type="button"
+                  onClick={confirmDemote}
+                  disabled={demoteMemberMutation.isPending}
+                  className="inline-flex w-full justify-center rounded-md border border-transparent bg-orange-600 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50"
+                >
+                  {demoteMemberMutation.isPending ? 'Demoting...' : 'Demote to Member'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowDemoteConfirm(false)}
                   className="mt-3 inline-flex w-full justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-base font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 sm:mt-0 sm:w-auto sm:text-sm"
                 >
                   Cancel
