@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useQuery, useMutation } from '@tanstack/react-query'
 import { teamsApi } from '../lib/api'
+import { useAuthStore } from '../stores/authStore'
 import { 
   ArrowLeftIcon, 
   UserIcon,
@@ -13,6 +14,7 @@ import toast from 'react-hot-toast'
 export default function TeamMembersPage() {
   const { teamId } = useParams<{ teamId: string }>()
   const navigate = useNavigate()
+  const { user } = useAuthStore()
   const [showPromoteConfirm, setShowPromoteConfirm] = useState(false)
   const [showDemoteConfirm, setShowDemoteConfirm] = useState(false)
   const [showRemoveConfirm, setShowRemoveConfirm] = useState(false)
@@ -74,11 +76,13 @@ export default function TeamMembersPage() {
 
   // Try different possible data structures
   const team = teamData?.team || teamData
-  const members = teamData?.members || teamData?.teamMembers || []
+  const members = teamData?.members || teamData?.teamMembers || team?.members || []
   
-  console.log('Team data response:', teamData)
-  console.log('Team:', team)
-  console.log('Members:', members)
+  console.log('Full team data response:', teamData)
+  console.log('Team object:', team)
+  console.log('Members array:', members)
+  console.log('Members length:', members.length)
+  console.log('Team members property:', team?.members)
 
   if (!team) {
     return (
@@ -90,8 +94,7 @@ export default function TeamMembersPage() {
   }
 
   // Check if current user is a manager
-  const currentUser = JSON.parse(localStorage.getItem('user') || '{}')
-  const currentUserMember = members.find((member: any) => member.user.id === currentUser.id)
+  const currentUserMember = members.find((member: any) => member.user.id === user?.id)
   const isManager = currentUserMember?.role === 'admin'
 
   const handlePromoteClick = (member: any) => {
