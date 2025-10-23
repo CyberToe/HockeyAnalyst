@@ -181,7 +181,7 @@ export default function NavigationContent({ onNavigate }: NavigationContentProps
                 <div key={team.id} className="mt-1">
                   <button
                     onClick={() => toggleTeam(team.id)}
-                    className="w-full flex items-center justify-between px-2 py-2 text-sm font-medium text-gray-500 rounded-md hover:bg-gray-50 hover:text-gray-700 transition-colors duration-200"
+                    className="w-full flex items-center justify-between px-2 py-2 text-sm font-medium text-gray-600 rounded-md hover:bg-gray-50 hover:text-gray-900 transition-colors duration-200"
                   >
                     <div className="flex items-center">
                       <div className="mr-3 flex-shrink-0 h-5 w-5 flex items-center justify-center">
@@ -189,13 +189,13 @@ export default function NavigationContent({ onNavigate }: NavigationContentProps
                           <img 
                             src={team.imageUrl} 
                             alt={`${team.name} team logo`}
-                            className="h-5 w-5 rounded object-cover opacity-60"
+                            className="h-5 w-5 rounded object-cover"
                           />
                         ) : (
-                          <UserGroupIcon className="h-5 w-5 text-gray-400" />
+                          <UserGroupIcon className="h-5 w-5 text-gray-600" />
                         )}
                       </div>
-                      <span className="text-gray-500">{team.name}</span>
+                      <span className="text-gray-900">{team.name}</span>
                     </div>
                     {expandedTeams.has(team.id) ? (
                       <ChevronDownIcon className="h-4 w-4" />
