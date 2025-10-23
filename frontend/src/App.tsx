@@ -8,6 +8,7 @@ import DashboardPage from './pages/DashboardPage'
 import TeamPage from './pages/TeamPage'
 import TeamPlayersPage from './pages/TeamPlayersPage'
 import TeamGamesPage from './pages/TeamGamesPage'
+import TeamMembersPage from './pages/TeamMembersPage'
 import GamePage from './pages/GamePage'
 import AnalyticsPage from './pages/AnalyticsPage'
 import ProfilePage from './pages/ProfilePage'
@@ -39,6 +40,7 @@ function App() {
         <Route path="profile" element={<ProfilePage />} />
         <Route path="teams/:teamId" element={<TeamPage />} />
         <Route path="teams/:teamId/players" element={<TeamPlayersPage />} />
+        <Route path="teams/:teamId/members" element={<TeamMembersPage />} />
         <Route path="teams/:teamId/games" element={<TeamGamesPage />} />
         <Route path="teams/:teamId/games/:gameId" element={<GamePage />} />
         <Route path="teams/:teamId/analytics" element={<AnalyticsPage />} />

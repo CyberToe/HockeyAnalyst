@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { 
   PlusIcon, 
   UserGroupIcon, 
@@ -17,6 +17,7 @@ import JoinTeamModal from '../components/JoinTeamModal'
 import toast from 'react-hot-toast'
 
 export default function DashboardPage() {
+  const navigate = useNavigate()
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [showJoinModal, setShowJoinModal] = useState(false)
   const [disabledTeamsCollapsed, setDisabledTeamsCollapsed] = useState(true)
@@ -82,6 +83,17 @@ export default function DashboardPage() {
   const activeTeams = teams.filter((team: any) => team.state === 'ACTIVE')
   const disabledTeams = teams.filter((team: any) => team.state === 'DISABLED')
 
+  // Check if current user is a manager of a team
+  const isManager = (team: any) => {
+    const currentUser = JSON.parse(localStorage.getItem('user') || '{}')
+    const currentUserMember = team.members?.find((member: any) => member.user.id === currentUser.id)
+    return currentUserMember?.role === 'admin'
+  }
+
+  const handleMembersClick = (teamId: string) => {
+    navigate(`/teams/${teamId}/members`)
+  }
+
   const renderTeamTile = (team: any) => (
     <div key={team.id} className="bg-white overflow-hidden shadow rounded-lg">
       <div className="p-6">
@@ -142,10 +154,20 @@ export default function DashboardPage() {
         </div>
         
         <div className="mt-4 grid grid-cols-2 gap-4">
-          <div className="flex items-center text-sm text-gray-500">
-            <UserGroupIcon className="h-4 w-4 mr-1" />
-            {team.members?.length || 0} members
-          </div>
+          {isManager(team) ? (
+            <button
+              onClick={() => handleMembersClick(team.id)}
+              className="flex items-center text-sm text-gray-500 hover:text-primary-600 hover:bg-gray-50 rounded-md p-1 transition-colors duration-200"
+            >
+              <UserGroupIcon className="h-4 w-4 mr-1" />
+              {team.members?.length || 0} members
+            </button>
+          ) : (
+            <div className="flex items-center text-sm text-gray-500">
+              <UserGroupIcon className="h-4 w-4 mr-1" />
+              {team.members?.length || 0} members
+            </div>
+          )}
           <div className="flex items-center text-sm text-gray-500">
             <ChartBarIcon className="h-4 w-4 mr-1" />
             {team._count?.players || 0} players

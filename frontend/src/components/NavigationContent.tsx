@@ -123,6 +123,32 @@ export default function NavigationContent({ onNavigate }: NavigationContentProps
                   
                   {expandedTeams.has(team.id) && (
                     <div className="ml-4 space-y-1">
+                      {/* Members link - only for managers */}
+                      {(() => {
+                        const currentUser = JSON.parse(localStorage.getItem('user') || '{}')
+                        const currentUserMember = team.members?.find((member: any) => member.user.id === currentUser.id)
+                        const isManager = currentUserMember?.role === 'admin'
+                        
+                        if (isManager) {
+                          return (
+                            <NavLink
+                              to={`/teams/${team.id}/members`}
+                              onClick={handleNavClick}
+                              className={({ isActive }) =>
+                                `group flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors duration-200 ${
+                                  isActive
+                                    ? 'bg-primary-100 text-primary-900'
+                                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                                }`
+                              }
+                            >
+                              <UserGroupIcon className="mr-3 flex-shrink-0 h-4 w-4" />
+                              Members
+                            </NavLink>
+                          )
+                        }
+                        return null
+                      })()}
                       <NavLink
                         to={`/teams/${team.id}/players`}
                         onClick={handleNavClick}
