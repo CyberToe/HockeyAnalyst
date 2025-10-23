@@ -23,6 +23,7 @@ interface NavigationContentProps {
 
 export default function NavigationContent({ onNavigate }: NavigationContentProps) {
   const [expandedTeams, setExpandedTeams] = useState<Set<string>>(new Set())
+  const [disabledTeamsCollapsed, setDisabledTeamsCollapsed] = useState(true)
   const location = useLocation()
 
   // Fetch user's teams
@@ -174,10 +175,20 @@ export default function NavigationContent({ onNavigate }: NavigationContentProps
           {/* Disabled Teams */}
           {teamsData.teams.filter((team: any) => team.state === 'DISABLED').length > 0 && (
             <div className="mt-4">
-              <div className="px-2 py-1 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                Disabled Teams
-              </div>
-              {teamsData.teams.filter((team: any) => team.state === 'DISABLED').map((team: any) => (
+              <button
+                onClick={() => setDisabledTeamsCollapsed(!disabledTeamsCollapsed)}
+                className="w-full flex items-center justify-between px-2 py-1 text-xs font-semibold text-gray-500 uppercase tracking-wider hover:text-gray-700 transition-colors duration-200"
+              >
+                <span>Disabled Teams ({teamsData.teams.filter((team: any) => team.state === 'DISABLED').length})</span>
+                {disabledTeamsCollapsed ? (
+                  <ChevronRightIcon className="h-4 w-4" />
+                ) : (
+                  <ChevronDownIcon className="h-4 w-4" />
+                )}
+              </button>
+              {disabledTeamsCollapsed ? null : (
+                <div className="mt-1">
+                  {teamsData.teams.filter((team: any) => team.state === 'DISABLED').map((team: any) => (
                 <div key={team.id} className="mt-1">
                   <button
                     onClick={() => toggleTeam(team.id)}
@@ -236,7 +247,9 @@ export default function NavigationContent({ onNavigate }: NavigationContentProps
                     </div>
                   )}
                 </div>
-              ))}
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </div>
