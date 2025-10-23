@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Link, useNavigate } from 'react-router-dom'
+import { useAuthStore } from '../stores/authStore'
 import { 
   PlusIcon, 
   UserGroupIcon, 
@@ -18,6 +19,7 @@ import toast from 'react-hot-toast'
 
 export default function DashboardPage() {
   const navigate = useNavigate()
+  const { user } = useAuthStore()
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [showJoinModal, setShowJoinModal] = useState(false)
   const [disabledTeamsCollapsed, setDisabledTeamsCollapsed] = useState(true)
@@ -85,10 +87,14 @@ export default function DashboardPage() {
 
   // Check if current user is a manager of a team
   const isManager = (team: any) => {
-    const currentUser = JSON.parse(localStorage.getItem('user') || '{}')
-    const currentUserMember = team.members?.find((member: any) => member.user.id === currentUser.id)
+    if (!user) {
+      console.log('No user found in auth store')
+      return false
+    }
+    
+    const currentUserMember = team.members?.find((member: any) => member.user.id === user.id)
     const isAdmin = currentUserMember?.role === 'admin'
-    console.log('Team:', team.name, 'Current user:', currentUser.id, 'Member role:', currentUserMember?.role, 'Is manager:', isAdmin)
+    console.log('Team:', team.name, 'Current user ID:', user.id, 'Member role:', currentUserMember?.role, 'Is manager:', isAdmin)
     return isAdmin
   }
 
