@@ -83,87 +83,137 @@ export default function NavigationContent({ onNavigate }: NavigationContentProps
         </NavLink>
       ))}
 
-      {/* Teams Section - Only show active teams */}
-      {teamsData?.teams && teamsData.teams.filter((team: any) => team.state === 'ACTIVE').length > 0 && (
+      {/* Teams Section */}
+      {teamsData?.teams && teamsData.teams.length > 0 && (
         <div className="mt-4">
-          <div className="px-2 py-1 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-            Teams
-          </div>
-          {teamsData.teams.filter((team: any) => team.state === 'ACTIVE').map((team: any) => (
-            <div key={team.id} className="mt-1">
+          {/* Active Teams */}
+          {teamsData.teams.filter((team: any) => team.state === 'ACTIVE').length > 0 && (
+            <>
+              <div className="px-2 py-1 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                Active Teams
+              </div>
+              {teamsData.teams.filter((team: any) => team.state === 'ACTIVE').map((team: any) => (
+                <div key={team.id} className="mt-1">
+                  <button
+                    onClick={() => toggleTeam(team.id)}
+                    className="w-full flex items-center justify-between px-2 py-2 text-sm font-medium text-gray-600 rounded-md hover:bg-gray-50 hover:text-gray-900 transition-colors duration-200"
+                  >
+                    <div className="flex items-center">
+                      <div className="mr-3 flex-shrink-0 h-5 w-5 flex items-center justify-center">
+                        {team.imageUrl ? (
+                          <img 
+                            src={team.imageUrl} 
+                            alt={`${team.name} team logo`}
+                            className="h-5 w-5 rounded object-cover"
+                          />
+                        ) : (
+                          <UserGroupIcon className="h-5 w-5" />
+                        )}
+                      </div>
+                      {team.name}
+                    </div>
+                    {expandedTeams.has(team.id) ? (
+                      <ChevronDownIcon className="h-4 w-4" />
+                    ) : (
+                      <ChevronRightIcon className="h-4 w-4" />
+                    )}
+                  </button>
+                  
+                  {expandedTeams.has(team.id) && (
+                    <div className="ml-4 space-y-1">
+                      <NavLink
+                        to={`/teams/${team.id}/players`}
+                        onClick={handleNavClick}
+                        className={({ isActive }) =>
+                          `group flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors duration-200 ${
+                            isActive
+                              ? 'bg-primary-100 text-primary-900'
+                              : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                          }`
+                        }
+                      >
+                        <UserGroupIcon className="mr-3 flex-shrink-0 h-4 w-4" />
+                        Players
+                      </NavLink>
+                      <NavLink
+                        to={`/teams/${team.id}/games`}
+                        onClick={handleNavClick}
+                        className={({ isActive }) =>
+                          `group flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors duration-200 ${
+                            isActive
+                              ? 'bg-primary-100 text-primary-900'
+                              : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                          }`
+                        }
+                      >
+                        <CalendarDaysIcon className="mr-3 flex-shrink-0 h-4 w-4" />
+                        Games
+                      </NavLink>
+                      <NavLink
+                        to={`/teams/${team.id}/analytics`}
+                        onClick={handleNavClick}
+                        className={({ isActive }) =>
+                          `group flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors duration-200 ${
+                            isActive
+                              ? 'bg-primary-100 text-primary-900'
+                              : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                          }`
+                        }
+                      >
+                        <ChartBarIcon className="mr-3 flex-shrink-0 h-4 w-4" />
+                        Analytics
+                      </NavLink>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </>
+          )}
+
+          {/* Disabled Teams */}
+          {teamsData.teams.filter((team: any) => team.state === 'DISABLED').length > 0 && (
+            <div className="mt-4">
               <button
-                onClick={() => toggleTeam(team.id)}
-                className="w-full flex items-center justify-between px-2 py-2 text-sm font-medium text-gray-600 rounded-md hover:bg-gray-50 hover:text-gray-900 transition-colors duration-200"
+                onClick={() => toggleTeam('disabled')}
+                className="w-full flex items-center justify-between px-2 py-2 text-sm font-medium text-gray-500 rounded-md hover:bg-gray-50 hover:text-gray-700 transition-colors duration-200"
               >
                 <div className="flex items-center">
                   <div className="mr-3 flex-shrink-0 h-5 w-5 flex items-center justify-center">
-                    {team.imageUrl ? (
-                      <img 
-                        src={team.imageUrl} 
-                        alt={`${team.name} team logo`}
-                        className="h-5 w-5 rounded object-cover"
-                      />
-                    ) : (
-                      <UserGroupIcon className="h-5 w-5" />
-                    )}
+                    <UserGroupIcon className="h-5 w-5 text-gray-400" />
                   </div>
-                  {team.name}
+                  <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    Disabled Teams
+                  </span>
                 </div>
-                {expandedTeams.has(team.id) ? (
+                {expandedTeams.has('disabled') ? (
                   <ChevronDownIcon className="h-4 w-4" />
                 ) : (
                   <ChevronRightIcon className="h-4 w-4" />
                 )}
               </button>
               
-              {expandedTeams.has(team.id) && (
-                <div className="ml-4 space-y-1">
-                  <NavLink
-                    to={`/teams/${team.id}/players`}
-                    onClick={handleNavClick}
-                    className={({ isActive }) =>
-                      `group flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors duration-200 ${
-                        isActive
-                          ? 'bg-primary-100 text-primary-900'
-                          : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                      }`
-                    }
-                  >
-                    <UserGroupIcon className="mr-3 flex-shrink-0 h-4 w-4" />
-                    Players
-                  </NavLink>
-                  <NavLink
-                    to={`/teams/${team.id}/games`}
-                    onClick={handleNavClick}
-                    className={({ isActive }) =>
-                      `group flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors duration-200 ${
-                        isActive
-                          ? 'bg-primary-100 text-primary-900'
-                          : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                      }`
-                    }
-                  >
-                    <CalendarDaysIcon className="mr-3 flex-shrink-0 h-4 w-4" />
-                    Games
-                  </NavLink>
-                  <NavLink
-                    to={`/teams/${team.id}/analytics`}
-                    onClick={handleNavClick}
-                    className={({ isActive }) =>
-                      `group flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors duration-200 ${
-                        isActive
-                          ? 'bg-primary-100 text-primary-900'
-                          : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                      }`
-                    }
-                  >
-                    <ChartBarIcon className="mr-3 flex-shrink-0 h-4 w-4" />
-                    Analytics
-                  </NavLink>
+              {expandedTeams.has('disabled') && (
+                <div className="ml-4 space-y-1 mt-2">
+                  {teamsData.teams.filter((team: any) => team.state === 'DISABLED').map((team: any) => (
+                    <div key={team.id} className="flex items-center px-2 py-2 text-sm text-gray-400">
+                      <div className="mr-3 flex-shrink-0 h-4 w-4 flex items-center justify-center">
+                        {team.imageUrl ? (
+                          <img 
+                            src={team.imageUrl} 
+                            alt={`${team.name} team logo`}
+                            className="h-4 w-4 rounded object-cover opacity-50"
+                          />
+                        ) : (
+                          <UserGroupIcon className="h-4 w-4" />
+                        )}
+                      </div>
+                      <span className="text-gray-400">{team.name}</span>
+                    </div>
+                  ))}
                 </div>
               )}
             </div>
-          ))}
+          )}
         </div>
       )}
     </nav>
