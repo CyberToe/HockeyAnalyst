@@ -304,7 +304,7 @@ export default function DashboardPage() {
                   <ChevronDownIcon className="h-5 w-5" />
                 )}
               </button>
-              {!disabledTeamsCollapsed && (
+              {disabledTeamsCollapsed === false && (
                 <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
                   {disabledTeams.map(renderTeamTile)}
                 </div>
