@@ -6,6 +6,8 @@ interface User {
   id: string
   email: string
   displayName: string | null
+  createdAt?: string
+  lastLoginAt?: string
 }
 
 interface AuthState {
