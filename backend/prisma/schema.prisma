@@ -177,6 +177,7 @@ enum AttackingDirection {
 enum TeamType {
   BASIC_FREE
   STANDARD_MONTHLY
+  STANDARD_YEARLY
 }
 
 enum TeamState {

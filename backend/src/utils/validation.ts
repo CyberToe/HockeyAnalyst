@@ -17,7 +17,7 @@ export const createTeamSchema = z.object({
   name: z.string().min(1, 'Team name is required').max(100, 'Team name too long'),
   description: z.string().max(500, 'Description too long').optional(),
   imageUrl: z.string().url('Invalid image URL').optional(),
-  type: z.enum(['BASIC_FREE', 'STANDARD_MONTHLY']).default('BASIC_FREE'),
+  type: z.enum(['BASIC_FREE', 'STANDARD_MONTHLY', 'STANDARD_YEARLY']).default('BASIC_FREE'),
   state: z.enum(['ACTIVE', 'DISABLED']).default('ACTIVE')
 });
 
@@ -29,7 +29,7 @@ export const updateTeamSchema = z.object({
   name: z.string().min(1, 'Team name is required').max(100, 'Team name too long').optional(),
   description: z.string().max(500, 'Description too long').optional(),
   imageUrl: z.string().url('Invalid image URL').optional(),
-  type: z.enum(['BASIC_FREE', 'STANDARD_MONTHLY']).optional(),
+  type: z.enum(['BASIC_FREE', 'STANDARD_MONTHLY', 'STANDARD_YEARLY']).optional(),
   state: z.enum(['ACTIVE', 'DISABLED']).optional()
 });
 
