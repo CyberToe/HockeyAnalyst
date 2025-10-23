@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useForm } from 'react-hook-form'
 import { teamsApi } from '../lib/api'
 import toast from 'react-hot-toast'
@@ -23,6 +23,7 @@ export default function CreateTeamModal({ isOpen, onClose, onSuccess }: CreateTe
   const [currentStep, setCurrentStep] = useState<'form' | 'subscription'>('form')
   const [selectedSubscription, setSelectedSubscription] = useState<SubscriptionType | null>(null)
   const [formData, setFormData] = useState<CreateTeamForm | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const {
     register,
@@ -43,13 +44,12 @@ export default function CreateTeamModal({ isOpen, onClose, onSuccess }: CreateTe
   }
 
   const onFormSubmit = (data: CreateTeamForm) => {
-    // Get the image file from the file input
-    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement
-    const imageFile = fileInput?.files?.[0]
+    // Get the image file from the file input using ref
+    const imageFile = fileInputRef.current?.files?.[0]
     
     console.log('Form submit - data:', data)
     console.log('Form submit - imageFile:', imageFile)
-    console.log('Form submit - fileInput:', fileInput)
+    console.log('Form submit - fileInputRef:', fileInputRef.current)
     
     // Store form data with image file and move to subscription selection step
     setFormData({
@@ -220,6 +220,7 @@ export default function CreateTeamModal({ isOpen, onClose, onSuccess }: CreateTe
                 Team Image
               </label>
               <input
+                ref={fileInputRef}
                 type="file"
                 accept="image/*"
                 onChange={handleImageChange}
