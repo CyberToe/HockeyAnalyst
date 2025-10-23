@@ -87,10 +87,13 @@ export default function DashboardPage() {
   const isManager = (team: any) => {
     const currentUser = JSON.parse(localStorage.getItem('user') || '{}')
     const currentUserMember = team.members?.find((member: any) => member.user.id === currentUser.id)
-    return currentUserMember?.role === 'admin'
+    const isAdmin = currentUserMember?.role === 'admin'
+    console.log('Team:', team.name, 'Current user:', currentUser.id, 'Member role:', currentUserMember?.role, 'Is manager:', isAdmin)
+    return isAdmin
   }
 
   const handleMembersClick = (teamId: string) => {
+    console.log('Members click handler called for team:', teamId)
     navigate(`/teams/${teamId}/members`)
   }
 
