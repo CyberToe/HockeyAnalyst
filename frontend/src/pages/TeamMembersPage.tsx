@@ -4,9 +4,7 @@ import { useQuery, useMutation } from '@tanstack/react-query'
 import { teamsApi } from '../lib/api'
 import { 
   ArrowLeftIcon, 
-  UserGroupIcon, 
   UserIcon,
-  CrownIcon,
   TrashIcon,
   UserPlusIcon
 } from '@heroicons/react/24/outline'
@@ -140,7 +138,11 @@ export default function TeamMembersPage() {
               <div className="flex items-center">
                 <div className="flex-shrink-0">
                   {member.role === 'admin' ? (
-                    <CrownIcon className="h-8 w-8 text-yellow-500" />
+                    <div className="h-8 w-8 text-yellow-500 flex items-center justify-center">
+                      <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                      </svg>
+                    </div>
                   ) : (
                     <UserIcon className="h-8 w-8 text-gray-400" />
                   )}
@@ -193,7 +195,9 @@ export default function TeamMembersPage() {
             <div className="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6">
               <div className="sm:flex sm:items-start">
                 <div className="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-yellow-100 sm:mx-0 sm:h-10 sm:w-10">
-                  <CrownIcon className="h-6 w-6 text-yellow-600" />
+                  <svg className="h-6 w-6 text-yellow-600" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                  </svg>
                 </div>
                 <div className="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left">
                   <h3 className="text-lg font-medium leading-6 text-gray-900">
