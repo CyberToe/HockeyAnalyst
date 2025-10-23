@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { teamsApi } from '../lib/api'
 import toast from 'react-hot-toast'
-import SimpleModal from './SimpleModal'
 
 interface CreateTeamModalProps {
   isOpen: boolean
@@ -68,7 +67,7 @@ export default function CreateTeamModal({ isOpen, onClose, onSuccess }: CreateTe
             resolve(e.target?.result as string)
           }
           reader.onerror = reject
-          reader.readAsDataURL(formData.imageFile)
+          reader.readAsDataURL(formData.imageFile!)
         })
       }
       
