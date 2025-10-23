@@ -47,6 +47,10 @@ export default function CreateTeamModal({ isOpen, onClose, onSuccess }: CreateTe
     const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement
     const imageFile = fileInput?.files?.[0]
     
+    console.log('Form submit - data:', data)
+    console.log('Form submit - imageFile:', imageFile)
+    console.log('Form submit - fileInput:', fileInput)
+    
     // Store form data with image file and move to subscription selection step
     setFormData({
       ...data,
@@ -67,15 +71,23 @@ export default function CreateTeamModal({ isOpen, onClose, onSuccess }: CreateTe
       
       // Convert image file to base64 for now (in production, upload to cloud storage)
       let imageUrl = undefined
+      console.log('Subscription select - formData:', formData)
+      console.log('Subscription select - imageFile:', formData.imageFile)
+      
       if (formData.imageFile && formData.imageFile.size > 0) {
+        console.log('Processing image file...')
         imageUrl = await new Promise<string>((resolve, reject) => {
           const reader = new FileReader()
           reader.onload = (e) => {
+            console.log('FileReader onload - result length:', e.target?.result?.toString().length)
             resolve(e.target?.result as string)
           }
           reader.onerror = reject
           reader.readAsDataURL(formData.imageFile!)
         })
+        console.log('Image URL created, length:', imageUrl?.length)
+      } else {
+        console.log('No image file or file is empty')
       }
       
       const teamData = {
@@ -85,6 +97,9 @@ export default function CreateTeamModal({ isOpen, onClose, onSuccess }: CreateTe
         type: subscriptionType,
         state: 'ACTIVE' // Always set to active for new teams
       }
+      
+      console.log('Final team data being sent:', teamData)
+      console.log('ImageUrl in team data:', teamData.imageUrl)
       
       await teamsApi.createTeam(teamData)
       toast.success('Team created successfully!')
