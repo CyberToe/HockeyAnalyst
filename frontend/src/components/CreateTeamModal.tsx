@@ -43,8 +43,15 @@ export default function CreateTeamModal({ isOpen, onClose, onSuccess }: CreateTe
   }
 
   const onFormSubmit = (data: CreateTeamForm) => {
-    // Store form data and move to subscription selection step
-    setFormData(data)
+    // Get the image file from the file input
+    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement
+    const imageFile = fileInput?.files?.[0]
+    
+    // Store form data with image file and move to subscription selection step
+    setFormData({
+      ...data,
+      imageFile
+    })
     setCurrentStep('subscription')
   }
 
@@ -198,7 +205,6 @@ export default function CreateTeamModal({ isOpen, onClose, onSuccess }: CreateTe
                 Team Image
               </label>
               <input
-                {...register('imageFile')}
                 type="file"
                 accept="image/*"
                 onChange={handleImageChange}
