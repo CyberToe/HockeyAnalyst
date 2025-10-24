@@ -177,51 +177,60 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        <div className="mt-6 flex flex-wrap gap-2">
-          <Link
-            to={`/teams/${team.id}/players`}
-            className={`flex-1 min-w-0 text-center px-3 py-2 rounded-md text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 ${
-              team.state === 'DISABLED' 
-                ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
-                : 'bg-primary-600 text-white hover:bg-primary-700'
-            }`}
-            onClick={team.state === 'DISABLED' ? (e) => e.preventDefault() : undefined}
-          >
-            Players ({team._count?.players || 0})
-          </Link>
-          <Link
-            to={`/teams/${team.id}/games`}
-            className={`flex-1 min-w-0 text-center px-3 py-2 rounded-md text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 ${
-              team.state === 'DISABLED' 
-                ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
-                : 'bg-primary-600 text-white hover:bg-primary-700'
-            }`}
-            onClick={team.state === 'DISABLED' ? (e) => e.preventDefault() : undefined}
-          >
-            Games ({team._count?.games || 0})
-          </Link>
-          <Link
-            to={`/teams/${team.id}/analytics`}
-            className="flex-1 min-w-0 bg-primary-600 text-white text-center px-3 py-2 rounded-md text-sm font-medium hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
-          >
-            Analytics
-          </Link>
-          {isManager(team) && (
-            <button
-              onClick={() => handleMembersClick(team.id)}
-              className="flex-1 min-w-0 bg-gray-100 text-gray-700 text-center px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+        <div className="mt-6 space-y-3">
+          {/* Main action buttons */}
+          <div className="flex flex-wrap gap-2">
+            <Link
+              to={`/teams/${team.id}/players`}
+              className={`flex-1 min-w-0 text-center px-3 py-2 rounded-md text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 ${
+                team.state === 'DISABLED' 
+                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
+                  : 'bg-primary-600 text-white hover:bg-primary-700'
+              }`}
+              onClick={team.state === 'DISABLED' ? (e) => e.preventDefault() : undefined}
             >
-              Members ({team.members?.length || 0})
-            </button>
-          )}
-          {team.state === 'ACTIVE' && (
-            <button
-              onClick={() => handleDisableClick(team.id, team.name)}
-              className="bg-yellow-100 text-yellow-700 px-3 py-2 rounded-md text-sm font-medium hover:bg-yellow-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500"
-              title="Disable team"
+              Players ({team._count?.players || 0})
+            </Link>
+            <Link
+              to={`/teams/${team.id}/games`}
+              className={`flex-1 min-w-0 text-center px-3 py-2 rounded-md text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 ${
+                team.state === 'DISABLED' 
+                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
+                  : 'bg-primary-600 text-white hover:bg-primary-700'
+              }`}
+              onClick={team.state === 'DISABLED' ? (e) => e.preventDefault() : undefined}
             >
-              Disable
-            </button>
+              Games ({team._count?.games || 0})
+            </Link>
+            <Link
+              to={`/teams/${team.id}/analytics`}
+              className="flex-1 min-w-0 bg-primary-600 text-white text-center px-3 py-2 rounded-md text-sm font-medium hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+            >
+              Analytics
+            </Link>
+          </div>
+          
+          {/* Secondary action buttons */}
+          {(isManager(team) || team.state === 'ACTIVE') && (
+            <div className="flex flex-wrap gap-2">
+              {isManager(team) && (
+                <button
+                  onClick={() => handleMembersClick(team.id)}
+                  className="flex-1 min-w-0 bg-blue-600 text-white text-center px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                >
+                  Members ({team.members?.length || 0})
+                </button>
+              )}
+              {team.state === 'ACTIVE' && (
+                <button
+                  onClick={() => handleDisableClick(team.id, team.name)}
+                  className="bg-yellow-100 text-yellow-700 px-3 py-2 rounded-md text-sm font-medium hover:bg-yellow-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500"
+                  title="Disable team"
+                >
+                  Disable
+                </button>
+              )}
+            </div>
           )}
         </div>
       </div>
