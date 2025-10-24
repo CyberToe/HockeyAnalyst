@@ -3,10 +3,7 @@ import { useParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { gamesApi, playersApi, analyticsApi } from '../lib/api'
 import { 
-  ChartBarIcon, 
-  UserGroupIcon, 
-  CalendarDaysIcon,
-  XMarkIcon
+  ChartBarIcon
 } from '@heroicons/react/24/outline'
 import ShotVisualization from '../components/ShotVisualization'
 
