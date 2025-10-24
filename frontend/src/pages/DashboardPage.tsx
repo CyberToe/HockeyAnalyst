@@ -162,30 +162,8 @@ export default function DashboardPage() {
           </div>
         </div>
         
-        <div className="mt-4 grid grid-cols-2 gap-4">
-          {isManager(team) ? (
-            <button
-              onClick={() => handleMembersClick(team.id)}
-              className="flex items-center text-sm text-gray-500 hover:text-primary-600 hover:bg-gray-50 rounded-md p-1 transition-colors duration-200"
-            >
-              <UserGroupIcon className="h-4 w-4 mr-1" />
-              {team.members?.length || 0} members
-            </button>
-          ) : (
-            <div className="flex items-center text-sm text-gray-500">
-              <UserGroupIcon className="h-4 w-4 mr-1" />
-              {team.members?.length || 0} members
-            </div>
-          )}
-          <div className="flex items-center text-sm text-gray-500">
-            <ChartBarIcon className="h-4 w-4 mr-1" />
-            {team._count?.players || 0} players
-          </div>
-          <div className="flex items-center text-sm text-gray-500">
-            <CalendarIcon className="h-4 w-4 mr-1" />
-            {team._count?.games || 0} games
-          </div>
-          <div className="flex items-center text-sm text-gray-500">
+        <div className="mt-4">
+          <div className="flex items-center text-sm text-gray-500 mb-2">
             <div className="inline-flex items-center space-x-1">
               <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                 Team Code: {team.teamCode}
@@ -201,35 +179,43 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        <div className="mt-6 flex space-x-3">
+        <div className="mt-6 flex flex-wrap gap-2">
           <Link
             to={`/teams/${team.id}/players`}
-            className={`flex-1 text-center px-3 py-2 rounded-md text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 ${
+            className={`flex-1 min-w-0 text-center px-3 py-2 rounded-md text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 ${
               team.state === 'DISABLED' 
                 ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
                 : 'bg-primary-600 text-white hover:bg-primary-700'
             }`}
             onClick={team.state === 'DISABLED' ? (e) => e.preventDefault() : undefined}
           >
-            Players
+            Players ({team._count?.players || 0})
           </Link>
           <Link
             to={`/teams/${team.id}/games`}
-            className={`flex-1 text-center px-3 py-2 rounded-md text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 ${
+            className={`flex-1 min-w-0 text-center px-3 py-2 rounded-md text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 ${
               team.state === 'DISABLED' 
                 ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
                 : 'bg-primary-600 text-white hover:bg-primary-700'
             }`}
             onClick={team.state === 'DISABLED' ? (e) => e.preventDefault() : undefined}
           >
-            Games
+            Games ({team._count?.games || 0})
           </Link>
           <Link
             to={`/teams/${team.id}/analytics`}
-            className="flex-1 bg-primary-600 text-white text-center px-3 py-2 rounded-md text-sm font-medium hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+            className="flex-1 min-w-0 bg-primary-600 text-white text-center px-3 py-2 rounded-md text-sm font-medium hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
           >
             Analytics
           </Link>
+          {isManager(team) && (
+            <button
+              onClick={() => handleMembersClick(team.id)}
+              className="flex-1 min-w-0 bg-gray-100 text-gray-700 text-center px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+            >
+              Members ({team.members?.length || 0})
+            </button>
+          )}
           {team.state === 'ACTIVE' && (
             <button
               onClick={() => handleDisableClick(team.id, team.name)}
