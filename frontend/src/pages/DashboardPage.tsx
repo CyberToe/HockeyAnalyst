@@ -6,8 +6,6 @@ import {
   PlusIcon, 
   UserGroupIcon, 
   UserPlusIcon,
-  ChartBarIcon,
-  CalendarIcon,
   ClipboardDocumentIcon,
   ChevronDownIcon,
   ChevronRightIcon
