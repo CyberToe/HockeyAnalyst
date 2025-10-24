@@ -238,7 +238,9 @@ export default function AnalyticsPage() {
         
         {playersData?.players && playersData.players.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-            {playersData.players.map((player: Player) => (
+            {playersData.players
+              .sort((a, b) => (a.number || 999) - (b.number || 999))
+              .map((player: Player) => (
               <label key={player.id} className="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
                 <input
                   type="checkbox"
@@ -393,6 +395,7 @@ export default function AnalyticsPage() {
                       <tbody className="bg-white divide-y divide-gray-200">
                         {analyticsData.players
                           .filter((player: any) => selectedPlayers.has(player.id))
+                          .sort((a, b) => (a.number || 999) - (b.number || 999))
                           .map((player: any) => (
                           <tr key={player.id} className="hover:bg-gray-50">
                             <td className="px-6 py-4 whitespace-nowrap">

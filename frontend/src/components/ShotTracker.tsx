@@ -763,7 +763,9 @@ export default function ShotTracker() {
           
           {/* Team Players */}
           {game.team?.players && game.team.players.length > 0 ? (
-            game.team.players.map((player) => (
+            game.team.players
+              .sort((a, b) => (a.number || 999) - (b.number || 999))
+              .map((player) => (
               <button
                 key={player.id}
                 onClick={() => setSelectedPlayer(player)}

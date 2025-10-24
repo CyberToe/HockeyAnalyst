@@ -305,7 +305,9 @@ export default function GamePage() {
                 <div className="mb-4">
                   <h4 className="text-xs font-medium text-gray-600 mb-2">Select Player</h4>
                   <div className="flex flex-wrap gap-1">
-                    {game.team.players.map((player: Player) => (
+                    {game.team.players
+                      .sort((a, b) => (a.number || 999) - (b.number || 999))
+                      .map((player: Player) => (
                       <button
                         key={player.id}
                         onClick={() => handlePlayerSelect(player)}
@@ -433,6 +435,7 @@ export default function GamePage() {
                   <div className="flex flex-wrap gap-1">
                     {game.team.players
                       .filter((player: Player) => !faceoffsData?.faceoffs?.some((f: any) => f.playerId === player.id))
+                      .sort((a, b) => (a.number || 999) - (b.number || 999))
                       .map((player: Player) => (
                         <button
                           key={player.id}
@@ -466,7 +469,9 @@ export default function GamePage() {
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-200">
-                          {faceoffsData.faceoffs.map((faceoff: any) => (
+                          {faceoffsData.faceoffs
+                            .sort((a, b) => (a.player.number || 999) - (b.player.number || 999))
+                            .map((faceoff: any) => (
                             <tr key={faceoff.id}>
                               <td className="px-4 py-2 text-sm text-gray-900">
                                 {faceoff.player.number ? `#${faceoff.player.number} ` : ''}{faceoff.player.name}
