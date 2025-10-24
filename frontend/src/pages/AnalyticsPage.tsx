@@ -59,7 +59,64 @@ export default function AnalyticsPage() {
   // Fetch analytics for selected games and players
   const { data: analyticsData, isLoading: analyticsLoading, error: analyticsError } = useQuery({
     queryKey: ['analytics', teamId, Array.from(selectedGames), Array.from(selectedPlayers)],
-    queryFn: () => analyticsApi.getPlayerAnalytics(teamId!, 'all').then(res => res.data),
+    queryFn: async () => {
+      if (selectedGames.size === 0) return null;
+      
+      // Fetch game analytics for each selected game
+      const gameAnalyticsPromises = Array.from(selectedGames).map(gameId => 
+        analyticsApi.getGameAnalytics(gameId).then(res => res.data)
+      );
+      
+      const gameAnalyticsResults = await Promise.all(gameAnalyticsPromises);
+      
+      // Combine the data from all games
+      const combinedShotTimeline = gameAnalyticsResults.flatMap(result => result.shotTimeline || []);
+      const combinedPeriodStats = gameAnalyticsResults.flatMap(result => result.periodStats || []);
+      const combinedPlayerStats = gameAnalyticsResults.flatMap(result => result.playerStats || []);
+      
+      // Calculate combined overview
+      const combinedOverview = gameAnalyticsResults.reduce((acc, result) => {
+        const overview = result.overview || {};
+        return {
+          teamShots: (acc.teamShots || 0) + (overview.teamShots || 0),
+          teamGoals: (acc.teamGoals || 0) + (overview.teamGoals || 0),
+          opponentShots: (acc.opponentShots || 0) + (overview.opponentShots || 0),
+          opponentGoals: (acc.opponentGoals || 0) + (overview.opponentGoals || 0)
+        };
+      }, {});
+      
+      // Aggregate player stats
+      const playerStatsMap = new Map();
+      combinedPlayerStats.forEach(playerStat => {
+        const playerId = playerStat.player.id;
+        if (playerStatsMap.has(playerId)) {
+          const existing = playerStatsMap.get(playerId);
+          existing.statistics.shots += playerStat.statistics.shots;
+          existing.statistics.goals += playerStat.statistics.goals;
+          existing.statistics.assists += playerStat.statistics.assists;
+          existing.statistics.faceoffsTaken += playerStat.statistics.faceoffsTaken;
+          existing.statistics.faceoffsWon += playerStat.statistics.faceoffsWon;
+        } else {
+          playerStatsMap.set(playerId, {
+            ...playerStat,
+            statistics: { ...playerStat.statistics }
+          });
+        }
+      });
+      
+      return {
+        shotTimeline: combinedShotTimeline,
+        periodStats: combinedPeriodStats,
+        playerStats: Array.from(playerStatsMap.values()),
+        overview: combinedOverview,
+        players: Array.from(playerStatsMap.values()).map(ps => ({
+          id: ps.player.id,
+          name: ps.player.name,
+          number: ps.player.number,
+          stats: ps.statistics
+        }))
+      };
+    },
     enabled: !!teamId && selectedGames.size > 0 && selectedPlayers.size > 0
   })
 
@@ -226,6 +283,18 @@ export default function AnalyticsPage() {
             </div>
           ) : analyticsData ? (
             <>
+              {/* Debug logging */}
+              {(() => {
+                console.log('Analytics Data Debug:', {
+                  analyticsData,
+                  shotTimeline: analyticsData.shotTimeline,
+                  periodStats: analyticsData.periodStats,
+                  selectedGames: Array.from(selectedGames),
+                  selectedPlayers: Array.from(selectedPlayers)
+                });
+                return null;
+              })()}
+              
               {/* Shot Visualizations for each period */}
               <div className="space-y-6">
                 <div ref={(el) => shotVizRefs.current[0] = el}>
