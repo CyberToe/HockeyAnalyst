@@ -1,6 +1,7 @@
 import express from 'express';
 import { prisma } from '../lib/prisma';
 import { AuthRequest, requireTeamMember } from '../middleware/auth';
+import { sendAnalyticsReport } from '../lib/sendgrid';
 
 const router = express.Router();
 
@@ -575,6 +576,150 @@ router.get('/games/:gameId', async (req: AuthRequest, res, next) => {
       shotTimeline
     });
   } catch (error) {
+    next(error);
+  }
+});
+
+// Send analytics report via email
+router.post('/teams/:teamId/email-report', requireTeamMember, async (req: AuthRequest, res, next) => {
+  try {
+    const { teamId } = req.params;
+    const { gameIds, playerIds } = req.body;
+
+    // Get the logged-in user
+    const user = await prisma.user.findUnique({
+      where: { id: req.userId! }
+    });
+
+    if (!user || !user.email) {
+      return res.status(400).json({ error: 'User email not found' });
+    }
+
+    // Get team information
+    const team = await prisma.team.findUnique({
+      where: { id: teamId },
+      include: {
+        players: {
+          where: playerIds && playerIds.length > 0 ? { id: { in: playerIds } } : undefined
+        },
+        games: {
+          where: gameIds && gameIds.length > 0 ? { id: { in: gameIds } } : undefined
+        }
+      }
+    });
+
+    if (!team) {
+      return res.status(404).json({ error: 'Team not found' });
+    }
+
+    // Fetch analytics for selected games
+    const gameAnalyticsPromises = team.games.map(game => 
+      prisma.game.findUnique({
+        where: { id: game.id },
+        include: {
+          shots: {
+            include: {
+              shooter: true,
+              period: true
+            }
+          },
+          goals: {
+            include: {
+              scorer: true
+            }
+          },
+          faceoffs: {
+            include: {
+              player: true
+            }
+          },
+          periods: true
+        }
+      })
+    );
+
+    const gamesData = await Promise.all(gameAnalyticsPromises);
+
+    // Calculate combined overview
+    const allShots = gamesData.flatMap(game => game?.shots || []);
+    const teamShots = allShots.filter(shot => !shot.scoredAgainst);
+    const opponentShots = allShots.filter(shot => shot.scoredAgainst);
+    const teamGoals = teamShots.filter(shot => shot.scored).length;
+    const opponentGoals = opponentShots.filter(shot => shot.scored).length;
+
+    // Calculate player statistics
+    const playerStats = team.players.map(player => {
+      // Get player's shots from selected games
+      const playerShots = allShots.filter(shot => shot.shooter?.id === player.id);
+      
+      // Get goals from goals tracker
+      const playerGoals = gamesData.flatMap(game => 
+        game?.goals.filter(goal => goal.scorerPlayerId === player.id) || []
+      );
+      
+      // Get assists from goals tracker
+      const playerAssists = gamesData.flatMap(game => 
+        game?.goals.filter(goal => 
+          goal.assister1PlayerId === player.id || goal.assister2PlayerId === player.id
+        ) || []
+      );
+      
+      // Get faceoffs
+      const playerFaceoffs = gamesData.flatMap(game => 
+        game?.faceoffs.filter(faceoff => faceoff.player?.id === player.id) || []
+      );
+      
+      const faceoffsTaken = playerFaceoffs.reduce((sum, f) => sum + f.taken, 0);
+      const faceoffsWon = playerFaceoffs.reduce((sum, f) => sum + f.won, 0);
+
+      // Use the greater of goals from shots vs goals from goals tracker
+      const goals = Math.max(playerShots.filter(shot => shot.scored).length, playerGoals.length);
+
+      return {
+        id: player.id,
+        name: player.name,
+        number: player.number,
+        stats: {
+          shots: playerShots.length,
+          goals,
+          assists: playerAssists.length,
+          faceoffsTaken,
+          faceoffsWon
+        }
+      };
+    });
+
+    // Prepare email data
+    const emailData = {
+      teamName: team.name,
+      games: team.games.map(game => ({
+        id: game.id,
+        opponent: game.opponent,
+        createdAt: game.createdAt
+      })),
+      players: team.players.map(player => ({
+        id: player.id,
+        name: player.name,
+        number: player.number
+      })),
+      overview: {
+        teamShots: teamShots.length,
+        teamGoals,
+        opponentShots: opponentShots.length,
+        opponentGoals
+      },
+      playerStats
+    };
+
+    // Send email
+    await sendAnalyticsReport(user.email, emailData);
+
+    res.json({ 
+      message: 'Analytics report sent successfully to your email',
+      email: user.email 
+    });
+  } catch (error) {
+    console.error('Error sending analytics report:', error);
     next(error);
   }
 });

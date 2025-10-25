@@ -173,4 +173,6 @@ export const analyticsApi = {
     return api.get(`/analytics/teams/${teamId}/players`, { params })
   },
   getGameAnalytics: (gameId: string) => api.get(`/analytics/games/${gameId}`),
+  sendEmailReport: (teamId: string, data: { gameIds: string[], playerIds: string[] }) => 
+    api.post(`/analytics/teams/${teamId}/email-report`, data),
 }

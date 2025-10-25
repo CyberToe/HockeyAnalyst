@@ -1,11 +1,13 @@
 import { useState, useRef, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useMutation } from '@tanstack/react-query'
 import { gamesApi, playersApi, analyticsApi } from '../lib/api'
 import { 
-  ChartBarIcon
+  ChartBarIcon,
+  EnvelopeIcon
 } from '@heroicons/react/24/outline'
 import ShotVisualization from '../components/ShotVisualization'
+import toast from 'react-hot-toast'
 
 interface Game {
   id: string
@@ -166,6 +168,29 @@ export default function AnalyticsPage() {
     }
   }
 
+  // Email report mutation
+  const emailReportMutation = useMutation({
+    mutationFn: (data: { gameIds: string[], playerIds: string[] }) => 
+      analyticsApi.sendEmailReport(teamId!, data),
+    onSuccess: (data) => {
+      toast.success(data.data.message || 'Report sent successfully to your email!')
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.error || 'Failed to send email report')
+    }
+  })
+
+  const handleSendEmailReport = () => {
+    if (selectedGames.size === 0 || selectedPlayers.size === 0) {
+      toast.error('Please select at least one game and one player')
+      return
+    }
+    emailReportMutation.mutate({
+      gameIds: Array.from(selectedGames),
+      playerIds: Array.from(selectedPlayers)
+    })
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -265,6 +290,21 @@ export default function AnalyticsPage() {
         ) : (
           <p className="text-gray-500 text-sm">No players available</p>
         )}
+      </div>
+
+      {/* Email Report Button */}
+      <div className="bg-white rounded-lg border border-gray-200 p-6">
+        <button
+          onClick={handleSendEmailReport}
+          disabled={selectedGames.size === 0 || selectedPlayers.size === 0 || emailReportMutation.isPending}
+          className="flex items-center justify-center gap-2 px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+        >
+          <EnvelopeIcon className="h-5 w-5" />
+          {emailReportMutation.isPending ? 'Sending...' : 'Email Report'}
+        </button>
+        <p className="mt-2 text-sm text-gray-600">
+          Send an analytics report to your registered email address with all the data shown below
+        </p>
       </div>
 
       {/* Analytics Content */}
