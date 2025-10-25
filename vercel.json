@@ -6,17 +6,12 @@
   "framework": null,
   "functions": {
     "api/index.js": {
-      "includeFiles": "backend/dist/**",
+      "includeFiles": "backend/dist/** backend/node_modules/@prisma/** backend/node_modules/.prisma/** backend/node_modules/@sendgrid/**",
       "memory": 1024,
       "maxDuration": 10,
       "excludeFiles": "**/*.test.ts"
     }
   },
-  "serverFiles": [
-    "backend/node_modules/@prisma/**",
-    "backend/node_modules/.prisma/**",
-    "backend/node_modules/@sendgrid/**"
-  ],
   "routes": [
     {
       "src": "/api/(.*)",
