@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "buildCommand": "cd backend && npx prisma generate && cd .. && npm run build:all",
+  "buildCommand": "cd backend && npx prisma generate && npm install && cd .. && npm run build:all",
   "installCommand": "npm install",
   "outputDirectory": "frontend/dist",
   "framework": null,
