@@ -27,6 +27,12 @@ export const sendAnalyticsReport = async (
   reportData: EmailReportData
 ): Promise<void> => {
   try {
+    // Check if SendGrid API key is configured
+    if (!SENDGRID_API_KEY || SENDGRID_API_KEY === '') {
+      console.error('SENDGRID_API_KEY is not configured');
+      throw new Error('Email service is not configured. Please set SENDGRID_API_KEY environment variable.');
+    }
+
     const { teamName, games, players, overview, playerStats } = reportData;
 
     // Calculate shooting percentage

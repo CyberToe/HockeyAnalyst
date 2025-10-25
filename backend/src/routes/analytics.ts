@@ -712,15 +712,33 @@ router.post('/teams/:teamId/email-report', requireTeamMember, async (req: AuthRe
     };
 
     // Send email
+    console.log('Attempting to send analytics report to:', user.email);
+    console.log('Email data prepared:', {
+      teamName: emailData.teamName,
+      gamesCount: emailData.games.length,
+      playersCount: emailData.players.length
+    });
+    
     await sendAnalyticsReport(user.email, emailData);
+    
+    console.log('Analytics report sent successfully to:', user.email);
 
     res.json({ 
       message: 'Analytics report sent successfully to your email',
       email: user.email 
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error sending analytics report:', error);
-    next(error);
+    console.error('Error details:', {
+      message: error.message,
+      stack: error.stack,
+      name: error.name
+    });
+    
+    // Return user-friendly error message
+    return res.status(500).json({ 
+      error: error.message || 'Failed to send analytics report. Please check the SendGrid configuration.' 
+    });
   }
 });
 
