@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+import { useRef, useEffect } from 'react'
 
 interface Shot {
   id: string
@@ -24,7 +24,6 @@ interface ShotVisualizationProps {
 }
 
 export default function ShotVisualization({ shots, period, title, periodAttackingDirection }: ShotVisualizationProps) {
-  const [hoveredShot, setHoveredShot] = useState<Shot | null>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
   // Filter shots by period
@@ -265,22 +264,6 @@ export default function ShotVisualization({ shots, period, title, periodAttackin
           />
         </div>
 
-        {/* Shot tooltip */}
-        {hoveredShot && (
-          <div className="mt-4 p-3 bg-gray-50 rounded-lg border">
-            <div className="text-sm">
-              <div className="font-medium">
-                {hoveredShot.shooter ? `${hoveredShot.shooter.name} (${hoveredShot.shooter.number || 'N/A'})` : 'Unknown Player'}
-              </div>
-              <div className="text-gray-600">
-                {hoveredShot.scored ? 'Goal' : 'Shot'} - Period {hoveredShot.period}
-              </div>
-              <div className="text-xs text-gray-500">
-                {new Date(hoveredShot.takenAt).toLocaleTimeString()}
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   )
