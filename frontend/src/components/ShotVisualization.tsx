@@ -217,40 +217,6 @@ export default function ShotVisualization({ shots, period, title, periodAttackin
     })
   }
 
-  // Handle canvas click for tooltip
-  const handleCanvasClick = (event: React.MouseEvent<HTMLCanvasElement>) => {
-    const canvas = canvasRef.current
-    if (!canvas) return
-
-    const rect = canvas.getBoundingClientRect()
-    const x = event.clientX - rect.left
-    const y = event.clientY - rect.top
-
-    // Find shot near click position (accounting for mirrored coordinates)
-    const clickedShot = filteredShots.find(shot => {
-      let shotX = shot.xCoord
-      
-      // Apply same mirroring logic as in drawShotMarkers
-      if (period === 'all') {
-        if (shot.attackingDirection === 'left') {
-          shotX = canvas.width - shotX
-        }
-      } else {
-        if (periodAttackingDirection === 'left') {
-          shotX = canvas.width - shotX
-        }
-      }
-      
-      const distance = Math.sqrt((shotX - x) ** 2 + (shot.yCoord - y) ** 2)
-      return distance < 15 // Within 15 pixels
-    })
-
-    if (clickedShot) {
-      setHoveredShot(clickedShot)
-    } else {
-      setHoveredShot(null)
-    }
-  }
 
   // Draw rink when component mounts or shots change
   useEffect(() => {
@@ -295,8 +261,7 @@ export default function ShotVisualization({ shots, period, title, periodAttackin
             ref={canvasRef}
             width={800}
             height={400}
-            className="border border-gray-300 rounded-lg cursor-pointer"
-            onClick={handleCanvasClick}
+            className="border border-gray-300 rounded-lg"
           />
         </div>
 

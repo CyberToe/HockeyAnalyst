@@ -831,29 +831,6 @@ export default function ShotTracker({ lastSelectedPeriod = 1, onPeriodChange }: 
           ? 'bg-blue-100'
           : 'bg-blue-100'
       }`}>
-        <h3 className="text-sm font-medium text-gray-700 mb-3">Hockey Rink</h3>
-        
-        {/* Legend - Centered above rink */}
-        <div className="flex justify-center mb-4">
-          <div className="flex flex-wrap gap-3 text-xs">
-            <div className="flex items-center gap-1">
-              <div className="w-3 h-3 rounded-full" style={{backgroundColor: '#38ef7d', border: '2px solid #11998e'}}></div>
-              <span className="text-gray-600">Score - For</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <div className="w-3 h-3 rounded-full" style={{backgroundColor: 'transparent', border: '2px solid #00f2fe'}}></div>
-              <span className="text-gray-600">Miss - For</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <div className="w-3 h-3 rounded-full" style={{backgroundColor: '#ff6a00', border: '2px solid #ee0979'}}></div>
-              <span className="text-gray-600">Score - Against</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <div className="w-3 h-3 rounded-full" style={{backgroundColor: 'transparent', border: '2px solid #fa709a'}}></div>
-              <span className="text-gray-600">Miss - Against</span>
-            </div>
-          </div>
-        </div>
         
         <div className="flex items-center justify-center gap-4">
           {/* Left Stats - FOR */}
@@ -912,6 +889,28 @@ export default function ShotTracker({ lastSelectedPeriod = 1, onPeriodChange }: 
             <div className="text-center">
               <div className="text-2xl font-bold text-red-600">{stats.againstScores}</div>
               <div className="text-xs text-red-700">Scores</div>
+            </div>
+          </div>
+        </div>
+        
+        {/* Legend - Centered below rink */}
+        <div className="flex justify-center mt-4">
+          <div className="flex flex-wrap gap-3 text-xs">
+            <div className="flex items-center gap-1">
+              <div className="w-3 h-3 rounded-full" style={{backgroundColor: '#38ef7d', border: '2px solid #11998e'}}></div>
+              <span className="text-gray-600">Score - For</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <div className="w-3 h-3 rounded-full" style={{backgroundColor: 'transparent', border: '2px solid #00f2fe'}}></div>
+              <span className="text-gray-600">Miss - For</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <div className="w-3 h-3 rounded-full" style={{backgroundColor: '#ff6a00', border: '2px solid #ee0979'}}></div>
+              <span className="text-gray-600">Score - Against</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <div className="w-3 h-3 rounded-full" style={{backgroundColor: 'transparent', border: '2px solid #fa709a'}}></div>
+              <span className="text-gray-600">Miss - Against</span>
             </div>
           </div>
         </div>
