@@ -11,15 +11,19 @@ const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 
-// Import Prisma client
-const { PrismaClient } = require('@prisma/client');
-
 // Pre-require backend dependencies to ensure they're bundled
 try {
   require('../backend/node_modules/@sendgrid/mail');
   console.log('SendGrid mail loaded successfully');
 } catch (e) {
   console.log('SendGrid mail not found in node_modules:', e.message);
+}
+
+try {
+  require('../backend/node_modules/@prisma/client');
+  console.log('Prisma client loaded successfully');
+} catch (e) {
+  console.log('Prisma client not found in node_modules:', e.message);
 }
 
 // Import routes from backend dist (included via includeFiles)
@@ -37,7 +41,6 @@ const { errorHandler } = require('../backend/dist/middleware/errorHandler');
 const { authenticateToken } = require('../backend/dist/middleware/auth');
 
 const app = express();
-const prisma = new PrismaClient();
 
 // Trust proxy for Vercel deployment
 app.set('trust proxy', 1);

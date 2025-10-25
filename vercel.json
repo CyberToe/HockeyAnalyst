@@ -1,7 +1,7 @@
 {
   "version": 2,
   "buildCommand": "cd backend && npx prisma generate && npm install && cd .. && npm run build:all",
-  "installCommand": "npm install",
+  "installCommand": "cd backend && npm install && cd .. && npm install",
   "outputDirectory": "frontend/dist",
   "framework": null,
   "functions": {
@@ -12,6 +12,11 @@
       "excludeFiles": "**/*.test.ts"
     }
   },
+  "serverFiles": [
+    "backend/node_modules/@prisma/**",
+    "backend/node_modules/.prisma/**",
+    "backend/node_modules/@sendgrid/**"
+  ],
   "routes": [
     {
       "src": "/api/(.*)",
