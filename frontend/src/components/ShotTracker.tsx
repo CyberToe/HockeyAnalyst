@@ -26,13 +26,18 @@ interface Game {
   }
 }
 
-export default function ShotTracker() {
+interface ShotTrackerProps {
+  lastSelectedPeriod?: number | 'all'
+  onPeriodChange?: (period: number | 'all') => void
+}
+
+export default function ShotTracker({ lastSelectedPeriod = 1, onPeriodChange }: ShotTrackerProps) {
   const { gameId } = useParams<{ gameId: string }>()
   const queryClient = useQueryClient()
   const canvasRef = useRef<HTMLCanvasElement>(null)
   
   // State for period selection (1, 2, 3, or 'all')
-  const [selectedPeriod, setSelectedPeriod] = useState<number | 'all'>(1)
+  const [selectedPeriod, setSelectedPeriod] = useState<number | 'all'>(lastSelectedPeriod)
   
   // State for attacking direction
   const [attackingDirection, setAttackingDirection] = useState<'left' | 'right'>('right')
@@ -524,6 +529,11 @@ export default function ShotTracker() {
     drawRink()
   }, [game, shots, selectedPeriod, attackingDirection])
 
+  // Sync selectedPeriod when lastSelectedPeriod changes (when switching back from other trackers)
+  useEffect(() => {
+    setSelectedPeriod(lastSelectedPeriod)
+  }, [lastSelectedPeriod])
+
   // Update attacking direction based on selected period
   const updateAttackingDirection = (newDirection: 'left' | 'right') => {
     if (selectedPeriod === 'all') {
@@ -680,7 +690,10 @@ export default function ShotTracker() {
             <div className="text-xs font-medium text-gray-600 mb-2">Period</div>
             <div className="flex space-x-2">
               <button
-                onClick={() => setSelectedPeriod(1)}
+                onClick={() => {
+                  setSelectedPeriod(1)
+                  onPeriodChange?.(1)
+                }}
                 className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                   selectedPeriod === 1
                     ? 'bg-primary-600 text-white'
@@ -690,7 +703,10 @@ export default function ShotTracker() {
                 Period 1
               </button>
               <button
-                onClick={() => setSelectedPeriod(2)}
+                onClick={() => {
+                  setSelectedPeriod(2)
+                  onPeriodChange?.(2)
+                }}
                 className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                   selectedPeriod === 2
                     ? 'bg-primary-600 text-white'
@@ -700,7 +716,10 @@ export default function ShotTracker() {
                 Period 2
               </button>
               <button
-                onClick={() => setSelectedPeriod(3)}
+                onClick={() => {
+                  setSelectedPeriod(3)
+                  onPeriodChange?.(3)
+                }}
                 className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                   selectedPeriod === 3
                     ? 'bg-primary-600 text-white'
@@ -710,7 +729,10 @@ export default function ShotTracker() {
                 Period 3
               </button>
               <button
-                onClick={() => setSelectedPeriod('all')}
+                onClick={() => {
+                  setSelectedPeriod('all')
+                  onPeriodChange?.('all')
+                }}
                 className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                   selectedPeriod === 'all'
                     ? 'bg-primary-600 text-white'

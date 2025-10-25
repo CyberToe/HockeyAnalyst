@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { useQuery, useMutation } from '@tanstack/react-query'
 import { gamesApi, goalsApi, faceoffsApi } from '../lib/api'
-import { ChevronDownIcon } from '@heroicons/react/24/outline'
 import ShotTracker from '../components/ShotTracker'
 import toast from 'react-hot-toast'
 
@@ -14,8 +13,8 @@ interface Player {
 
 export default function GamePage() {
   const { gameId } = useParams<{ teamId: string; gameId: string }>()
-  const [selectedTracker, setSelectedTracker] = useState<string>('')
-  const [showComingSoon, setShowComingSoon] = useState<boolean>(false)
+  const [selectedTracker, setSelectedTracker] = useState<string>('shot-tracker')
+  const [lastShotPeriod, setLastShotPeriod] = useState<number | 'all'>(1)
 
   // Goals and Assists state
   const [selectedPlayerForGoal, setSelectedPlayerForGoal] = useState<Player | null>(null)
@@ -39,13 +38,6 @@ export default function GamePage() {
 
   const handleTrackerChange = (value: string) => {
     setSelectedTracker(value)
-    if (value === 'shot-tracker' || value === 'goals-assists' || value === 'faceoffs') {
-      setShowComingSoon(false)
-    } else {
-      setShowComingSoon(true)
-      // Hide the message after 3 seconds
-      setTimeout(() => setShowComingSoon(false), 3000)
-    }
   }
 
   // Goals and Assists functions
@@ -249,51 +241,34 @@ export default function GamePage() {
   return (
     <div className="space-y-6">
       <div className="bg-white shadow rounded-lg p-6">
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">
             {game.opponent ? `vs ${game.opponent}` : 'Game'}
           </h1>
           
-          {/* Tracking Options Dropdown */}
-          <div className="relative">
-            <select
-              value={selectedTracker}
-              onChange={(e) => handleTrackerChange(e.target.value)}
-              className="appearance-none bg-white border border-gray-300 rounded-md px-4 py-2 pr-8 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-            >
-              <option value="">Select Tracker</option>
-              {trackingOptions.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-            <ChevronDownIcon className="absolute right-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+          {/* Tracking Options Buttons */}
+          <div className="flex gap-3">
+            {trackingOptions.map((option) => (
+              <button
+                key={option.value}
+                onClick={() => handleTrackerChange(option.value)}
+                className={`px-6 py-2 rounded-lg text-sm font-medium transition-all ${
+                  selectedTracker === option.value
+                    ? 'bg-primary-600 text-white shadow-md'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                {option.label}
+              </button>
+            ))}
           </div>
         </div>
 
-        {/* Coming Soon Message */}
-        {showComingSoon && (
-          <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-md">
-            <div className="flex">
-              <div className="flex-shrink-0">
-                <svg className="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                </svg>
-              </div>
-              <div className="ml-3">
-                <p className="text-sm font-medium text-blue-800">
-                  {selectedTracker === 'shot-tracker' && 'Shot Tracker is coming soon!'}
-                  {selectedTracker === 'goals-assists' && 'Goals & Assists tracker is coming soon!'}
-                  {selectedTracker === 'faceoffs' && 'Faceoffs tracker is coming soon!'}
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
-
         {selectedTracker === 'shot-tracker' ? (
-          <ShotTracker />
+          <ShotTracker 
+            lastSelectedPeriod={lastShotPeriod}
+            onPeriodChange={setLastShotPeriod}
+          />
         ) : selectedTracker === 'goals-assists' ? (
           <div className="space-y-6">
             {/* Goals and Assists Section */}
@@ -523,11 +498,7 @@ export default function GamePage() {
               </div>
             )}
           </div>
-        ) : (
-          <p className="mt-1 text-gray-600">
-            Select a tracking option from the dropdown above to get started.
-          </p>
-        )}
+        ) : null}
       </div>
 
       {/* Delete Goal Confirmation Modal */}
