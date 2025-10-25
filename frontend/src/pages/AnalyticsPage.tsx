@@ -26,6 +26,10 @@ export default function AnalyticsPage() {
   const [selectedGames, setSelectedGames] = useState<Set<string>>(new Set())
   const [selectedPlayers, setSelectedPlayers] = useState<Set<string>>(new Set())
   
+  // Track if we've initialized (to prevent re-initialization after user deselects all)
+  const [hasInitializedGames, setHasInitializedGames] = useState(false)
+  const [hasInitializedPlayers, setHasInitializedPlayers] = useState(false)
+  
   // Refs for shot visualizations
   const shotVizRefs = useRef<(HTMLDivElement | null)[]>([])
 
@@ -43,18 +47,20 @@ export default function AnalyticsPage() {
     enabled: !!teamId
   })
 
-  // Initialize selected games and players when data loads
+  // Initialize selected games and players when data loads (only once)
   useEffect(() => {
-    if (gamesData?.games && selectedGames.size === 0) {
+    if (gamesData?.games && !hasInitializedGames) {
       setSelectedGames(new Set(gamesData.games.map((game: Game) => game.id)))
+      setHasInitializedGames(true)
     }
-  }, [gamesData, selectedGames.size])
+  }, [gamesData, hasInitializedGames])
 
   useEffect(() => {
-    if (playersData?.players && selectedPlayers.size === 0) {
+    if (playersData?.players && !hasInitializedPlayers) {
       setSelectedPlayers(new Set(playersData.players.map((player: Player) => player.id)))
+      setHasInitializedPlayers(true)
     }
-  }, [playersData, selectedPlayers.size])
+  }, [playersData, hasInitializedPlayers])
 
   // Fetch analytics for selected games and players
   const { data: analyticsData, isLoading: analyticsLoading, error: analyticsError } = useQuery({
