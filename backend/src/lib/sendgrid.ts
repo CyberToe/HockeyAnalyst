@@ -192,8 +192,23 @@ This is an automated email. Please do not reply.
 
     await sgMail.send(msg);
     console.log('Analytics report email sent successfully to:', toEmail);
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error sending analytics report email:', error);
+    
+    // Log detailed error information from SendGrid
+    if (error.response) {
+      console.error('SendGrid response error details:');
+      console.error('Status:', error.code);
+      console.error('Body:', JSON.stringify(error.response.body, null, 2));
+    }
+    
+    // Provide more specific error messages
+    if (error.code === 403) {
+      throw new Error('SendGrid API key is invalid or does not have permission to send emails. Please check your SENDGRID_API_KEY environment variable.');
+    } else if (error.code === 401) {
+      throw new Error('SendGrid API key is unauthorized. Please verify your SENDGRID_API_KEY environment variable.');
+    }
+    
     throw error;
   }
 };
