@@ -14,6 +14,14 @@ const rateLimit = require('express-rate-limit');
 // Import Prisma client
 const { PrismaClient } = require('@prisma/client');
 
+// Pre-require backend dependencies to ensure they're bundled
+try {
+  require('../backend/node_modules/@sendgrid/mail');
+  console.log('SendGrid mail loaded successfully');
+} catch (e) {
+  console.log('SendGrid mail not found in node_modules:', e.message);
+}
+
 // Import routes from backend dist (included via includeFiles)
 const authRoutes = require('../backend/dist/routes/auth-simple').default;
 const teamRoutes = require('../backend/dist/routes/teams').default;
