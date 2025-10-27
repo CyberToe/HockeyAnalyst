@@ -1,5 +1,5 @@
 @echo off
-echo Setting up Hockey Assistant Database with Docker...
+echo Setting up Hockey-Assistant Database with Docker...
 
 REM Start PostgreSQL container
 docker-compose up -d

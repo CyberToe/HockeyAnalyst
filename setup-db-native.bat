@@ -1,5 +1,5 @@
 @echo off
-echo Setting up Hockey Assistant Database...
+echo Setting up Hockey-Assistant Database...
 
 REM Create database (you'll be prompted for password)
 createdb -U postgres hockey_analytics

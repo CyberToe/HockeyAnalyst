@@ -1,10 +1,10 @@
-Hockey Assistant Tracking Application
+Hockey-Assistant Tracking Application
 
 Business Requirements Document (BRD)
 
 Version: 1.0
 Database: PostgreSQL
-Prepared for: Hockey Assistant App Project
+Prepared for: Hockey-Assistant App Project
 Prepared by: Paul Leblanc
 
 1. Purpose

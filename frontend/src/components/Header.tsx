@@ -24,7 +24,7 @@ export default function Header() {
     if (path.includes('/profile')) return 'Profile Settings'
     if (path.includes('/analytics')) return 'Analytics'
     if (path.includes('/settings')) return 'Settings'
-    return 'Hockey Assistant'
+    return 'Hockey-Assistant'
   }
 
   return (
@@ -80,12 +80,12 @@ export default function Header() {
                 <div className="w-8 h-8 flex items-center justify-center">
                   <img 
                     src="/images/logo.jpg" 
-                    alt="Hockey Assistant Logo" 
+                    alt="Hockey-Assistant Logo" 
                     className="w-8 h-8 rounded-lg object-cover"
                   />
                 </div>
                 <span className="ml-2 text-xl font-bold text-gray-900">
-                  Hockey Assistant
+                  Hockey-Assistant
                 </span>
               </div>
               <button

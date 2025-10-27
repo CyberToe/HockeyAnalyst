@@ -1,7 +1,7 @@
 {
   "name": "hockey-assistant-backend-v2",
   "version": "1.0.0",
-  "description": "Backend API for Hockey Assistant Tracking Application",
+  "description": "Backend API for Hockey-Assistant Tracking Application",
   "main": "dist/index.js",
   "scripts": {
     "dev": "nodemon src/index.ts",
