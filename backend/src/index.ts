@@ -10,6 +10,7 @@ import { PrismaClient } from '@prisma/client';
 // Import routes
 import authRoutes from './routes/auth-simple';
 import teamRoutes from './routes/teams';
+import teamImageRoutes from './routes/team-images';
 import playerRoutes from './routes/players';
 import gameRoutes from './routes/games';
 import shotRoutes from './routes/shots';
@@ -61,6 +62,7 @@ app.get('/health', (req, res) => {
 // API routes
 app.use('/api/auth', authRoutes);
 app.use('/api/teams', authenticateToken, teamRoutes);
+app.use('/api/team-images', authenticateToken, teamImageRoutes);
 app.use('/api/players', authenticateToken, playerRoutes);
 app.use('/api/games', authenticateToken, gameRoutes);
 app.use('/api/shots', authenticateToken, shotRoutes);

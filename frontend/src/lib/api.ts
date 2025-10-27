@@ -80,6 +80,22 @@ export const teamsApi = {
     api.delete(`/teams/${teamId}/members/${userId}`),
 }
 
+// Team Images API
+export const teamImagesApi = {
+  uploadImage: (teamId: string, imageFile: File) => {
+    const formData = new FormData();
+    formData.append('image', imageFile);
+    return api.post(`/team-images/${teamId}/upload`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+  },
+  uploadImageBase64: (teamId: string, imageData: string) =>
+    api.post(`/team-images/${teamId}/upload-base64`, { imageData }),
+  deleteImage: (teamId: string) => api.delete(`/team-images/${teamId}`),
+}
+
 // Players API
 export const playersApi = {
   getPlayers: (teamId: string) => api.get(`/players/teams/${teamId}`),

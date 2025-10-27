@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react'
 import { useForm } from 'react-hook-form'
-import { teamsApi } from '../lib/api'
+import { teamsApi, teamImagesApi } from '../lib/api'
 import toast from 'react-hot-toast'
 
 interface CreateTeamModalProps {
@@ -69,39 +69,33 @@ export default function CreateTeamModal({ isOpen, onClose, onSuccess }: CreateTe
       setIsLoading(true)
       setSelectedSubscription(subscriptionType)
       
-      // Convert image file to base64 for now (in production, upload to cloud storage)
-      let imageUrl = undefined
       console.log('Subscription select - formData:', formData)
       console.log('Subscription select - imageFile:', formData.imageFile)
       
-      if (formData.imageFile && formData.imageFile.size > 0) {
-        console.log('Processing image file...')
-        imageUrl = await new Promise<string>((resolve, reject) => {
-          const reader = new FileReader()
-          reader.onload = (e) => {
-            console.log('FileReader onload - result length:', e.target?.result?.toString().length)
-            resolve(e.target?.result as string)
-          }
-          reader.onerror = reject
-          reader.readAsDataURL(formData.imageFile!)
-        })
-        console.log('Image URL created, length:', imageUrl?.length)
-      } else {
-        console.log('No image file or file is empty')
-      }
-      
+      // Create team first without image
       const teamData = {
         name: formData.name,
         description: formData.description,
-        imageUrl,
         type: subscriptionType,
         state: 'ACTIVE' // Always set to active for new teams
       }
       
-      console.log('Final team data being sent:', teamData)
-      console.log('ImageUrl in team data:', teamData.imageUrl)
+      console.log('Creating team with data:', teamData)
+      const teamResponse = await teamsApi.createTeam(teamData)
+      const team = teamResponse.data.team
       
-      await teamsApi.createTeam(teamData)
+      // Upload image if provided
+      if (formData.imageFile && formData.imageFile.size > 0) {
+        console.log('Uploading image file, size:', formData.imageFile.size)
+        try {
+          await teamImagesApi.uploadImage(team.id, formData.imageFile)
+          console.log('Image uploaded successfully')
+        } catch (imageError) {
+          console.warn('Failed to upload image, but team was created:', imageError)
+          // Don't fail the entire operation if image upload fails
+        }
+      }
+      
       toast.success('Team created successfully!')
       reset()
       setImagePreview(null)

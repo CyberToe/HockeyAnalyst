@@ -10,7 +10,7 @@ import {
   ChevronDownIcon,
   ChevronRightIcon
 } from '@heroicons/react/24/outline'
-import { teamsApi } from '../lib/api'
+import { teamsApi, teamImagesApi } from '../lib/api'
 import CreateTeamModal from '../components/CreateTeamModal'
 import JoinTeamModal from '../components/JoinTeamModal'
 import toast from 'react-hot-toast'
@@ -89,15 +89,9 @@ export default function DashboardPage() {
 
   const updateTeamImage = async (teamId: string, imageFile: File) => {
     try {
-      // Convert image file to base64
-      const reader = new FileReader()
-      reader.onload = async (e) => {
-        const imageUrl = e.target?.result as string
-        await teamsApi.updateTeam(teamId, { imageUrl })
-        toast.success('Team image updated successfully!')
-        refetch()
-      }
-      reader.readAsDataURL(imageFile)
+      await teamImagesApi.uploadImage(teamId, imageFile)
+      toast.success('Team image updated successfully!')
+      refetch()
     } catch (error) {
       // Error is handled by API interceptor
     }
