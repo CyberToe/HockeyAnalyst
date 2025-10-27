@@ -30,9 +30,22 @@ interface Game {
 interface ShotTrackerProps {
   lastSelectedPeriod?: number | 'all'
   onPeriodChange?: (period: number | 'all') => void
+  gamePlayers?: Array<{
+    id: string
+    gameId: string
+    playerId: string
+    included: boolean
+    number?: number
+    player: {
+      id: string
+      name: string
+      number?: number
+      type: 'TEAM_PLAYER' | 'SUBSTITUTE'
+    }
+  }>
 }
 
-export default function ShotTracker({ lastSelectedPeriod = 1, onPeriodChange }: ShotTrackerProps) {
+export default function ShotTracker({ lastSelectedPeriod = 1, onPeriodChange, gamePlayers }: ShotTrackerProps) {
   const { gameId } = useParams<{ gameId: string }>()
   const queryClient = useQueryClient()
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -784,35 +797,31 @@ export default function ShotTracker({ lastSelectedPeriod = 1, onPeriodChange }: 
             AGAINST
           </button>
           
-          {/* Team Players */}
-          {game.team?.players && game.team.players.length > 0 ? (
-            game.team.players
+          {/* Game Players */}
+          {gamePlayers && gamePlayers.length > 0 ? (
+            gamePlayers
+              .filter(gp => gp.included)
               .sort((a, b) => (a.number || 999) - (b.number || 999))
-              .map((player) => (
+              .map((gamePlayer) => (
               <button
-                key={player.id}
-                onClick={() => setSelectedPlayer(player)}
+                key={gamePlayer.player.id}
+                onClick={() => setSelectedPlayer(gamePlayer.player)}
                 className={`px-2 py-1 rounded text-xs font-medium transition-colors ${
-                  selectedPlayer === player
+                  selectedPlayer === gamePlayer.player
                     ? 'bg-blue-600 text-white'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
-                {player.number ? `#${player.number} ` : ''}{player.name}
+                {gamePlayer.number ? `#${gamePlayer.number} ` : ''}{gamePlayer.player.name}
               </button>
             ))
           ) : (
             <div className="text-xs text-gray-500 text-center py-2">
-              <div>No players found</div>
+              <div>No players selected for this game</div>
               <div className="mt-1">
-                <a 
-                  href={`/teams/${game.team?.id}`} 
-                  className="text-blue-600 hover:text-blue-800 underline"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  Add players to your team
-                </a>
+                <span className="text-blue-600 hover:text-blue-800 underline cursor-pointer">
+                  Go to Player Selection tab to add players
+                </span>
               </div>
             </div>
           )}

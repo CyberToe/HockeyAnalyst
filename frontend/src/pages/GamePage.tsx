@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { useQuery, useMutation } from '@tanstack/react-query'
-import { gamesApi, goalsApi, faceoffsApi } from '../lib/api'
+import { gamesApi, goalsApi, faceoffsApi, gamePlayersApi } from '../lib/api'
 import ShotTracker from '../components/ShotTracker'
 import toast from 'react-hot-toast'
 
@@ -10,6 +10,15 @@ interface Player {
   name: string
   number?: number
   type: 'TEAM_PLAYER' | 'SUBSTITUTE'
+}
+
+interface GamePlayer {
+  id: string
+  gameId: string
+  playerId: string
+  included: boolean
+  number?: number
+  player: Player
 }
 
 export default function GamePage() {
@@ -31,14 +40,20 @@ export default function GamePage() {
   const [manualTaken, setManualTaken] = useState(0)
   const [manualWon, setManualWon] = useState(0)
 
+  // Game players state
+  const [showPlayerSelection, setShowPlayerSelection] = useState(false)
+  const [gamePlayers, setGamePlayers] = useState<GamePlayer[]>([])
+
   const trackingOptions = [
     { value: 'shot-tracker', label: 'Shot Tracker' },
     { value: 'goals-assists', label: 'Goals & Assists' },
-    { value: 'faceoffs', label: 'Faceoffs' }
+    { value: 'faceoffs', label: 'Faceoffs' },
+    { value: 'players', label: 'Player Selection' }
   ]
 
   const handleTrackerChange = (value: string) => {
     setSelectedTracker(value)
+    setShowPlayerSelection(value === 'players')
   }
 
   // Goals and Assists functions
@@ -169,6 +184,13 @@ export default function GamePage() {
     enabled: !!gameId,
   })
 
+  // Fetch game players data
+  const { data: gamePlayersData, refetch: refetchGamePlayers } = useQuery({
+    queryKey: ['gamePlayers', gameId],
+    queryFn: () => gamePlayersApi.getGamePlayers(gameId!).then(res => res.data),
+    enabled: !!gameId,
+  })
+
 
   // Add player to faceoffs mutation
   const addPlayerToFaceoffsMutation = useMutation({
@@ -217,6 +239,31 @@ export default function GamePage() {
     },
     onError: (error: any) => {
       toast.error(error.response?.data?.error || 'Failed to remove player from faceoffs')
+    }
+  })
+
+  // Game players mutations
+  const updateGamePlayerMutation = useMutation({
+    mutationFn: ({ gamePlayerId, data }: { gamePlayerId: string; data: { included?: boolean; number?: number } }) =>
+      gamePlayersApi.updateGamePlayer(gamePlayerId, data),
+    onSuccess: () => {
+      refetchGamePlayers()
+      toast.success('Player updated successfully')
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.error || 'Failed to update player')
+    }
+  })
+
+  const bulkUpdateGamePlayersMutation = useMutation({
+    mutationFn: (updates: Array<{ gamePlayerId: string; included?: boolean; number?: number }>) =>
+      gamePlayersApi.bulkUpdateGamePlayers(gameId!, updates),
+    onSuccess: () => {
+      refetchGamePlayers()
+      toast.success('Players updated successfully')
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.error || 'Failed to update players')
     }
   })
 
@@ -269,11 +316,12 @@ export default function GamePage() {
           <ShotTracker 
             lastSelectedPeriod={lastShotPeriod}
             onPeriodChange={setLastShotPeriod}
+            gamePlayers={gamePlayersData?.gamePlayers}
           />
         ) : selectedTracker === 'goals-assists' ? (
           <div className="space-y-6">
             {/* Goals and Assists Section */}
-            {game.team?.players && (
+            {gamePlayersData?.gamePlayers && gamePlayersData.gamePlayers.filter(gp => gp.included).length > 0 && (
               <div className="mb-6">
                 <h3 className="text-sm font-medium text-gray-700 mb-3">Goals and Assists</h3>
                 
@@ -281,19 +329,20 @@ export default function GamePage() {
                 <div className="mb-4">
                   <h4 className="text-xs font-medium text-gray-600 mb-2">Select Player</h4>
                   <div className="flex flex-wrap gap-1">
-                    {game.team.players
-                      .sort((a: Player, b: Player) => (a.number || 999) - (b.number || 999))
-                      .map((player: Player) => (
+                    {gamePlayersData.gamePlayers
+                      .filter(gp => gp.included)
+                      .sort((a: GamePlayer, b: GamePlayer) => (a.number || 999) - (b.number || 999))
+                      .map((gamePlayer: GamePlayer) => (
                       <button
-                        key={player.id}
-                        onClick={() => handlePlayerSelect(player)}
+                        key={gamePlayer.player.id}
+                        onClick={() => handlePlayerSelect(gamePlayer.player)}
                         className={`px-2 py-1 rounded text-xs font-medium transition-colors ${
-                          selectedPlayerForGoal === player
+                          selectedPlayerForGoal === gamePlayer.player
                             ? 'bg-blue-600 text-white'
                             : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                         }`}
                       >
-                        {player.number ? `#${player.number} ` : ''}{player.name}
+                        {gamePlayer.number ? `#${gamePlayer.number} ` : ''}{gamePlayer.player.name}
                       </button>
                     ))}
                   </div>
@@ -401,7 +450,7 @@ export default function GamePage() {
         ) : selectedTracker === 'faceoffs' ? (
           <div className="space-y-6">
             {/* Faceoffs Section */}
-            {game.team?.players && (
+            {gamePlayersData?.gamePlayers && gamePlayersData.gamePlayers.filter(gp => gp.included).length > 0 && (
               <div className="mb-6">
                 <h3 className="text-sm font-medium text-gray-700 mb-3">Faceoffs Tracking</h3>
                 
@@ -409,13 +458,16 @@ export default function GamePage() {
                 <div className="mb-4">
                   <h4 className="text-xs font-medium text-gray-600 mb-2">Add Player to Faceoffs Tracking</h4>
                   <div className="flex flex-wrap gap-1">
-                    {game.team.players
-                      .filter((player: Player) => !faceoffsData?.faceoffs?.some((f: any) => f.playerId === player.id))
-                      .sort((a: Player, b: Player) => (a.number || 999) - (b.number || 999))
-                      .map((player: Player) => (
+                    {gamePlayersData.gamePlayers
+                      .filter((gamePlayer: GamePlayer) => 
+                        gamePlayer.included && 
+                        !faceoffsData?.faceoffs?.some((f: any) => f.playerId === gamePlayer.player.id)
+                      )
+                      .sort((a: GamePlayer, b: GamePlayer) => (a.number || 999) - (b.number || 999))
+                      .map((gamePlayer: GamePlayer) => (
                         <button
-                          key={player.id}
-                          onClick={() => addPlayerToFaceoffsMutation.mutate({ playerId: player.id })}
+                          key={gamePlayer.player.id}
+                          onClick={() => addPlayerToFaceoffsMutation.mutate({ playerId: gamePlayer.player.id })}
                           disabled={addPlayerToFaceoffsMutation.isPending}
                           className={`px-2 py-1 rounded text-xs font-medium transition-colors ${
                             addPlayerToFaceoffsMutation.isPending
@@ -423,7 +475,7 @@ export default function GamePage() {
                               : 'bg-blue-100 text-blue-700 hover:bg-blue-200'
                           }`}
                         >
-                          {player.number ? `#${player.number} ` : ''}{player.name}
+                          {gamePlayer.number ? `#${gamePlayer.number} ` : ''}{gamePlayer.player.name}
                         </button>
                       ))}
                   </div>
@@ -498,6 +550,110 @@ export default function GamePage() {
                 )}
               </div>
             )}
+          </div>
+        ) : selectedTracker === 'players' ? (
+          <div className="space-y-6">
+            {/* Player Selection Section */}
+            <div className="mb-6">
+              <h3 className="text-lg font-medium text-gray-900 mb-4">Game Roster</h3>
+              <p className="text-sm text-gray-600 mb-6">
+                Select which players are participating in this game and set their jersey numbers.
+              </p>
+              
+              {gamePlayersData?.gamePlayers && gamePlayersData.gamePlayers.length > 0 ? (
+                <div className="space-y-4">
+                  {/* Team Players Section */}
+                  <div>
+                    <h4 className="text-sm font-medium text-gray-700 mb-3">Team Players</h4>
+                    <div className="space-y-2">
+                      {gamePlayersData.gamePlayers
+                        .filter((gp: GamePlayer) => gp.player.type === 'TEAM_PLAYER')
+                        .map((gamePlayer: GamePlayer) => (
+                        <div key={gamePlayer.id} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
+                          <div className="flex items-center space-x-3">
+                            <input
+                              type="checkbox"
+                              checked={gamePlayer.included}
+                              onChange={(e) => updateGamePlayerMutation.mutate({
+                                gamePlayerId: gamePlayer.id,
+                                data: { included: e.target.checked }
+                              })}
+                              className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                            />
+                            <div className="flex-1">
+                              <div className="text-sm font-medium text-gray-900">{gamePlayer.player.name}</div>
+                            </div>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <label className="text-xs text-gray-500">Jersey #</label>
+                            <input
+                              type="number"
+                              min="0"
+                              max="99"
+                              value={gamePlayer.number || ''}
+                              onChange={(e) => updateGamePlayerMutation.mutate({
+                                gamePlayerId: gamePlayer.id,
+                                data: { number: e.target.value ? parseInt(e.target.value) : undefined }
+                              })}
+                              className="w-16 px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-primary-500"
+                              placeholder="?"
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Substitutes Section */}
+                  {gamePlayersData.gamePlayers.some((gp: GamePlayer) => gp.player.type === 'SUBSTITUTE') && (
+                    <div>
+                      <h4 className="text-sm font-medium text-gray-700 mb-3">Substitutes</h4>
+                      <div className="space-y-2">
+                        {gamePlayersData.gamePlayers
+                          .filter((gp: GamePlayer) => gp.player.type === 'SUBSTITUTE')
+                          .map((gamePlayer: GamePlayer) => (
+                          <div key={gamePlayer.id} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg bg-gray-50">
+                            <div className="flex items-center space-x-3">
+                              <input
+                                type="checkbox"
+                                checked={gamePlayer.included}
+                                onChange={(e) => updateGamePlayerMutation.mutate({
+                                  gamePlayerId: gamePlayer.id,
+                                  data: { included: e.target.checked }
+                                })}
+                                className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                              />
+                              <div className="flex-1">
+                                <div className="text-sm font-medium text-gray-900">{gamePlayer.player.name}</div>
+                              </div>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <label className="text-xs text-gray-500">Jersey #</label>
+                              <input
+                                type="number"
+                                min="0"
+                                max="99"
+                                value={gamePlayer.number || ''}
+                                onChange={(e) => updateGamePlayerMutation.mutate({
+                                  gamePlayerId: gamePlayer.id,
+                                  data: { number: e.target.value ? parseInt(e.target.value) : undefined }
+                                })}
+                                className="w-16 px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-primary-500"
+                                placeholder="?"
+                              />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <p className="text-gray-500">No players found for this game.</p>
+                </div>
+              )}
+            </div>
           </div>
         ) : null}
       </div>
