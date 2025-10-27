@@ -173,6 +173,8 @@ enum AttackingDirection {
 }
 
 enum PlayerType {
-  TEAM_PLAYER  @map("TEAM_PLAYER")
-  SUBSTITUTE   @map("SUBSTITUTE")
+  TEAM_PLAYER
+  SUBSTITUTE
+
+  @@map("player_type")
 }
