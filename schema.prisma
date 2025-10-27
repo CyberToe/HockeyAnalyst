@@ -59,7 +59,7 @@ model Player {
   teamId         String      @map("team_id")
   name           String
   number         Int?
-  type           PlayerType  @default(TEAM_PLAYER)
+  type           PlayerType  @default(TEAM_PLAYER) @map("type")
   createdAt      DateTime    @default(now()) @map("created_at")
   faceoffs       Faceoff[]
   goalsAssisted1 Goal[]      @relation("GoalAssister1")
@@ -173,6 +173,6 @@ enum AttackingDirection {
 }
 
 enum PlayerType {
-  TEAM_PLAYER
-  SUBSTITUTE
+  TEAM_PLAYER  @map("TEAM_PLAYER")
+  SUBSTITUTE   @map("SUBSTITUTE")
 }
