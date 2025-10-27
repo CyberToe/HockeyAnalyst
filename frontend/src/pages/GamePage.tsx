@@ -40,9 +40,6 @@ export default function GamePage() {
   const [manualTaken, setManualTaken] = useState(0)
   const [manualWon, setManualWon] = useState(0)
 
-  // Game players state
-  const [showPlayerSelection, setShowPlayerSelection] = useState(false)
-  const [gamePlayers, setGamePlayers] = useState<GamePlayer[]>([])
 
   const trackingOptions = [
     { value: 'shot-tracker', label: 'Shot Tracker' },
@@ -53,7 +50,6 @@ export default function GamePage() {
 
   const handleTrackerChange = (value: string) => {
     setSelectedTracker(value)
-    setShowPlayerSelection(value === 'players')
   }
 
   // Goals and Assists functions
@@ -255,17 +251,6 @@ export default function GamePage() {
     }
   })
 
-  const bulkUpdateGamePlayersMutation = useMutation({
-    mutationFn: (updates: Array<{ gamePlayerId: string; included?: boolean; number?: number }>) =>
-      gamePlayersApi.bulkUpdateGamePlayers(gameId!, updates),
-    onSuccess: () => {
-      refetchGamePlayers()
-      toast.success('Players updated successfully')
-    },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.error || 'Failed to update players')
-    }
-  })
 
   if (isLoading) {
     return (
@@ -321,7 +306,7 @@ export default function GamePage() {
         ) : selectedTracker === 'goals-assists' ? (
           <div className="space-y-6">
             {/* Goals and Assists Section */}
-            {gamePlayersData?.gamePlayers && gamePlayersData.gamePlayers.filter(gp => gp.included).length > 0 && (
+            {gamePlayersData?.gamePlayers && gamePlayersData.gamePlayers.filter((gp: GamePlayer) => gp.included).length > 0 && (
               <div className="mb-6">
                 <h3 className="text-sm font-medium text-gray-700 mb-3">Goals and Assists</h3>
                 
@@ -330,7 +315,7 @@ export default function GamePage() {
                   <h4 className="text-xs font-medium text-gray-600 mb-2">Select Player</h4>
                   <div className="flex flex-wrap gap-1">
                     {gamePlayersData.gamePlayers
-                      .filter(gp => gp.included)
+                      .filter((gp: GamePlayer) => gp.included)
                       .sort((a: GamePlayer, b: GamePlayer) => (a.number || 999) - (b.number || 999))
                       .map((gamePlayer: GamePlayer) => (
                       <button
@@ -450,7 +435,7 @@ export default function GamePage() {
         ) : selectedTracker === 'faceoffs' ? (
           <div className="space-y-6">
             {/* Faceoffs Section */}
-            {gamePlayersData?.gamePlayers && gamePlayersData.gamePlayers.filter(gp => gp.included).length > 0 && (
+            {gamePlayersData?.gamePlayers && gamePlayersData.gamePlayers.filter((gp: GamePlayer) => gp.included).length > 0 && (
               <div className="mb-6">
                 <h3 className="text-sm font-medium text-gray-700 mb-3">Faceoffs Tracking</h3>
                 
