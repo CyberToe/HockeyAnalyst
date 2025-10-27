@@ -9,6 +9,7 @@ interface Player {
   id: string
   name: string
   number?: number
+  type: 'TEAM_PLAYER' | 'SUBSTITUTE'
 }
 
 export default function TeamPlayersPage() {
@@ -37,7 +38,7 @@ export default function TeamPlayersPage() {
 
   // Create player mutation
   const createPlayerMutation = useMutation({
-    mutationFn: (data: { name: string; number?: number }) => 
+    mutationFn: (data: { name: string; number?: number; type?: 'TEAM_PLAYER' | 'SUBSTITUTE' }) => 
       playersApi.createPlayer(teamId!, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['players', teamId] })
@@ -51,7 +52,7 @@ export default function TeamPlayersPage() {
 
   // Update player mutation
   const updatePlayerMutation = useMutation({
-    mutationFn: ({ playerId, data }: { playerId: string; data: { name: string; number?: number } }) => 
+    mutationFn: ({ playerId, data }: { playerId: string; data: { name: string; number?: number; type?: 'TEAM_PLAYER' | 'SUBSTITUTE' } }) => 
       playersApi.updatePlayer(playerId, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['players', teamId] })
@@ -146,43 +147,99 @@ export default function TeamPlayersPage() {
       {/* Players List */}
       <div className="bg-white shadow overflow-hidden sm:rounded-md">
         {playersData?.players && playersData.players.length > 0 ? (
-          <ul className="divide-y divide-gray-200">
-            {playersData.players.map((player: Player) => (
-              <li key={player.id} className="px-6 py-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    <div className="flex-shrink-0">
-                      <div className="h-10 w-10 rounded-full bg-primary-100 flex items-center justify-center">
-                        <span className="text-sm font-medium text-primary-600">
-                          {player.number || '?'}
-                        </span>
+          <div>
+            {/* Team Players Section */}
+            <div className="px-6 py-4 bg-gray-50 border-b border-gray-200">
+              <h3 className="text-lg font-medium text-gray-900">Team Players</h3>
+            </div>
+            <ul className="divide-y divide-gray-200">
+              {playersData.players
+                .filter((player: Player) => player.type === 'TEAM_PLAYER')
+                .map((player: Player) => (
+                <li key={player.id} className="px-6 py-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <div className="flex-shrink-0">
+                        <div className="h-10 w-10 rounded-full bg-primary-100 flex items-center justify-center">
+                          <span className="text-sm font-medium text-primary-600">
+                            {player.number || '?'}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="ml-4">
+                        <div className="text-sm font-medium text-gray-900">{player.name}</div>
+                        {player.number && (
+                          <div className="text-sm text-gray-500">#{player.number}</div>
+                        )}
                       </div>
                     </div>
-                    <div className="ml-4">
-                      <div className="text-sm font-medium text-gray-900">{player.name}</div>
-                      {player.number && (
-                        <div className="text-sm text-gray-500">#{player.number}</div>
-                      )}
+                    <div className="flex items-center space-x-2">
+                      <button
+                        onClick={() => handleEditPlayer(player)}
+                        className="text-primary-600 hover:text-primary-900"
+                      >
+                        <PencilIcon className="h-4 w-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDeletePlayer(player.id)}
+                        className="text-red-600 hover:text-red-900"
+                      >
+                        <TrashIcon className="h-4 w-4" />
+                      </button>
                     </div>
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <button
-                      onClick={() => handleEditPlayer(player)}
-                      className="text-primary-600 hover:text-primary-900"
-                    >
-                      <PencilIcon className="h-4 w-4" />
-                    </button>
-                    <button
-                      onClick={() => handleDeletePlayer(player.id)}
-                      className="text-red-600 hover:text-red-900"
-                    >
-                      <TrashIcon className="h-4 w-4" />
-                    </button>
-                  </div>
+                </li>
+              ))}
+            </ul>
+
+            {/* Substitutes Section */}
+            {playersData.players.some((player: Player) => player.type === 'SUBSTITUTE') && (
+              <>
+                <div className="px-6 py-4 bg-gray-50 border-b border-gray-200">
+                  <h3 className="text-lg font-medium text-gray-900">Substitutes</h3>
                 </div>
-              </li>
-            ))}
-          </ul>
+                <ul className="divide-y divide-gray-200">
+                  {playersData.players
+                    .filter((player: Player) => player.type === 'SUBSTITUTE')
+                    .map((player: Player) => (
+                    <li key={player.id} className="px-6 py-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center">
+                          <div className="flex-shrink-0">
+                            <div className="h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center">
+                              <span className="text-sm font-medium text-gray-600">
+                                {player.number || '?'}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="ml-4">
+                            <div className="text-sm font-medium text-gray-900">{player.name}</div>
+                            {player.number && (
+                              <div className="text-sm text-gray-500">#{player.number}</div>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <button
+                            onClick={() => handleEditPlayer(player)}
+                            className="text-primary-600 hover:text-primary-900"
+                          >
+                            <PencilIcon className="h-4 w-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDeletePlayer(player.id)}
+                            className="text-red-600 hover:text-red-900"
+                          >
+                            <TrashIcon className="h-4 w-4" />
+                          </button>
+                        </div>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
+          </div>
         ) : (
           <div className="text-center py-12">
             <div className="text-gray-400">
@@ -261,18 +318,19 @@ export default function TeamPlayersPage() {
 
 // Create Player Modal Component
 function CreatePlayerModal({ onSubmit, onClose, isLoading }: {
-  onSubmit: (data: { name: string; number?: number }) => void
+  onSubmit: (data: { name: string; number?: number; type?: 'TEAM_PLAYER' | 'SUBSTITUTE' }) => void
   onClose: () => void
   isLoading: boolean
 }) {
-  const [formData, setFormData] = useState({ name: '', number: '' })
+  const [formData, setFormData] = useState({ name: '', number: '', type: 'TEAM_PLAYER' as 'TEAM_PLAYER' | 'SUBSTITUTE' })
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (formData.name.trim()) {
       onSubmit({
         name: formData.name.trim(),
-        number: formData.number ? parseInt(formData.number) : undefined
+        number: formData.number ? parseInt(formData.number) : undefined,
+        type: formData.type
       })
     }
   }
@@ -309,6 +367,19 @@ function CreatePlayerModal({ onSubmit, onClose, isLoading }: {
               placeholder="Enter jersey number"
             />
           </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Player Type
+            </label>
+            <select
+              value={formData.type}
+              onChange={(e) => setFormData({ ...formData, type: e.target.value as 'TEAM_PLAYER' | 'SUBSTITUTE' })}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+            >
+              <option value="TEAM_PLAYER">Team Player</option>
+              <option value="SUBSTITUTE">Substitute</option>
+            </select>
+          </div>
           <div className="flex space-x-3">
             <button
               type="button"
@@ -334,13 +405,14 @@ function CreatePlayerModal({ onSubmit, onClose, isLoading }: {
 // Edit Player Modal Component
 function EditPlayerModal({ player, onSubmit, onClose, isLoading }: {
   player: Player
-  onSubmit: (data: { name: string; number?: number }) => void
+  onSubmit: (data: { name: string; number?: number; type?: 'TEAM_PLAYER' | 'SUBSTITUTE' }) => void
   onClose: () => void
   isLoading: boolean
 }) {
   const [formData, setFormData] = useState({ 
     name: player.name, 
-    number: player.number?.toString() || '' 
+    number: player.number?.toString() || '',
+    type: player.type
   })
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -348,7 +420,8 @@ function EditPlayerModal({ player, onSubmit, onClose, isLoading }: {
     if (formData.name.trim()) {
       onSubmit({
         name: formData.name.trim(),
-        number: formData.number ? parseInt(formData.number) : undefined
+        number: formData.number ? parseInt(formData.number) : undefined,
+        type: formData.type
       })
     }
   }
@@ -384,6 +457,19 @@ function EditPlayerModal({ player, onSubmit, onClose, isLoading }: {
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
               placeholder="Enter jersey number"
             />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Player Type
+            </label>
+            <select
+              value={formData.type}
+              onChange={(e) => setFormData({ ...formData, type: e.target.value as 'TEAM_PLAYER' | 'SUBSTITUTE' })}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+            >
+              <option value="TEAM_PLAYER">Team Player</option>
+              <option value="SUBSTITUTE">Substitute</option>
+            </select>
           </div>
           <div className="flex space-x-3">
             <button

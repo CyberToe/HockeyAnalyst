@@ -47,7 +47,8 @@ export const createPlayerSchema = z.object({
       return Number(val);
     },
     z.number().int().min(0).max(99).optional()
-  )
+  ),
+  type: z.enum(['TEAM_PLAYER', 'SUBSTITUTE']).default('TEAM_PLAYER')
 });
 
 export const updatePlayerSchema = z.object({
@@ -63,7 +64,8 @@ export const updatePlayerSchema = z.object({
       return Number(val);
     },
     z.number().int().min(0).max(99).optional()
-  )
+  ),
+  type: z.enum(['TEAM_PLAYER', 'SUBSTITUTE']).optional()
 });
 
 // Game validation schemas

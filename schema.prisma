@@ -55,16 +55,17 @@ model TeamMember {
 }
 
 model Player {
-  id             String    @id @default(uuid())
-  teamId         String    @map("team_id")
+  id             String      @id @default(uuid())
+  teamId         String      @map("team_id")
   name           String
   number         Int?
-  createdAt      DateTime  @default(now()) @map("created_at")
+  type           PlayerType  @default(TEAM_PLAYER)
+  createdAt      DateTime    @default(now()) @map("created_at")
   faceoffs       Faceoff[]
-  goalsAssisted1 Goal[]    @relation("GoalAssister1")
-  goalsAssisted2 Goal[]    @relation("GoalAssister2")
-  goalsScored    Goal[]    @relation("GoalScorer")
-  team           Team      @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  goalsAssisted1 Goal[]      @relation("GoalAssister1")
+  goalsAssisted2 Goal[]      @relation("GoalAssister2")
+  goalsScored    Goal[]      @relation("GoalScorer")
+  team           Team        @relation(fields: [teamId], references: [id], onDelete: Cascade)
   shots          Shot[]
 
   @@unique([teamId, name])
@@ -169,4 +170,9 @@ enum MemberRole {
 enum AttackingDirection {
   left
   right
+}
+
+enum PlayerType {
+  TEAM_PLAYER
+  SUBSTITUTE
 }

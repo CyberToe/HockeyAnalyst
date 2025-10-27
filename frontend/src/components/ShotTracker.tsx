@@ -14,6 +14,7 @@ interface Player {
   id: string
   name: string
   number?: number
+  type: 'TEAM_PLAYER' | 'SUBSTITUTE'
 }
 
 interface Game {

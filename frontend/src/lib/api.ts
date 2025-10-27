@@ -99,9 +99,9 @@ export const teamImagesApi = {
 // Players API
 export const playersApi = {
   getPlayers: (teamId: string) => api.get(`/players/teams/${teamId}`),
-  createPlayer: (teamId: string, data: { name: string; number?: number }) =>
+  createPlayer: (teamId: string, data: { name: string; number?: number; type?: 'TEAM_PLAYER' | 'SUBSTITUTE' }) =>
     api.post(`/players/teams/${teamId}`, data),
-  updatePlayer: (playerId: string, data: { name?: string; number?: number }) =>
+  updatePlayer: (playerId: string, data: { name?: string; number?: number; type?: 'TEAM_PLAYER' | 'SUBSTITUTE' }) =>
     api.put(`/players/${playerId}`, data),
   deletePlayer: (playerId: string) => api.delete(`/players/${playerId}`),
   getPlayerStats: (playerId: string) => api.get(`/players/${playerId}/stats`),

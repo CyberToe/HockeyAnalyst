@@ -13,6 +13,7 @@ router.get('/teams/:teamId', requireTeamMember, async (req: AuthRequest, res, ne
     const players = await prisma.player.findMany({
       where: { teamId },
       orderBy: [
+        { type: 'asc' },
         { number: 'asc' },
         { name: 'asc' }
       ]
@@ -28,7 +29,7 @@ router.get('/teams/:teamId', requireTeamMember, async (req: AuthRequest, res, ne
 router.post('/teams/:teamId', requireTeamMember, validateSchema(createPlayerSchema), async (req: AuthRequest, res, next) => {
   try {
     const { teamId } = req.params;
-    const { name, number } = req.body;
+    const { name, number, type } = req.body;
 
     // Check if player name already exists in team
     const existingPlayer = await prisma.player.findFirst({
@@ -60,7 +61,8 @@ router.post('/teams/:teamId', requireTeamMember, validateSchema(createPlayerSche
       data: {
         teamId,
         name,
-        number
+        number,
+        type: type || 'TEAM_PLAYER'
       }
     });
 
@@ -77,7 +79,7 @@ router.post('/teams/:teamId', requireTeamMember, validateSchema(createPlayerSche
 router.put('/:playerId', validateSchema(updatePlayerSchema), async (req: AuthRequest, res, next) => {
   try {
     const { playerId } = req.params;
-    const { name, number } = req.body;
+    const { name, number, type } = req.body;
 
     // Get player and verify team membership
     const player = await prisma.player.findUnique({
@@ -137,7 +139,8 @@ router.put('/:playerId', validateSchema(updatePlayerSchema), async (req: AuthReq
       where: { id: playerId },
       data: {
         ...(name && { name }),
-        ...(number !== undefined && { number })
+        ...(number !== undefined && { number }),
+        ...(type && { type })
       }
     });
 
