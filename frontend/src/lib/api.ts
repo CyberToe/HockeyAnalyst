@@ -190,3 +190,13 @@ export const analyticsApi = {
   },
   getGameAnalytics: (gameId: string) => api.get(`/analytics/games/${gameId}`),
 }
+
+// Game Players API
+export const gamePlayersApi = {
+  getGamePlayers: (gameId: string) => api.get(`/game-players/games/${gameId}`),
+  initializeGamePlayers: (gameId: string) => api.post(`/game-players/games/${gameId}/initialize`),
+  updateGamePlayer: (gamePlayerId: string, data: { included?: boolean; number?: number }) =>
+    api.put(`/game-players/${gamePlayerId}`, data),
+  bulkUpdateGamePlayers: (gameId: string, updates: Array<{ gamePlayerId: string; included?: boolean; number?: number }>) =>
+    api.put(`/game-players/games/${gameId}/bulk`, { updates }),
+}

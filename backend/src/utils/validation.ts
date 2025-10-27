@@ -171,6 +171,40 @@ export const incrementFaceoffSchema = z.object({
   won: z.boolean().default(false)
 });
 
+// Game Player validation schemas
+export const updateGamePlayerSchema = z.object({
+  included: z.boolean().optional(),
+  number: z.preprocess(
+    (val) => {
+      if (val === '' || val === null || val === undefined) return undefined;
+      if (typeof val === 'string') {
+        const parsed = parseInt(val, 10);
+        return isNaN(parsed) ? val : parsed;
+      }
+      return Number(val);
+    },
+    z.number().int().min(0).max(99).optional()
+  )
+});
+
+export const bulkUpdateGamePlayersSchema = z.object({
+  updates: z.array(z.object({
+    gamePlayerId: z.string().uuid('Invalid game player ID'),
+    included: z.boolean().optional(),
+    number: z.preprocess(
+      (val) => {
+        if (val === '' || val === null || val === undefined) return undefined;
+        if (typeof val === 'string') {
+          const parsed = parseInt(val, 10);
+          return isNaN(parsed) ? val : parsed;
+        }
+        return Number(val);
+      },
+      z.number().int().min(0).max(99).optional()
+    )
+  }))
+});
+
 // Validation middleware
 export const validateSchema = (schema: z.ZodSchema) => {
   return (req: any, res: any, next: any) => {

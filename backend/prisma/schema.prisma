@@ -58,18 +58,19 @@ model TeamMember {
 }
 
 model Player {
-  id             String      @id @default(uuid())
-  teamId         String      @map("team_id")
+  id             String       @id @default(uuid())
+  teamId         String       @map("team_id")
   name           String
   number         Int?
-  type           PlayerType  @default(TEAM_PLAYER) @map("type")
-  createdAt      DateTime    @default(now()) @map("created_at")
+  type           PlayerType   @default(TEAM_PLAYER) @map("type")
+  createdAt      DateTime     @default(now()) @map("created_at")
   faceoffs       Faceoff[]
-  goalsAssisted1 Goal[]      @relation("GoalAssister1")
-  goalsAssisted2 Goal[]      @relation("GoalAssister2")
-  goalsScored    Goal[]      @relation("GoalScorer")
-  team           Team        @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  goalsAssisted1 Goal[]       @relation("GoalAssister1")
+  goalsAssisted2 Goal[]       @relation("GoalAssister2")
+  goalsScored    Goal[]       @relation("GoalScorer")
+  team           Team         @relation(fields: [teamId], references: [id], onDelete: Cascade)
   shots          Shot[]
+  gamePlayers    GamePlayer[]
 
   @@unique([teamId, name])
   @@unique([teamId, number])
@@ -77,22 +78,39 @@ model Player {
 }
 
 model Game {
-  id        String    @id @default(uuid())
-  teamId    String    @map("team_id")
+  id        String       @id @default(uuid())
+  teamId    String       @map("team_id")
   opponent  String?
   location  String?
-  startTime DateTime? @map("start_time")
-  createdBy String?   @map("created_by")
-  createdAt DateTime  @default(now()) @map("created_at")
+  startTime DateTime?    @map("start_time")
+  createdBy String?      @map("created_by")
+  createdAt DateTime     @default(now()) @map("created_at")
   notes     String?
   faceoffs  Faceoff[]
-  creator   User?     @relation("GameCreator", fields: [createdBy], references: [id])
-  team      Team      @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  creator   User?        @relation("GameCreator", fields: [createdBy], references: [id])
+  team      Team         @relation(fields: [teamId], references: [id], onDelete: Cascade)
   goals     Goal[]
   periods   Period[]
   shots     Shot[]
+  players   GamePlayer[]
 
   @@map("games")
+}
+
+model GamePlayer {
+  id        String   @id @default(uuid())
+  gameId    String   @map("game_id")
+  playerId  String   @map("player_id")
+  included  Boolean  @default(true)
+  number    Int?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  
+  game      Game     @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  player    Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  @@unique([gameId, playerId])
+  @@map("game_players")
 }
 
 model Period {

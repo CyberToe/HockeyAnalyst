@@ -17,6 +17,7 @@ import shotRoutes from './routes/shots';
 import goalRoutes from './routes/goals';
 import faceoffRoutes from './routes/faceoffs';
 import analyticsRoutes from './routes/analytics';
+import gamePlayerRoutes from './routes/game-players';
 
 // Import middleware
 import { errorHandler } from './middleware/errorHandler';
@@ -69,6 +70,7 @@ app.use('/api/shots', authenticateToken, shotRoutes);
 app.use('/api/goals', authenticateToken, goalRoutes);
 app.use('/api/faceoffs', authenticateToken, faceoffRoutes);
 app.use('/api/analytics', authenticateToken, analyticsRoutes);
+app.use('/api/game-players', authenticateToken, gamePlayerRoutes);
 
 // Error handling middleware
 app.use(errorHandler);

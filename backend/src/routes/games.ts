@@ -58,6 +58,25 @@ router.post('/teams/:teamId', requireTeamMember, validateSchema(createGameSchema
       }
     });
 
+    // Initialize game players
+    const players = await prisma.player.findMany({
+      where: { teamId },
+      orderBy: [
+        { type: 'asc' },
+        { number: 'asc' },
+        { name: 'asc' }
+      ]
+    });
+
+    await prisma.gamePlayer.createMany({
+      data: players.map(player => ({
+        gameId: game.id,
+        playerId: player.id,
+        included: player.type === 'TEAM_PLAYER',
+        number: player.number
+      }))
+    });
+
     res.status(201).json({
       message: 'Game created successfully',
       game
