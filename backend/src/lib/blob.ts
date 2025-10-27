@@ -53,9 +53,10 @@ export class BlobStorage {
 
       console.log('Uploading to pathname:', pathname);
 
-      const blob = await put(pathname, file, {
+      const blob = await put(pathname, file.buffer || file, {
         access: 'public',
         token: this.token,
+        contentType: file.mimetype || this.getMimeTypeFromExtension(fileExtension),
       });
 
       console.log('Upload successful, blob URL:', blob.url);
@@ -102,7 +103,12 @@ export class BlobStorage {
    * @returns string - The file extension with dot
    */
   private getFileExtension(file: any): string {
-    if (file && file.name) {
+    if (file && file.originalname) { // For Multer files
+      const name = file.originalname;
+      const lastDot = name.lastIndexOf('.');
+      return lastDot !== -1 ? name.substring(lastDot) : '.jpg';
+    }
+    if (file && file.name) { // For browser File objects
       const name = file.name;
       const lastDot = name.lastIndexOf('.');
       return lastDot !== -1 ? name.substring(lastDot) : '.jpg';
@@ -111,6 +117,22 @@ export class BlobStorage {
     // For Buffer or files without name, we'll default to .jpg
     // In a real implementation, you might want to detect the MIME type
     return '.jpg';
+  }
+
+  private getMimeTypeFromExtension(extension: string): string {
+    switch (extension.toLowerCase()) {
+      case '.jpg':
+      case '.jpeg':
+        return 'image/jpeg';
+      case '.png':
+        return 'image/png';
+      case '.gif':
+        return 'image/gif';
+      case '.webp':
+        return 'image/webp';
+      default:
+        return 'application/octet-stream';
+    }
   }
 
   /**
