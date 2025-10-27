@@ -286,7 +286,7 @@ export default function CreateTeamModal({ isOpen, onClose, onSuccess }: CreateTe
                   {isLoading && selectedSubscription === 'STANDARD_MONTHLY' ? (
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mx-auto"></div>
                   ) : (
-                    'Monthly Subscription - $9.99 / mo (USD)'
+                    'Monthly Subscription - $9.99 / mo (USD) (Free: Currently in Beta)'
                   )}
                 </button>
                 <button
@@ -297,7 +297,7 @@ export default function CreateTeamModal({ isOpen, onClose, onSuccess }: CreateTe
                   {isLoading && selectedSubscription === 'STANDARD_YEARLY' ? (
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mx-auto"></div>
                   ) : (
-                    'Yearly Subscription - $6.99 / mo (USD) (billed annually)'
+                    'Yearly Subscription - $6.99 / mo (USD) (billed annually) (Free: Currently in Beta)'
                   )}
                 </button>
               </div>

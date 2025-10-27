@@ -23,6 +23,8 @@ export default function DashboardPage() {
   const [disabledTeamsCollapsed, setDisabledTeamsCollapsed] = useState(true)
   const [showDisableConfirm, setShowDisableConfirm] = useState(false)
   const [teamToDisable, setTeamToDisable] = useState<{id: string, name: string} | null>(null)
+  const [showActivateModal, setShowActivateModal] = useState(false)
+  const [teamToActivate, setTeamToActivate] = useState<{id: string, name: string} | null>(null)
 
   const copyTeamCode = async (teamCode: string) => {
     try {
@@ -56,6 +58,33 @@ export default function DashboardPage() {
   const cancelDisableTeam = () => {
     setShowDisableConfirm(false)
     setTeamToDisable(null)
+  }
+
+  const handleActivateClick = (teamId: string, teamName: string) => {
+    setTeamToActivate({ id: teamId, name: teamName })
+    setShowActivateModal(true)
+  }
+
+  const handlePlanSelect = async (planType: 'BASIC_FREE' | 'STANDARD_MONTHLY' | 'STANDARD_YEARLY') => {
+    if (!teamToActivate) return
+
+    try {
+      await teamsApi.updateTeam(teamToActivate.id, { 
+        state: 'ACTIVE',
+        type: planType 
+      })
+      toast.success('Team activated successfully!')
+      setShowActivateModal(false)
+      setTeamToActivate(null)
+      refetch()
+    } catch (error) {
+      // Error is handled by API interceptor
+    }
+  }
+
+  const cancelActivateTeam = () => {
+    setShowActivateModal(false)
+    setTeamToActivate(null)
   }
 
   const updateTeamImage = async (teamId: string, imageFile: File) => {
@@ -232,6 +261,19 @@ export default function DashboardPage() {
               )}
             </div>
           )}
+          
+          {/* Activate button for disabled teams */}
+          {team.state === 'DISABLED' && isManager(team) && (
+            <div className="flex flex-wrap gap-2">
+              <button
+                onClick={() => handleActivateClick(team.id, team.name)}
+                className="w-full bg-green-600 text-white text-center px-3 py-2 rounded-md text-sm font-medium hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                title="Activate team"
+              >
+                Activate
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -392,6 +434,128 @@ export default function DashboardPage() {
                   type="button"
                   onClick={cancelDisableTeam}
                   className="mt-3 inline-flex w-full justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-base font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 sm:mt-0 sm:w-auto sm:text-sm"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Activate Team Modal */}
+      {showActivateModal && (
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          <div className="flex min-h-full items-center justify-center p-4">
+            {/* Background overlay */}
+            <div 
+              className="fixed inset-0 bg-gray-500 bg-opacity-75"
+              onClick={cancelActivateTeam}
+            />
+            
+            {/* Modal content - wider for plan options */}
+            <div className="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-4xl sm:p-6">
+              {/* Close button */}
+              <div className="absolute right-0 top-0 hidden pr-4 pt-4 sm:block">
+                <button
+                  type="button"
+                  className="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+                  onClick={cancelActivateTeam}
+                >
+                  <span className="sr-only">Close</span>
+                  <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              
+              {/* Modal header */}
+              <div className="sm:flex sm:items-start">
+                <div className="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left w-full">
+                  <h3 className="text-lg font-medium leading-6 text-gray-900">
+                    Activate Team: {teamToActivate?.name}
+                  </h3>
+                  <p className="mt-2 text-sm text-gray-500">
+                    Select a plan to activate your team.
+                  </p>
+                </div>
+              </div>
+
+              {/* Plan selection */}
+              <div className="mt-6">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-4xl mx-auto">
+                  {/* Standard Team Option */}
+                  <div className="border border-gray-200 rounded-lg p-6">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Standard Team</h3>
+                    <p className="text-sm text-gray-600 mb-4">Team Management and Analytics</p>
+                    
+                    <div className="space-y-3 mb-6">
+                      <div className="flex items-center">
+                        <span className="text-2xl mr-3">🏒</span>
+                        <span className="text-sm text-gray-700">Unlimited Games</span>
+                      </div>
+                      <div className="flex items-center">
+                        <span className="text-2xl mr-3">👥</span>
+                        <span className="text-sm text-gray-700">Unlimited Members</span>
+                      </div>
+                      <div className="flex items-center">
+                        <span className="text-2xl mr-3">📊</span>
+                        <span className="text-sm text-gray-700">Unlimited Exported Statistic Reports</span>
+                      </div>
+                    </div>
+
+                    <div className="space-y-3">
+                      <button
+                        onClick={() => handlePlanSelect('STANDARD_MONTHLY')}
+                        className="w-full bg-primary-600 text-white py-2 px-4 rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                      >
+                        Monthly Subscription - $9.99 / mo (USD) (Free: Currently in Beta)
+                      </button>
+                      <button
+                        onClick={() => handlePlanSelect('STANDARD_YEARLY')}
+                        className="w-full bg-primary-600 text-white py-2 px-4 rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                      >
+                        Yearly Subscription - $6.99 / mo (USD) (billed annually) (Free: Currently in Beta)
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Free Team Option */}
+                  <div className="border border-gray-200 rounded-lg p-6">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Free Team</h3>
+                    <p className="text-sm text-gray-600 mb-4">Team Management and Analytics</p>
+                    
+                    <div className="space-y-3 mb-6">
+                      <div className="flex items-center">
+                        <span className="text-2xl mr-3">🏒</span>
+                        <span className="text-sm text-gray-700">1 Game</span>
+                      </div>
+                      <div className="flex items-center">
+                        <span className="text-2xl mr-3">👥</span>
+                        <span className="text-sm text-gray-700">3 Members including the owner</span>
+                      </div>
+                      <div className="flex items-center">
+                        <span className="text-2xl mr-3">📊</span>
+                        <span className="text-sm text-gray-700">5 Exported Statistic Reports</span>
+                      </div>
+                    </div>
+
+                    <button
+                      onClick={() => handlePlanSelect('BASIC_FREE')}
+                      className="w-full bg-gray-600 text-white py-2 px-4 rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500"
+                    >
+                      Free - Can be upgraded later
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Modal footer */}
+              <div className="mt-6 sm:flex sm:flex-row-reverse">
+                <button
+                  type="button"
+                  onClick={cancelActivateTeam}
+                  className="w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:ml-3 sm:w-auto sm:text-sm"
                 >
                   Cancel
                 </button>
