@@ -392,6 +392,68 @@ router.post('/:teamId/promote', requireAdmin, async (req: AuthRequest, res, next
   }
 });
 
+// Demote user from admin to member
+router.post('/:teamId/demote', requireAdmin, async (req: AuthRequest, res, next) => {
+  try {
+    const { teamId } = req.params;
+    const { userId } = req.body;
+
+    if (!userId) {
+      res.status(400).json({ error: 'User ID is required' });
+      return;
+    }
+
+    // Check if target user is a member
+    const targetMembership = await prisma.teamMember.findUnique({
+      where: {
+        teamId_userId: {
+          teamId,
+          userId
+        }
+      }
+    });
+
+    if (!targetMembership) {
+      res.status(404).json({ error: 'User is not a member of this team' });
+      return;
+    }
+
+    // Check if user is already a member (not an admin)
+    if (targetMembership.role === 'member') {
+      res.status(400).json({ error: 'User is already a member' });
+      return;
+    }
+
+    // Check if this is the last admin in the team
+    const adminCount = await prisma.teamMember.count({
+      where: {
+        teamId,
+        role: 'admin'
+      }
+    });
+
+    if (adminCount <= 1) {
+      res.status(400).json({ error: 'Cannot demote the last admin of the team' });
+      return;
+    }
+
+    // Demote to member
+    await prisma.teamMember.update({
+      where: {
+        teamId_userId: {
+          teamId,
+          userId
+        }
+      },
+      data: { role: 'member' }
+    });
+
+    res.json({ message: 'Admin demoted to member successfully' });
+  } catch (error) {
+    next(error);
+  }
+});
+
 // Remove team member
 router.delete('/:teamId/members/:userId', requireAdmin, async (req: AuthRequest, res, next) => {
   try {
