@@ -9,12 +9,12 @@ export default function Sidebar() {
             <div className="w-8 h-8 flex items-center justify-center">
               <img 
                 src="/images/logo.jpg" 
-                alt="Hockey Analytics Logo" 
+                alt="Hockey Assistant Logo" 
                 className="w-8 h-8 rounded-lg object-cover"
               />
             </div>
             <span className="ml-2 text-xl font-bold text-gray-900">
-              Hockey Analytics
+              Hockey Assistant
             </span>
           </div>
         </div>

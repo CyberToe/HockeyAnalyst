@@ -1,6 +1,6 @@
-# Hockey Analytics Application - Setup Guide
+# Hockey Assistant Application - Setup Guide
 
-This guide will help you set up the Hockey Analytics application on your local machine.
+This guide will help you set up the Hockey Assistant application on your local machine.
 
 ## Prerequisites
 

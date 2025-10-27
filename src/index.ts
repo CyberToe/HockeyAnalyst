@@ -80,7 +80,7 @@ const PORT = process.env.PORT || 3001;
 
 app.listen(PORT, async () => {
   console.log(`🚀 Server running on port ${PORT}`);
-  console.log(`📊 Hockey Analytics API ready`);
+    console.log(`📊 Hockey Assistant API ready`);
   
   // Test database connection
   try {

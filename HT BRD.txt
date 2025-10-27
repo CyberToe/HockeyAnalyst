@@ -1,15 +1,15 @@
-Hockey Analytics Tracking Application
+Hockey Assistant Tracking Application
 
 Business Requirements Document (BRD)
 
 Version: 1.0
 Database: PostgreSQL
-Prepared for: Hockey Analytics App Project
+Prepared for: Hockey Assistant App Project
 Prepared by: Paul Leblanc
 
 1. Purpose
 
-This document describes the functional and non-functional requirements of a hockey analytics tracking application designed to record, share, and analyze shot data during hockey games. The application supports multiple users, shared teams, and aggregated player statistics across games.
+This document describes the functional and non-functional requirements of a hockey assistant tracking application designed to record, share, and analyze shot data during hockey games. The application supports multiple users, shared teams, and aggregated player statistics across games.
 
 The system provides a visual rink interface where users can track shots live or after a game, noting location, result (score/miss), player, period, and attack direction.
 

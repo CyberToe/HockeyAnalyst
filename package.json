@@ -1,7 +1,7 @@
 {
-  "name": "hockey-analytics-app",
+  "name": "hockey-assistant-app",
   "version": "1.0.0",
-  "description": "Full-stack Hockey Analytics Application",
+  "description": "Full-stack Hockey Assistant Application",
   "main": "dist/index.js",
   "scripts": {
     "build": "npm run build:all",

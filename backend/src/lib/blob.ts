@@ -34,15 +34,31 @@ export class BlobStorage {
    */
   async uploadTeamImage(file: any, teamId: string): Promise<BlobUploadResult> {
     try {
+      console.log('Starting team image upload for team:', teamId);
+      console.log('File details:', {
+        name: file?.name,
+        size: file?.size,
+        type: file?.type
+      });
+      console.log('Blob token available:', !!this.token);
+
+      if (!this.token) {
+        throw new Error('BLOB_READ_WRITE_TOKEN is not configured');
+      }
+
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
       const fileExtension = this.getFileExtension(file);
       const filename = `team-${teamId}-${timestamp}${fileExtension}`;
       const pathname = `teams/${teamId}/${filename}`;
 
+      console.log('Uploading to pathname:', pathname);
+
       const blob = await put(pathname, file, {
         access: 'public',
         token: this.token,
       });
+
+      console.log('Upload successful, blob URL:', blob.url);
 
       return {
         url: blob.url,
@@ -53,7 +69,16 @@ export class BlobStorage {
       };
     } catch (error) {
       console.error('Error uploading team image to blob storage:', error);
-      throw new Error('Failed to upload team image');
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const errorStack = error instanceof Error ? error.stack : undefined;
+      const errorName = error instanceof Error ? error.name : 'Unknown';
+      
+      console.error('Error details:', {
+        message: errorMessage,
+        stack: errorStack,
+        name: errorName
+      });
+      throw new Error(`Failed to upload team image: ${errorMessage}`);
     }
   }
 

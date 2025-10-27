@@ -1,4 +1,4 @@
--- Hockey analytics schema for PostgreSQL
+-- Hockey assistant schema for PostgreSQL
 -- Assumes pgcrypto extension available for gen_random_uuid()
 -- Run as superuser or a user allowed to create extensions.
 

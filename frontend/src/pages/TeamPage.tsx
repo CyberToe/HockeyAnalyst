@@ -145,7 +145,7 @@ export default function TeamPage() {
               <div className="flex-shrink-0">
                 <img 
                   src="/images/logo.jpg" 
-                  alt="Hockey Analytics Logo" 
+                  alt="Hockey Assistant Logo" 
                   className="h-8 w-8 rounded-lg object-cover"
                 />
               </div>

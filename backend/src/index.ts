@@ -92,7 +92,7 @@ if (process.env.NODE_ENV !== 'production' && !process.env.VERCEL) {
   
   app.listen(PORT, async () => {
     console.log(`🚀 Server running on port ${PORT}`);
-    console.log(`📊 Hockey Analytics API ready`);
+    console.log(`📊 Hockey Assistant API ready`);
     
     // Test database connection
     try {

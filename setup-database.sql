@@ -1,5 +1,5 @@
--- Hockey Analytics Database Setup Script
--- Run this script to set up the PostgreSQL database for the Hockey Analytics application
+-- Hockey Assistant Database Setup Script
+-- Run this script to set up the PostgreSQL database for the Hockey Assistant application
 
 -- Create database (run as superuser)
 -- CREATE DATABASE hockey_analytics;

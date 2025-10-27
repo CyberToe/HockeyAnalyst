@@ -48,7 +48,7 @@ export default function LoginPage() {
           <div className="mx-auto h-12 w-12 flex items-center justify-center">
             <img 
               src="/images/logo.jpg" 
-              alt="Hockey Analytics Logo" 
+              alt="Hockey Assistant Logo" 
               className="h-12 w-12 rounded-lg object-cover"
             />
           </div>

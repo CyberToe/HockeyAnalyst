@@ -1,6 +1,6 @@
-# Hockey Analytics Tracking Application
+# Hockey Assistant Tracking Application
 
-A comprehensive hockey analytics tracking application that allows users to record, share, and analyze shot data during hockey games. The application supports multiple users, shared teams, and aggregated player statistics across games.
+A comprehensive hockey assistant tracking application that allows users to record, share, and analyze shot data during hockey games. The application supports multiple users, shared teams, and aggregated player statistics across games.
 
 ## Features
 

@@ -6,6 +6,24 @@ import { AuthRequest, requireAdmin } from '../middleware/auth';
 
 const router = express.Router();
 
+// Health check for blob storage
+router.get('/health', async (req, res) => {
+  try {
+    const token = process.env.BLOB_READ_WRITE_TOKEN;
+    res.json({
+      status: 'ok',
+      blobTokenConfigured: !!token,
+      tokenLength: token ? token.length : 0
+    });
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    res.status(500).json({
+      status: 'error',
+      error: errorMessage
+    });
+  }
+});
+
 // Configure multer for memory storage
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -61,7 +79,9 @@ router.post('/:teamId/upload', requireAdmin, upload.single('image'), async (req:
     }
 
     // Upload new image to blob storage
+    console.log('Attempting to upload image to blob storage...');
     const blobResult = await blobStorage.uploadTeamImage(file, teamId);
+    console.log('Blob upload successful, updating team record...');
 
     // Update team with new image URL
     const updatedTeam = await prisma.team.update({
@@ -82,12 +102,24 @@ router.post('/:teamId/upload', requireAdmin, upload.single('image'), async (req:
       }
     });
 
+    console.log('Team record updated successfully');
+
     res.json({
       message: 'Team image uploaded successfully',
       team: updatedTeam,
       imageUrl: blobResult.url
     });
   } catch (error) {
+    console.error('Error in team image upload route:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    const errorStack = error instanceof Error ? error.stack : undefined;
+    const errorName = error instanceof Error ? error.name : 'Unknown';
+    
+    console.error('Error details:', {
+      message: errorMessage,
+      stack: errorStack,
+      name: errorName
+    });
     next(error);
   }
 });
