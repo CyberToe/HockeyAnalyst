@@ -266,14 +266,14 @@ export default function ShotTracker({ lastSelectedPeriod = 1, onPeriodChange, ga
     ctx.lineTo(width * 0.66, height)
     ctx.stroke()
 
-    // Face-off circles (80% smaller, moved closer to creases horizontally)
-    drawFaceoffCircle(ctx, width * 0.15, height * 0.25, 16)  // Top left - moved closer to left crease
-    drawFaceoffCircle(ctx, width * 0.15, height * 0.75, 16)  // Bottom left - moved closer to left crease
-    drawFaceoffCircle(ctx, width * 0.85, height * 0.25, 16)  // Top right - moved closer to right crease
-    drawFaceoffCircle(ctx, width * 0.85, height * 0.75, 16)  // Bottom right - moved closer to right crease
+    // Face-off circles (radius 64, moved closer to creases horizontally)
+    drawFaceoffCircle(ctx, width * 0.15, height * 0.25, 64)  // Top left - moved closer to left crease
+    drawFaceoffCircle(ctx, width * 0.15, height * 0.75, 64)  // Bottom left - moved closer to left crease
+    drawFaceoffCircle(ctx, width * 0.85, height * 0.25, 64)  // Top right - moved closer to right crease
+    drawFaceoffCircle(ctx, width * 0.85, height * 0.75, 64)  // Bottom right - moved closer to right crease
 
     // Center face-off circle (match size with other circles)
-    drawFaceoffCircle(ctx, width * 0.5, height * 0.5, 16)
+    drawFaceoffCircle(ctx, width * 0.5, height * 0.5, 64)
 
     // Goal creases
     drawGoalCrease(ctx, width * 0.05, height * 0.5)
