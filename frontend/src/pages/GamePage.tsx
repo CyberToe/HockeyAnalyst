@@ -23,7 +23,7 @@ interface GamePlayer {
 
 export default function GamePage() {
   const { gameId } = useParams<{ teamId: string; gameId: string }>()
-  const [selectedTracker, setSelectedTracker] = useState<string>('shot-tracker')
+  const [selectedTracker, setSelectedTracker] = useState<string>('players')
   const [lastShotPeriod, setLastShotPeriod] = useState<number | 'all'>(1)
 
   // Goals and Assists state
@@ -42,10 +42,10 @@ export default function GamePage() {
 
 
   const trackingOptions = [
+    { value: 'players', label: 'Player Selection' },
     { value: 'shot-tracker', label: 'Shot Tracker' },
     { value: 'goals-assists', label: 'Goals & Assists' },
-    { value: 'faceoffs', label: 'Faceoffs' },
-    { value: 'players', label: 'Player Selection' }
+    { value: 'faceoffs', label: 'Faceoffs' }
   ]
 
   const handleTrackerChange = (value: string) => {
