@@ -88,18 +88,21 @@ export default function ShotVisualization({ shots, period, title, periodAttackin
     ctx.lineTo(width * 0.66, height)
     ctx.stroke()
 
-    // Face-off circles
-    drawFaceoffCircle(ctx, width * 0.2, height * 0.35, 40)
-    drawFaceoffCircle(ctx, width * 0.2, height * 0.65, 40)
-    drawFaceoffCircle(ctx, width * 0.8, height * 0.35, 40)
-    drawFaceoffCircle(ctx, width * 0.8, height * 0.65, 40)
+    // Face-off circles (moved closer to crease horizontally and boards vertically, doubled size)
+    drawFaceoffCircle(ctx, width * 0.25, height * 0.25, 80)  // Top left - moved closer to crease and boards
+    drawFaceoffCircle(ctx, width * 0.25, height * 0.75, 80)  // Bottom left - moved closer to crease and boards
+    drawFaceoffCircle(ctx, width * 0.75, height * 0.25, 80)  // Top right - moved closer to crease and boards
+    drawFaceoffCircle(ctx, width * 0.75, height * 0.75, 80)  // Bottom right - moved closer to crease and boards
 
-    // Center face-off circle
+    // Center face-off circle (keep original size)
     drawFaceoffCircle(ctx, width * 0.5, height * 0.5, 50)
 
     // Goal creases
     drawGoalCrease(ctx, width * 0.05, height * 0.5)
     drawGoalCrease(ctx, width * 0.95, height * 0.5)
+
+    // Red lines behind goal creases
+    drawRedLinesBehindCreases(ctx, width, height)
 
     // Draw shot markers
     drawShotMarkers(ctx)
@@ -135,6 +138,24 @@ export default function ShotVisualization({ shots, period, title, periodAttackin
       ctx.arc(x, y, 30, Math.PI / 2, -Math.PI / 2)
     }
     ctx.fill()
+    ctx.stroke()
+  }
+
+  // Draw red lines behind goal creases
+  const drawRedLinesBehindCreases = (ctx: CanvasRenderingContext2D, width: number, height: number) => {
+    ctx.strokeStyle = '#c41e3a'
+    ctx.lineWidth = 3
+
+    // Left goal red line (behind left crease)
+    ctx.beginPath()
+    ctx.moveTo(width * 0.05, height * 0.2)  // Start above crease
+    ctx.lineTo(width * 0.05, height * 0.8)  // End below crease
+    ctx.stroke()
+
+    // Right goal red line (behind right crease)
+    ctx.beginPath()
+    ctx.moveTo(width * 0.95, height * 0.2)  // Start above crease
+    ctx.lineTo(width * 0.95, height * 0.8)  // End below crease
     ctx.stroke()
   }
 
