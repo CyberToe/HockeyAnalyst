@@ -303,8 +303,8 @@ export default function ShotTracker({ lastSelectedPeriod = 1, onPeriodChange, ga
 
   // Draw goal crease
   const drawGoalCrease = (ctx: CanvasRenderingContext2D, x: number, y: number) => {
-    ctx.strokeStyle = '#c41e3a'
-    ctx.fillStyle = 'rgba(196, 30, 58, 0.1)'
+    ctx.strokeStyle = '#0033a0'
+    ctx.fillStyle = 'rgba(0, 51, 160, 0.1)'
     ctx.lineWidth = 2
 
     ctx.beginPath()
