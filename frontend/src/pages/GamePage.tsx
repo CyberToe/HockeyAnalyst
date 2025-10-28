@@ -40,6 +40,10 @@ export default function GamePage() {
   const [manualTaken, setManualTaken] = useState(0)
   const [manualWon, setManualWon] = useState(0)
 
+  // Player edit state
+  const [editingPlayers, setEditingPlayers] = useState(false)
+  const [tempPlayerData, setTempPlayerData] = useState<Record<string, { included: boolean; number?: number }>>({})
+
 
   const trackingOptions = [
     { value: 'players', label: 'Player Selection' },
@@ -50,6 +54,58 @@ export default function GamePage() {
 
   const handleTrackerChange = (value: string) => {
     setSelectedTracker(value)
+  }
+
+  // Player edit functions
+  const startEditingPlayers = () => {
+    if (!gamePlayersData?.gamePlayers) return
+    
+    const tempData: Record<string, { included: boolean; number?: number }> = {}
+    gamePlayersData.gamePlayers.forEach((gp: GamePlayer) => {
+      tempData[gp.id] = {
+        included: gp.included,
+        number: gp.number
+      }
+    })
+    setTempPlayerData(tempData)
+    setEditingPlayers(true)
+  }
+
+  const cancelEditingPlayers = () => {
+    setTempPlayerData({})
+    setEditingPlayers(false)
+  }
+
+  const savePlayerChanges = async () => {
+    if (!gamePlayersData?.gamePlayers) return
+
+    const updates = gamePlayersData.gamePlayers.map((gp: GamePlayer) => {
+      const tempData = tempPlayerData[gp.id]
+      return {
+        gamePlayerId: gp.id,
+        included: tempData?.included ?? gp.included,
+        number: tempData?.number ?? gp.number
+      }
+    })
+
+    try {
+      await bulkUpdateGamePlayersMutation.mutateAsync(updates)
+      setEditingPlayers(false)
+      setTempPlayerData({})
+      toast.success('Player changes saved successfully')
+    } catch (error) {
+      toast.error('Failed to save player changes')
+    }
+  }
+
+  const updateTempPlayerData = (gamePlayerId: string, field: 'included' | 'number', value: boolean | number) => {
+    setTempPlayerData(prev => ({
+      ...prev,
+      [gamePlayerId]: {
+        ...prev[gamePlayerId],
+        [field]: value
+      }
+    }))
   }
 
   // Goals and Assists functions
@@ -248,6 +304,17 @@ export default function GamePage() {
     },
     onError: (error: any) => {
       toast.error(error.response?.data?.error || 'Failed to update player')
+    }
+  })
+
+  const bulkUpdateGamePlayersMutation = useMutation({
+    mutationFn: (updates: Array<{ gamePlayerId: string; included?: boolean; number?: number }>) =>
+      gamePlayersApi.bulkUpdateGamePlayers(gameId!, updates),
+    onSuccess: () => {
+      refetchGamePlayers()
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.error || 'Failed to update players')
     }
   })
 
@@ -540,10 +607,40 @@ export default function GamePage() {
           <div className="space-y-6">
             {/* Player Selection Section */}
             <div className="mb-6">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Game Roster</h3>
-              <p className="text-sm text-gray-600 mb-6">
-                Select which players are participating in this game and set their jersey numbers.
-              </p>
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h3 className="text-lg font-medium text-gray-900">Game Roster</h3>
+                  <p className="text-sm text-gray-600 mt-1">
+                    Select which players are participating in this game and set their jersey numbers.
+                  </p>
+                </div>
+                <div className="flex space-x-2">
+                  {!editingPlayers ? (
+                    <button
+                      onClick={startEditingPlayers}
+                      className="px-4 py-2 bg-primary-600 text-white text-sm font-medium rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    >
+                      Edit Players
+                    </button>
+                  ) : (
+                    <>
+                      <button
+                        onClick={cancelEditingPlayers}
+                        className="px-4 py-2 bg-gray-300 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        onClick={savePlayerChanges}
+                        disabled={bulkUpdateGamePlayersMutation.isPending}
+                        className="px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 disabled:opacity-50"
+                      >
+                        {bulkUpdateGamePlayersMutation.isPending ? 'Saving...' : 'Save Changes'}
+                      </button>
+                    </>
+                  )}
+                </div>
+              </div>
               
               {gamePlayersData?.gamePlayers && gamePlayersData.gamePlayers.length > 0 ? (
                 <div className="space-y-4">
@@ -553,39 +650,59 @@ export default function GamePage() {
                     <div className="space-y-2">
                       {gamePlayersData.gamePlayers
                         .filter((gp: GamePlayer) => gp.player.type === 'TEAM_PLAYER')
-                        .map((gamePlayer: GamePlayer) => (
-                        <div key={gamePlayer.id} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
-                          <div className="flex items-center space-x-3">
-                            <input
-                              type="checkbox"
-                              checked={gamePlayer.included}
-                              onChange={(e) => updateGamePlayerMutation.mutate({
-                                gamePlayerId: gamePlayer.id,
-                                data: { included: e.target.checked }
-                              })}
-                              className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
-                            />
-                            <div className="flex-1">
-                              <div className="text-sm font-medium text-gray-900">{gamePlayer.player.name}</div>
+                        .map((gamePlayer: GamePlayer) => {
+                          const tempData = tempPlayerData[gamePlayer.id]
+                          const isIncluded = tempData?.included ?? gamePlayer.included
+                          const number = tempData?.number ?? gamePlayer.number
+                          
+                          return (
+                            <div key={gamePlayer.id} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
+                              <div className="flex items-center space-x-3">
+                                <input
+                                  type="checkbox"
+                                  checked={isIncluded}
+                                  onChange={(e) => {
+                                    if (editingPlayers) {
+                                      updateTempPlayerData(gamePlayer.id, 'included', e.target.checked)
+                                    } else {
+                                      updateGamePlayerMutation.mutate({
+                                        gamePlayerId: gamePlayer.id,
+                                        data: { included: e.target.checked }
+                                      })
+                                    }
+                                  }}
+                                  disabled={!editingPlayers}
+                                  className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded disabled:opacity-50"
+                                />
+                                <div className="flex-1">
+                                  <div className="text-sm font-medium text-gray-900">{gamePlayer.player.name}</div>
+                                </div>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <label className="text-xs text-gray-500">Jersey #</label>
+                                <input
+                                  type="number"
+                                  min="0"
+                                  max="99"
+                                  value={number || ''}
+                                  onChange={(e) => {
+                                    if (editingPlayers) {
+                                      updateTempPlayerData(gamePlayer.id, 'number', e.target.value ? parseInt(e.target.value) : 0)
+                                    } else {
+                                      updateGamePlayerMutation.mutate({
+                                        gamePlayerId: gamePlayer.id,
+                                        data: { number: e.target.value ? parseInt(e.target.value) : undefined }
+                                      })
+                                    }
+                                  }}
+                                  disabled={!editingPlayers}
+                                  className="w-16 px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:opacity-50"
+                                  placeholder="?"
+                                />
+                              </div>
                             </div>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <label className="text-xs text-gray-500">Jersey #</label>
-                            <input
-                              type="number"
-                              min="0"
-                              max="99"
-                              value={gamePlayer.number || ''}
-                              onChange={(e) => updateGamePlayerMutation.mutate({
-                                gamePlayerId: gamePlayer.id,
-                                data: { number: e.target.value ? parseInt(e.target.value) : undefined }
-                              })}
-                              className="w-16 px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-primary-500"
-                              placeholder="?"
-                            />
-                          </div>
-                        </div>
-                      ))}
+                          )
+                        })}
                     </div>
                   </div>
 
@@ -596,39 +713,59 @@ export default function GamePage() {
                       <div className="space-y-2">
                         {gamePlayersData.gamePlayers
                           .filter((gp: GamePlayer) => gp.player.type === 'SUBSTITUTE')
-                          .map((gamePlayer: GamePlayer) => (
-                          <div key={gamePlayer.id} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg bg-gray-50">
-                            <div className="flex items-center space-x-3">
-                              <input
-                                type="checkbox"
-                                checked={gamePlayer.included}
-                                onChange={(e) => updateGamePlayerMutation.mutate({
-                                  gamePlayerId: gamePlayer.id,
-                                  data: { included: e.target.checked }
-                                })}
-                                className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
-                              />
-                              <div className="flex-1">
-                                <div className="text-sm font-medium text-gray-900">{gamePlayer.player.name}</div>
+                          .map((gamePlayer: GamePlayer) => {
+                            const tempData = tempPlayerData[gamePlayer.id]
+                            const isIncluded = tempData?.included ?? gamePlayer.included
+                            const number = tempData?.number ?? gamePlayer.number
+                            
+                            return (
+                              <div key={gamePlayer.id} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg bg-gray-50">
+                                <div className="flex items-center space-x-3">
+                                  <input
+                                    type="checkbox"
+                                    checked={isIncluded}
+                                    onChange={(e) => {
+                                      if (editingPlayers) {
+                                        updateTempPlayerData(gamePlayer.id, 'included', e.target.checked)
+                                      } else {
+                                        updateGamePlayerMutation.mutate({
+                                          gamePlayerId: gamePlayer.id,
+                                          data: { included: e.target.checked }
+                                        })
+                                      }
+                                    }}
+                                    disabled={!editingPlayers}
+                                    className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded disabled:opacity-50"
+                                  />
+                                  <div className="flex-1">
+                                    <div className="text-sm font-medium text-gray-900">{gamePlayer.player.name}</div>
+                                  </div>
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                  <label className="text-xs text-gray-500">Jersey #</label>
+                                  <input
+                                    type="number"
+                                    min="0"
+                                    max="99"
+                                    value={number || ''}
+                                    onChange={(e) => {
+                                      if (editingPlayers) {
+                                        updateTempPlayerData(gamePlayer.id, 'number', e.target.value ? parseInt(e.target.value) : 0)
+                                      } else {
+                                        updateGamePlayerMutation.mutate({
+                                          gamePlayerId: gamePlayer.id,
+                                          data: { number: e.target.value ? parseInt(e.target.value) : undefined }
+                                        })
+                                      }
+                                    }}
+                                    disabled={!editingPlayers}
+                                    className="w-16 px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:opacity-50"
+                                    placeholder="?"
+                                  />
+                                </div>
                               </div>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                              <label className="text-xs text-gray-500">Jersey #</label>
-                              <input
-                                type="number"
-                                min="0"
-                                max="99"
-                                value={gamePlayer.number || ''}
-                                onChange={(e) => updateGamePlayerMutation.mutate({
-                                  gamePlayerId: gamePlayer.id,
-                                  data: { number: e.target.value ? parseInt(e.target.value) : undefined }
-                                })}
-                                className="w-16 px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-primary-500"
-                                placeholder="?"
-                              />
-                            </div>
-                          </div>
-                        ))}
+                            )
+                          })}
                       </div>
                     </div>
                   )}
