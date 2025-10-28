@@ -266,14 +266,14 @@ export default function ShotTracker({ lastSelectedPeriod = 1, onPeriodChange, ga
     ctx.lineTo(width * 0.66, height)
     ctx.stroke()
 
-    // Face-off circles (moved closer to crease horizontally and boards vertically, doubled size)
-    drawFaceoffCircle(ctx, width * 0.25, height * 0.25, 80)  // Top left - moved closer to crease and boards
-    drawFaceoffCircle(ctx, width * 0.25, height * 0.75, 80)  // Bottom left - moved closer to crease and boards
-    drawFaceoffCircle(ctx, width * 0.75, height * 0.25, 80)  // Top right - moved closer to crease and boards
-    drawFaceoffCircle(ctx, width * 0.75, height * 0.75, 80)  // Bottom right - moved closer to crease and boards
+    // Face-off circles (80% smaller, moved closer to creases horizontally)
+    drawFaceoffCircle(ctx, width * 0.15, height * 0.25, 16)  // Top left - moved closer to left crease
+    drawFaceoffCircle(ctx, width * 0.15, height * 0.75, 16)  // Bottom left - moved closer to left crease
+    drawFaceoffCircle(ctx, width * 0.85, height * 0.25, 16)  // Top right - moved closer to right crease
+    drawFaceoffCircle(ctx, width * 0.85, height * 0.75, 16)  // Bottom right - moved closer to right crease
 
-    // Center face-off circle (keep original size)
-    drawFaceoffCircle(ctx, width * 0.5, height * 0.5, 50)
+    // Center face-off circle (match size with other circles)
+    drawFaceoffCircle(ctx, width * 0.5, height * 0.5, 16)
 
     // Goal creases
     drawGoalCrease(ctx, width * 0.05, height * 0.5)
@@ -324,16 +324,16 @@ export default function ShotTracker({ lastSelectedPeriod = 1, onPeriodChange, ga
     ctx.strokeStyle = '#c41e3a'
     ctx.lineWidth = 3
 
-    // Left goal red line (behind left crease)
+    // Left goal red line (behind left crease) - extends to top and bottom boards
     ctx.beginPath()
-    ctx.moveTo(width * 0.05, height * 0.2)  // Start above crease
-    ctx.lineTo(width * 0.05, height * 0.8)  // End below crease
+    ctx.moveTo(width * 0.05, 0)  // Start at top board
+    ctx.lineTo(width * 0.05, height)  // End at bottom board
     ctx.stroke()
 
-    // Right goal red line (behind right crease)
+    // Right goal red line (behind right crease) - extends to top and bottom boards
     ctx.beginPath()
-    ctx.moveTo(width * 0.95, height * 0.2)  // Start above crease
-    ctx.lineTo(width * 0.95, height * 0.8)  // End below crease
+    ctx.moveTo(width * 0.95, 0)  // Start at top board
+    ctx.lineTo(width * 0.95, height)  // End at bottom board
     ctx.stroke()
   }
 
