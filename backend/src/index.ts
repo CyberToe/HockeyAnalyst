@@ -65,12 +65,12 @@ app.use('/api/auth', authRoutes);
 app.use('/api/teams', authenticateToken, teamRoutes);
 app.use('/api/team-images', authenticateToken, teamImageRoutes);
 app.use('/api/players', authenticateToken, playerRoutes);
+app.use('/api/game-players', authenticateToken, gamePlayerRoutes);
 app.use('/api/games', authenticateToken, gameRoutes);
 app.use('/api/shots', authenticateToken, shotRoutes);
 app.use('/api/goals', authenticateToken, goalRoutes);
 app.use('/api/faceoffs', authenticateToken, faceoffRoutes);
 app.use('/api/analytics', authenticateToken, analyticsRoutes);
-app.use('/api/game-players', authenticateToken, gamePlayerRoutes);
 
 // Error handling middleware
 app.use(errorHandler);
