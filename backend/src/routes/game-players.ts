@@ -6,9 +6,14 @@ import { AuthRequest, requireTeamMember } from '../middleware/auth';
 const router = express.Router();
 
 // Get game players
-router.get('/games/:gameId', requireTeamMember, async (req: AuthRequest, res, next) => {
+router.get('/games/:gameId', async (req: AuthRequest, res, next) => {
   try {
     const { gameId } = req.params;
+    const userId = req.userId;
+
+    if (!userId) {
+      return res.status(401).json({ error: 'Authentication required' });
+    }
 
     // Get the game and verify team membership
     const game = await prisma.game.findUnique({
@@ -21,17 +26,15 @@ router.get('/games/:gameId', requireTeamMember, async (req: AuthRequest, res, ne
     }
 
     // Check if user is a member of the team
-    const membership = await prisma.teamMember.findUnique({
+    const teamMember = await prisma.teamMember.findFirst({
       where: {
-        teamId_userId: {
-          teamId: game.teamId,
-          userId: req.userId!
-        }
+        teamId: game.teamId,
+        userId: userId
       }
     });
 
-    if (!membership) {
-      return res.status(403).json({ error: 'Access denied' });
+    if (!teamMember) {
+      return res.status(403).json({ error: 'Access denied. You are not a member of this team.' });
     }
 
     // Get game players with player details
@@ -54,7 +57,7 @@ router.get('/games/:gameId', requireTeamMember, async (req: AuthRequest, res, ne
 });
 
 // Initialize game players (called when creating a new game)
-router.post('/games/:gameId/initialize', requireTeamMember, async (req: AuthRequest, res, next) => {
+router.post('/games/:gameId/initialize', async (req: AuthRequest, res, next) => {
   try {
     const { gameId } = req.params;
 
@@ -177,7 +180,7 @@ router.put('/:gamePlayerId', validateSchema(updateGamePlayerSchema), async (req:
 });
 
 // Bulk update game players
-router.put('/games/:gameId/bulk', requireTeamMember, async (req: AuthRequest, res, next) => {
+router.put('/games/:gameId/bulk', async (req: AuthRequest, res, next) => {
   try {
     const { gameId } = req.params;
     const { updates } = req.body; // Array of { gamePlayerId, included, number }
