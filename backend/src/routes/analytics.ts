@@ -169,7 +169,7 @@ router.get('/teams/:teamId', requireTeamMember, async (req: AuthRequest, res, ne
         shootingPercentage: Math.round(teamShootingPercentage * 100) / 100,
         goalDifference: teamGoals - opponentGoals
       },
-      players,
+      playerStats,
       gameStats,
       periodStats,
       shotTimeline
