@@ -160,12 +160,12 @@ export default function AnalyticsPage() {
       setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')
     } else {
       setSortField(field)
-      setSortDirection('asc')
+      setSortDirection('desc') // First click sorts highest to lowest
     }
   }
 
   const getSortIcon = (field: string) => {
-    if (sortField !== field) return '↕️'
+    if (sortField !== field) return ''
     return sortDirection === 'asc' ? '↑' : '↓'
   }
 
@@ -471,6 +471,15 @@ export default function AnalyticsPage() {
                         <tr>
                           <th 
                             className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
+                            onClick={() => handleSort('number')}
+                          >
+                            <div className="flex items-center space-x-1">
+                              <span>Number</span>
+                              <span className="text-lg">{getSortIcon('number')}</span>
+                            </div>
+                          </th>
+                          <th 
+                            className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
                             onClick={() => handleSort('name')}
                           >
                             <div className="flex items-center space-x-1">
@@ -541,6 +550,10 @@ export default function AnalyticsPage() {
                             let aValue, bValue
                             
                             switch (sortField) {
+                              case 'number':
+                                aValue = a.number || 999
+                                bValue = b.number || 999
+                                break
                               case 'name':
                                 aValue = a.name || ''
                                 bValue = b.name || ''
@@ -590,20 +603,12 @@ export default function AnalyticsPage() {
                           })
                           .map((player: any) => (
                           <tr key={player.id} className="hover:bg-gray-50">
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                              {player.number || '#'}
+                            </td>
                             <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="flex items-center">
-                                <div className="flex-shrink-0 h-8 w-8">
-                                  <div className="h-8 w-8 rounded-full bg-primary-100 flex items-center justify-center">
-                                    <span className="text-sm font-medium text-primary-600">
-                                      {player.number || '#'}
-                                    </span>
-                                  </div>
-                                </div>
-                                <div className="ml-3">
-                                  <div className="text-sm font-medium text-gray-900">
-                                    {player.name}
-                                  </div>
-                                </div>
+                              <div className="text-sm font-medium text-gray-900">
+                                {player.name}
                               </div>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
