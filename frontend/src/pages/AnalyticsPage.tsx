@@ -471,31 +471,31 @@ export default function AnalyticsPage() {
                                 bValue = b.name || ''
                                 break
                               case 'shots':
-                                aValue = a.statistics?.shots || 0
-                                bValue = b.statistics?.shots || 0
+                                aValue = a.stats?.shots || 0
+                                bValue = b.stats?.shots || 0
                                 break
                               case 'goals':
-                                aValue = a.statistics?.goals || 0
-                                bValue = b.statistics?.goals || 0
+                                aValue = a.stats?.goals || 0
+                                bValue = b.stats?.goals || 0
                                 break
                               case 'assists':
-                                aValue = a.statistics?.assists || 0
-                                bValue = b.statistics?.assists || 0
+                                aValue = a.stats?.assists || 0
+                                bValue = b.stats?.assists || 0
                                 break
                               case 'faceoffsTaken':
-                                aValue = a.statistics?.faceoffsTaken || 0
-                                bValue = b.statistics?.faceoffsTaken || 0
+                                aValue = a.stats?.faceoffsTaken || 0
+                                bValue = b.stats?.faceoffsTaken || 0
                                 break
                               case 'faceoffsWon':
-                                aValue = a.statistics?.faceoffsWon || 0
-                                bValue = b.statistics?.faceoffsWon || 0
+                                aValue = a.stats?.faceoffsWon || 0
+                                bValue = b.stats?.faceoffsWon || 0
                                 break
                               case 'faceoffPercentage':
-                                aValue = a.statistics?.faceoffsTaken > 0 
-                                  ? (a.statistics?.faceoffsWon || 0) / a.statistics?.faceoffsTaken 
+                                aValue = a.stats?.faceoffsTaken > 0 
+                                  ? (a.stats?.faceoffsWon || 0) / a.stats?.faceoffsTaken 
                                   : 0
-                                bValue = b.statistics?.faceoffsTaken > 0 
-                                  ? (b.statistics?.faceoffsWon || 0) / b.statistics?.faceoffsTaken 
+                                bValue = b.stats?.faceoffsTaken > 0 
+                                  ? (b.stats?.faceoffsWon || 0) / b.stats?.faceoffsTaken 
                                   : 0
                                 break
                               default:
