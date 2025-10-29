@@ -91,7 +91,33 @@ export default function ShotTracker({ lastSelectedPeriod = 1, onPeriodChange, ga
   // State for reset confirmation modal
   const [showResetModal, setShowResetModal] = useState(false)
 
-  
+  // State for canvas dimensions
+  const [canvasDimensions, setCanvasDimensions] = useState({ width: 800, height: 400 })
+
+  // Calculate responsive canvas dimensions
+  const calculateCanvasDimensions = () => {
+    const container = canvasRef.current?.parentElement
+    if (!container) return { width: 800, height: 400 }
+    
+    const containerWidth = container.clientWidth - 32 // Account for padding
+    const maxWidth = Math.min(containerWidth, 800) // Cap at 800px
+    const width = Math.max(maxWidth, 300) // Minimum 300px
+    const height = width / 2 // Maintain 2:1 aspect ratio
+    
+    return { width, height }
+  }
+
+  // Update canvas dimensions on resize
+  useEffect(() => {
+    const updateDimensions = () => {
+      const newDimensions = calculateCanvasDimensions()
+      setCanvasDimensions(newDimensions)
+    }
+
+    updateDimensions()
+    window.addEventListener('resize', updateDimensions)
+    return () => window.removeEventListener('resize', updateDimensions)
+  }, [])
 
   // Fetch game data with periods
   const { data: gameData, isLoading } = useQuery({
@@ -226,6 +252,10 @@ export default function ShotTracker({ lastSelectedPeriod = 1, onPeriodChange, ga
 
     const ctx = canvas.getContext('2d')
     if (!ctx) return
+
+    // Set canvas internal dimensions to match our calculated dimensions
+    canvas.width = canvasDimensions.width
+    canvas.height = canvasDimensions.height
 
     const width = canvas.width
     const height = canvas.height
@@ -562,7 +592,7 @@ export default function ShotTracker({ lastSelectedPeriod = 1, onPeriodChange, ga
   // Draw rink when component mounts or shots change
   useEffect(() => {
     drawRink()
-  }, [game, shots, selectedPeriod, attackingDirection])
+  }, [game, shots, selectedPeriod, attackingDirection, canvasDimensions])
 
   // Sync selectedPeriod when lastSelectedPeriod changes (when switching back from other trackers)
   useEffect(() => {
@@ -883,9 +913,14 @@ export default function ShotTracker({ lastSelectedPeriod = 1, onPeriodChange, ga
           <div className="relative bg-blue-100 rounded-lg p-4">
             <canvas 
               ref={canvasRef}
-              width={800}
-              height={400}
-              className="w-full h-96 border-4 border-gray-800 rounded-lg cursor-crosshair"
+              width={canvasDimensions.width}
+              height={canvasDimensions.height}
+              className="border-4 border-gray-800 rounded-lg cursor-crosshair"
+              style={{
+                width: `${canvasDimensions.width}px`,
+                height: `${canvasDimensions.height}px`,
+                maxWidth: '100%'
+              }}
               onClick={handleCanvasClick}
               onMouseMove={handleCanvasMouseMove}
             />
