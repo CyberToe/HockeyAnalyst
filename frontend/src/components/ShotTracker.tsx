@@ -893,9 +893,9 @@ export default function ShotTracker({ lastSelectedPeriod = 1, onPeriodChange, ga
           : 'bg-blue-100'
       }`}>
         
-        <div className="flex items-center justify-center gap-4">
+        <div className="flex flex-col md:flex-row items-center justify-center gap-4">
           {/* Left Stats - FOR */}
-          <div className="flex flex-col items-center space-y-4 bg-green-50 rounded-lg p-4 min-w-[120px]">
+          <div className="hidden md:flex flex-col items-center space-y-4 bg-green-50 rounded-lg p-4 min-w-[120px]">
             <div className="text-center">
               <div className="text-lg font-bold text-green-800">FOR</div>
             </div>
@@ -944,7 +944,7 @@ export default function ShotTracker({ lastSelectedPeriod = 1, onPeriodChange, ga
           </div>
 
           {/* Right Stats - AGAINST */}
-          <div className="flex flex-col items-center space-y-4 bg-red-50 rounded-lg p-4 min-w-[120px]">
+          <div className="hidden md:flex flex-col items-center space-y-4 bg-red-50 rounded-lg p-4 min-w-[120px]">
             <div className="text-center">
               <div className="text-lg font-bold text-red-800">AGAINST</div>
             </div>
@@ -955,6 +955,38 @@ export default function ShotTracker({ lastSelectedPeriod = 1, onPeriodChange, ga
             <div className="text-center">
               <div className="text-2xl font-bold text-red-600">{stats.againstScores}</div>
               <div className="text-xs text-red-700">Scores</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Mobile compact stats below rink */}
+        <div className="md:hidden mt-4">
+          <div className="grid grid-cols-2 gap-2">
+            <div className="bg-green-50 rounded-lg p-2 text-center">
+              <div className="text-[10px] font-bold text-green-800">FOR</div>
+              <div className="flex items-center justify-center gap-3 mt-1">
+                <div>
+                  <div className="text-sm font-bold text-green-600">{stats.forShots}</div>
+                  <div className="text-[10px] text-green-700">Shots</div>
+                </div>
+                <div>
+                  <div className="text-sm font-bold text-green-600">{stats.forScores}</div>
+                  <div className="text-[10px] text-green-700">Scores</div>
+                </div>
+              </div>
+            </div>
+            <div className="bg-red-50 rounded-lg p-2 text-center">
+              <div className="text-[10px] font-bold text-red-800">AGAINST</div>
+              <div className="flex items-center justify-center gap-3 mt-1">
+                <div>
+                  <div className="text-sm font-bold text-red-600">{stats.againstShots}</div>
+                  <div className="text-[10px] text-red-700">Shots</div>
+                </div>
+                <div>
+                  <div className="text-sm font-bold text-red-600">{stats.againstScores}</div>
+                  <div className="text-[10px] text-red-700">Scores</div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
