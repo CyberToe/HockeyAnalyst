@@ -261,29 +261,47 @@ export default function AnalyticsPage() {
           </div>
         </div>
         
-        {playersData?.players && playersData.players.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-            {playersData.players
-              .sort((a: Player, b: Player) => (a.number || 999) - (b.number || 999))
-              .map((player: Player) => (
-              <label key={player.id} className="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={selectedPlayers.has(player.id)}
-                  onChange={() => handlePlayerToggle(player.id)}
-                  className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
-                />
-                <div className="flex-1 min-w-0">
-                  <div className="text-sm font-medium text-gray-900 truncate">
-                    {player.number ? `#${player.number} ` : ''}{player.name}
-                  </div>
-                </div>
-              </label>
-            ))}
+        <div className="space-y-4">
+          {/* AGAINST Option */}
+          <div className="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={selectedPlayers.has('AGAINST')}
+              onChange={() => handlePlayerToggle('AGAINST')}
+              className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+            />
+            <div className="flex-1 min-w-0">
+              <div className="text-sm font-medium text-gray-900 truncate">
+                AGAINST (Opponent Shots)
+              </div>
+            </div>
           </div>
-        ) : (
-          <p className="text-gray-500 text-sm">No players available</p>
-        )}
+
+          {/* Team Players */}
+          {playersData?.players && playersData.players.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+              {playersData.players
+                .sort((a: Player, b: Player) => (a.number || 999) - (b.number || 999))
+                .map((player: Player) => (
+                <label key={player.id} className="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={selectedPlayers.has(player.id)}
+                    onChange={() => handlePlayerToggle(player.id)}
+                    className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-medium text-gray-900 truncate">
+                      {player.number ? `#${player.number} ` : ''}{player.name}
+                    </div>
+                  </div>
+                </label>
+              ))}
+            </div>
+          ) : (
+            <p className="text-gray-500 text-sm">No players available</p>
+          )}
+        </div>
       </div>
 
       {/* Analytics Content */}
@@ -327,8 +345,15 @@ export default function AnalyticsPage() {
                 {(() => {
                   // Filter shots by selected players
                   const filteredShots = (analyticsData.shotTimeline || []).filter((shot: any) => {
-                    if (!shot.shooter) return false
-                    return selectedPlayers.has(shot.shooter.id)
+                    // If AGAINST is selected, include shots against (scoredAgainst = true)
+                    if (selectedPlayers.has('AGAINST') && shot.scoredAgainst) {
+                      return true
+                    }
+                    // If specific players are selected, include their shots
+                    if (shot.shooter && selectedPlayers.has(shot.shooter.id)) {
+                      return true
+                    }
+                    return false
                   })
                   
                   return (

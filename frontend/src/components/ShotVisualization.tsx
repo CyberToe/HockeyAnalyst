@@ -201,6 +201,13 @@ export default function ShotVisualization({ shots, period, title, periodAttackin
           x = width - x
         }
       }
+      
+      // Additional check: if shot is on the left side of the rink (x < width/2), flip it to right side
+      // This ensures ALL shots appear as attacking right
+      if (x < width / 2) {
+        console.log(`Flipping shot ${shot.id} from left side to right side`)
+        x = width - x
+      }
 
       // Determine marker style based on shot properties (same as ShotTracker)
       let fillColor, strokeColor, isFilled
