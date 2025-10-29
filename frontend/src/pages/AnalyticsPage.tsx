@@ -324,37 +324,49 @@ export default function AnalyticsPage() {
               
               {/* Shot Visualizations for each period */}
               <div className="space-y-6">
-                <div ref={(el) => shotVizRefs.current[0] = el}>
-                  <ShotVisualization
-                    shots={analyticsData.shotTimeline || []}
-                    period={1}
-                    title="Period 1"
-                    periodAttackingDirection={analyticsData.periodStats?.find((p: any) => p.period.periodNumber === 1)?.period.attackingDirection}
-                  />
-                </div>
-                <div ref={(el) => shotVizRefs.current[1] = el}>
-                  <ShotVisualization
-                    shots={analyticsData.shotTimeline || []}
-                    period={2}
-                    title="Period 2"
-                    periodAttackingDirection={analyticsData.periodStats?.find((p: any) => p.period.periodNumber === 2)?.period.attackingDirection}
-                  />
-                </div>
-                <div ref={(el) => shotVizRefs.current[2] = el}>
-                  <ShotVisualization
-                    shots={analyticsData.shotTimeline || []}
-                    period={3}
-                    title="Period 3"
-                    periodAttackingDirection={analyticsData.periodStats?.find((p: any) => p.period.periodNumber === 3)?.period.attackingDirection}
-                  />
-                </div>
-                <div ref={(el) => shotVizRefs.current[3] = el}>
-                  <ShotVisualization
-                    shots={analyticsData.shotTimeline || []}
-                    period="all"
-                    title="All Periods"
-                  />
-                </div>
+                {(() => {
+                  // Filter shots by selected players
+                  const filteredShots = (analyticsData.shotTimeline || []).filter((shot: any) => {
+                    if (!shot.shooter) return false
+                    return selectedPlayers.has(shot.shooter.id)
+                  })
+                  
+                  return (
+                    <>
+                      <div ref={(el) => shotVizRefs.current[0] = el}>
+                        <ShotVisualization
+                          shots={filteredShots}
+                          period={1}
+                          title="Period 1"
+                          periodAttackingDirection={analyticsData.periodStats?.find((p: any) => p.period.periodNumber === 1)?.period.attackingDirection}
+                        />
+                      </div>
+                      <div ref={(el) => shotVizRefs.current[1] = el}>
+                        <ShotVisualization
+                          shots={filteredShots}
+                          period={2}
+                          title="Period 2"
+                          periodAttackingDirection={analyticsData.periodStats?.find((p: any) => p.period.periodNumber === 2)?.period.attackingDirection}
+                        />
+                      </div>
+                      <div ref={(el) => shotVizRefs.current[2] = el}>
+                        <ShotVisualization
+                          shots={filteredShots}
+                          period={3}
+                          title="Period 3"
+                          periodAttackingDirection={analyticsData.periodStats?.find((p: any) => p.period.periodNumber === 3)?.period.attackingDirection}
+                        />
+                      </div>
+                      <div ref={(el) => shotVizRefs.current[3] = el}>
+                        <ShotVisualization
+                          shots={filteredShots}
+                          period="all"
+                          title="All Periods"
+                        />
+                      </div>
+                    </>
+                  )
+                })()}
               </div>
 
               {/* Game Overview */}

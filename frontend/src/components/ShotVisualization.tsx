@@ -185,6 +185,8 @@ export default function ShotVisualization({ shots, period, title, periodAttackin
       // Mirror shots based on attacking direction
       // For each period rink, the attacking direction should be right
       // If the goal is saved as attacking left, flip the node, else just draw the node as saved
+      
+      // Always ensure we show attacking right by flipping left-direction shots
       if (period === 'all') {
         // For "All Periods", mirror shots that were taken when attacking direction was 'left'
         if (shot.attackingDirection === 'left') {
