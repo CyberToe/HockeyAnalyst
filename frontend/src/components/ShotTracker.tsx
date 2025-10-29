@@ -296,18 +296,22 @@ export default function ShotTracker({ lastSelectedPeriod = 1, onPeriodChange, ga
     ctx.lineTo(width * 0.66, height)
     ctx.stroke()
 
-    // Face-off circles (radius 64, moved closer to creases horizontally)
-    drawFaceoffCircle(ctx, width * 0.15, height * 0.25, 64)  // Top left - moved closer to left crease
-    drawFaceoffCircle(ctx, width * 0.15, height * 0.75, 64)  // Bottom left - moved closer to left crease
-    drawFaceoffCircle(ctx, width * 0.85, height * 0.25, 64)  // Top right - moved closer to right crease
-    drawFaceoffCircle(ctx, width * 0.85, height * 0.75, 64)  // Bottom right - moved closer to right crease
+    // Dynamic sizes based on canvas height (preserves look across devices)
+    const faceoffRadius = Math.max(18, Math.min(64, Math.round(height * 0.16)))
+    const goalCreaseRadius = Math.max(10, Math.round(height * 0.075))
+
+    // Face-off circles (moved closer to creases horizontally)
+    drawFaceoffCircle(ctx, width * 0.15, height * 0.25, faceoffRadius)  // Top left - closer to left crease
+    drawFaceoffCircle(ctx, width * 0.15, height * 0.75, faceoffRadius)  // Bottom left - closer to left crease
+    drawFaceoffCircle(ctx, width * 0.85, height * 0.25, faceoffRadius)  // Top right - closer to right crease
+    drawFaceoffCircle(ctx, width * 0.85, height * 0.75, faceoffRadius)  // Bottom right - closer to right crease
 
     // Center face-off circle (match size with other circles)
-    drawFaceoffCircle(ctx, width * 0.5, height * 0.5, 64)
+    drawFaceoffCircle(ctx, width * 0.5, height * 0.5, faceoffRadius)
 
     // Goal creases
-    drawGoalCrease(ctx, width * 0.05, height * 0.5)
-    drawGoalCrease(ctx, width * 0.95, height * 0.5)
+    drawGoalCrease(ctx, width * 0.05, height * 0.5, goalCreaseRadius)
+    drawGoalCrease(ctx, width * 0.95, height * 0.5, goalCreaseRadius)
 
     // Red lines behind goal creases
     drawRedLinesBehindCreases(ctx, width, height)
@@ -327,12 +331,13 @@ export default function ShotTracker({ lastSelectedPeriod = 1, onPeriodChange, ga
     // Center dot
     ctx.fillStyle = '#c41e3a'
     ctx.beginPath()
-    ctx.arc(x, y, 4, 0, Math.PI * 2)
+    const centerDotRadius = Math.max(2, Math.min(6, Math.round(radius * 0.0625)))
+    ctx.arc(x, y, centerDotRadius, 0, Math.PI * 2)
     ctx.fill()
   }
 
   // Draw goal crease
-  const drawGoalCrease = (ctx: CanvasRenderingContext2D, x: number, y: number) => {
+  const drawGoalCrease = (ctx: CanvasRenderingContext2D, x: number, y: number, radius: number) => {
     ctx.strokeStyle = '#0033a0'
     ctx.fillStyle = 'rgba(0, 51, 160, 0.1)'
     ctx.lineWidth = 2
@@ -340,10 +345,10 @@ export default function ShotTracker({ lastSelectedPeriod = 1, onPeriodChange, ga
     ctx.beginPath()
     if (x < canvasRef.current!.width / 2) {
       // Left goal
-      ctx.arc(x, y, 30, -Math.PI / 2, Math.PI / 2)
+      ctx.arc(x, y, radius, -Math.PI / 2, Math.PI / 2)
     } else {
       // Right goal
-      ctx.arc(x, y, 30, Math.PI / 2, -Math.PI / 2)
+      ctx.arc(x, y, radius, Math.PI / 2, -Math.PI / 2)
     }
     ctx.fill()
     ctx.stroke()
@@ -893,22 +898,7 @@ export default function ShotTracker({ lastSelectedPeriod = 1, onPeriodChange, ga
           : 'bg-blue-100'
       }`}>
         
-        <div className="flex flex-col md:flex-row items-center justify-center gap-4">
-          {/* Left Stats - FOR */}
-          <div className="hidden md:flex flex-col items-center space-y-4 bg-green-50 rounded-lg p-4 min-w-[120px]">
-            <div className="text-center">
-              <div className="text-lg font-bold text-green-800">FOR</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-green-600">{stats.forShots}</div>
-              <div className="text-xs text-green-700">Shots</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-green-600">{stats.forScores}</div>
-              <div className="text-xs text-green-700">Scores</div>
-            </div>
-          </div>
-
+        <div className="flex items-center justify-center">
           {/* Rink Canvas */}
           <div className="relative bg-blue-100 rounded-lg p-4">
             <canvas 
@@ -943,48 +933,33 @@ export default function ShotTracker({ lastSelectedPeriod = 1, onPeriodChange, ga
             </div>
           </div>
 
-          {/* Right Stats - AGAINST */}
-          <div className="hidden md:flex flex-col items-center space-y-4 bg-red-50 rounded-lg p-4 min-w-[120px]">
-            <div className="text-center">
-              <div className="text-lg font-bold text-red-800">AGAINST</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-red-600">{stats.againstShots}</div>
-              <div className="text-xs text-red-700">Shots</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-red-600">{stats.againstScores}</div>
-              <div className="text-xs text-red-700">Scores</div>
-            </div>
-          </div>
         </div>
-
-        {/* Mobile compact stats below rink */}
-        <div className="md:hidden mt-4">
-          <div className="grid grid-cols-2 gap-2">
-            <div className="bg-green-50 rounded-lg p-2 text-center">
-              <div className="text-[10px] font-bold text-green-800">FOR</div>
-              <div className="flex items-center justify-center gap-3 mt-1">
+        {/* Compact stats below rink on all screens */}
+        <div className="mt-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div className="bg-green-50 rounded-lg p-3 md:p-4 text-center">
+              <div className="text-[11px] md:text-xs font-bold text-green-800">FOR</div>
+              <div className="flex items-center justify-center gap-6 mt-1">
                 <div>
-                  <div className="text-sm font-bold text-green-600">{stats.forShots}</div>
-                  <div className="text-[10px] text-green-700">Shots</div>
+                  <div className="text-base md:text-lg font-bold text-green-600">{stats.forShots}</div>
+                  <div className="text-[10px] md:text-xs text-green-700">Shots</div>
                 </div>
                 <div>
-                  <div className="text-sm font-bold text-green-600">{stats.forScores}</div>
-                  <div className="text-[10px] text-green-700">Scores</div>
+                  <div className="text-base md:text-lg font-bold text-green-600">{stats.forScores}</div>
+                  <div className="text-[10px] md:text-xs text-green-700">Scores</div>
                 </div>
               </div>
             </div>
-            <div className="bg-red-50 rounded-lg p-2 text-center">
-              <div className="text-[10px] font-bold text-red-800">AGAINST</div>
-              <div className="flex items-center justify-center gap-3 mt-1">
+            <div className="bg-red-50 rounded-lg p-3 md:p-4 text-center">
+              <div className="text-[11px] md:text-xs font-bold text-red-800">AGAINST</div>
+              <div className="flex items-center justify-center gap-6 mt-1">
                 <div>
-                  <div className="text-sm font-bold text-red-600">{stats.againstShots}</div>
-                  <div className="text-[10px] text-red-700">Shots</div>
+                  <div className="text-base md:text-lg font-bold text-red-600">{stats.againstShots}</div>
+                  <div className="text-[10px] md:text-xs text-red-700">Shots</div>
                 </div>
                 <div>
-                  <div className="text-sm font-bold text-red-600">{stats.againstScores}</div>
-                  <div className="text-[10px] text-red-700">Scores</div>
+                  <div className="text-base md:text-lg font-bold text-red-600">{stats.againstScores}</div>
+                  <div className="text-[10px] md:text-xs text-red-700">Scores</div>
                 </div>
               </div>
             </div>
