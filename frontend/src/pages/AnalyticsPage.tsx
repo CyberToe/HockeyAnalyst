@@ -62,7 +62,11 @@ export default function AnalyticsPage() {
 
   useEffect(() => {
     if (playersData?.players && !hasInitializedPlayers) {
-      setSelectedPlayers(new Set(playersData.players.map((player: Player) => player.id)))
+      // Only select team players by default, exclude substitute players
+      const teamPlayerIds = playersData.players
+        .filter((player: Player) => player.type === 'TEAM_PLAYER')
+        .map((player: Player) => player.id)
+      setSelectedPlayers(new Set(teamPlayerIds))
       setHasInitializedPlayers(true)
     }
   }, [playersData, hasInitializedPlayers])
@@ -279,24 +283,58 @@ export default function AnalyticsPage() {
 
           {/* Team Players */}
           {playersData?.players && playersData.players.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-              {playersData.players
-                .sort((a: Player, b: Player) => (a.number || 999) - (b.number || 999))
-                .map((player: Player) => (
-                <label key={player.id} className="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={selectedPlayers.has(player.id)}
-                    onChange={() => handlePlayerToggle(player.id)}
-                    className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
-                  />
-                  <div className="flex-1 min-w-0">
-                    <div className="text-sm font-medium text-gray-900 truncate">
-                      {player.number ? `#${player.number} ` : ''}{player.name}
-                    </div>
+            <div className="space-y-4">
+              {/* Team Players Section */}
+              <div>
+                <h4 className="text-sm font-medium text-gray-700 mb-3">Team Players</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                  {playersData.players
+                    .filter((player: Player) => player.type === 'TEAM_PLAYER')
+                    .sort((a: Player, b: Player) => (a.number || 999) - (b.number || 999))
+                    .map((player: Player) => (
+                    <label key={player.id} className="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={selectedPlayers.has(player.id)}
+                        onChange={() => handlePlayerToggle(player.id)}
+                        className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <div className="text-sm font-medium text-gray-900 truncate">
+                          {player.number ? `#${player.number} ` : ''}{player.name}
+                        </div>
+                      </div>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* Substitute Players Section */}
+              {playersData.players.filter((player: Player) => player.type === 'SUBSTITUTE').length > 0 && (
+                <div>
+                  <h4 className="text-sm font-medium text-gray-700 mb-3">Substitute Players</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                    {playersData.players
+                      .filter((player: Player) => player.type === 'SUBSTITUTE')
+                      .sort((a: Player, b: Player) => (a.number || 999) - (b.number || 999))
+                      .map((player: Player) => (
+                      <label key={player.id} className="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={selectedPlayers.has(player.id)}
+                          onChange={() => handlePlayerToggle(player.id)}
+                          className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <div className="text-sm font-medium text-gray-900 truncate">
+                            {player.number ? `#${player.number} ` : ''}{player.name}
+                          </div>
+                        </div>
+                      </label>
+                    ))}
                   </div>
-                </label>
-              ))}
+                </div>
+              )}
             </div>
           ) : (
             <p className="text-gray-500 text-sm">No players available</p>

@@ -182,31 +182,37 @@ export default function ShotVisualization({ shots, period, title, periodAttackin
       let x = shot.xCoord
       let y = shot.yCoord
 
-      // Mirror shots based on attacking direction
-      // For each period rink, the attacking direction should be right
-      // If the goal is saved as attacking left, flip the node, else just draw the node as saved
+      // Mirror shots based on attacking direction and shot type
+      // Team shots should show attacking right, opponent shots should show attacking left
       
-      // Always ensure we show attacking right by flipping left-direction shots
-      if (period === 'all') {
-        // For "All Periods", mirror shots that were taken when attacking direction was 'left'
-        if (shot.attackingDirection === 'left') {
-          console.log(`Mirroring shot ${shot.id} for all periods (left direction)`)
+      if (shot.scoredAgainst) {
+        // AGAINST shots: show on left side (opponent's attacking direction)
+        // If shot is on right side, flip it to left side
+        if (x > width / 2) {
+          console.log(`Flipping AGAINST shot ${shot.id} from right side to left side`)
           x = width - x
         }
       } else {
-        // For individual periods, mirror shots if the period's attacking direction was 'left'
-        // This ensures all periods show attacking right (flip left-direction shots)
-        if (periodAttackingDirection === 'left') {
-          console.log(`Mirroring shot ${shot.id} for period ${period} (left direction)`)
+        // Team shots: show on right side (our attacking direction)
+        if (period === 'all') {
+          // For "All Periods", mirror shots that were taken when attacking direction was 'left'
+          if (shot.attackingDirection === 'left') {
+            console.log(`Mirroring team shot ${shot.id} for all periods (left direction)`)
+            x = width - x
+          }
+        } else {
+          // For individual periods, mirror shots if the period's attacking direction was 'left'
+          if (periodAttackingDirection === 'left') {
+            console.log(`Mirroring team shot ${shot.id} for period ${period} (left direction)`)
+            x = width - x
+          }
+        }
+        
+        // Additional check: if team shot is on the left side, flip it to right side
+        if (x < width / 2) {
+          console.log(`Flipping team shot ${shot.id} from left side to right side`)
           x = width - x
         }
-      }
-      
-      // Additional check: if shot is on the left side of the rink (x < width/2), flip it to right side
-      // This ensures ALL shots appear as attacking right
-      if (x < width / 2) {
-        console.log(`Flipping shot ${shot.id} from left side to right side`)
-        x = width - x
       }
 
       // Determine marker style based on shot properties (same as ShotTracker)
