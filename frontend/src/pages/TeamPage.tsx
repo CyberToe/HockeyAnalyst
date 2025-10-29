@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useParams } from 'react-router-dom'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import { teamsApi, playersApi, gamesApi } from '../lib/api'
 import { PlusIcon, UserGroupIcon, CalendarIcon, ClipboardDocumentIcon } from '@heroicons/react/24/outline'
@@ -12,6 +12,7 @@ export default function TeamPage() {
   const { teamId } = useParams<{ teamId: string }>()
   const [showCreatePlayerModal, setShowCreatePlayerModal] = useState(false)
   const [showCreateGameModal, setShowCreateGameModal] = useState(false)
+  const queryClient = useQueryClient()
 
   const copyTeamCode = async (teamCode: string) => {
     try {
@@ -250,6 +251,8 @@ export default function TeamPage() {
         onSuccess={() => {
           setShowCreatePlayerModal(false)
           refetchPlayers()
+          // Also invalidate game players queries to update any open game pages
+          queryClient.invalidateQueries({ queryKey: ['gamePlayers'] })
         }}
         teamId={teamId!}
       />

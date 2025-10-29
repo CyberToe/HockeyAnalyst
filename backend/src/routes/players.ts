@@ -66,6 +66,23 @@ router.post('/teams/:teamId', requireTeamMember, validateSchema(createPlayerSche
       }
     });
 
+    // Add player to all existing games for this team
+    const existingGames = await prisma.game.findMany({
+      where: { teamId },
+      select: { id: true }
+    });
+
+    if (existingGames.length > 0) {
+      await prisma.gamePlayer.createMany({
+        data: existingGames.map(game => ({
+          gameId: game.id,
+          playerId: player.id,
+          included: false, // Add with checkbox unchecked
+          number: player.number
+        }))
+      });
+    }
+
     res.status(201).json({
       message: 'Player added successfully',
       player

@@ -39,6 +39,10 @@ export default function GamePage() {
   const [faceoffToUpdate, setFaceoffToUpdate] = useState<any>(null)
   const [manualTaken, setManualTaken] = useState(0)
   const [manualWon, setManualWon] = useState(0)
+  
+  // Faceoff deletion confirmation
+  const [showFaceoffDeleteModal, setShowFaceoffDeleteModal] = useState(false)
+  const [faceoffToDelete, setFaceoffToDelete] = useState<string | null>(null)
 
   // Player edit state
   const [editingPlayers, setEditingPlayers] = useState(false)
@@ -288,11 +292,30 @@ export default function GamePage() {
     onSuccess: () => {
       refetchFaceoffs()
       toast.success('Player removed from faceoffs tracking')
+      setShowFaceoffDeleteModal(false)
+      setFaceoffToDelete(null)
     },
     onError: (error: any) => {
       toast.error(error.response?.data?.error || 'Failed to remove player from faceoffs')
     }
   })
+
+  // Faceoff deletion handlers
+  const handleDeleteFaceoff = (faceoffId: string) => {
+    setFaceoffToDelete(faceoffId)
+    setShowFaceoffDeleteModal(true)
+  }
+
+  const confirmDeleteFaceoff = () => {
+    if (faceoffToDelete) {
+      deleteFaceoffMutation.mutate(faceoffToDelete)
+    }
+  }
+
+  const cancelDeleteFaceoff = () => {
+    setShowFaceoffDeleteModal(false)
+    setFaceoffToDelete(null)
+  }
 
   // Game players mutations
   const updateGamePlayerMutation = useMutation({
@@ -585,7 +608,7 @@ export default function GamePage() {
                                     Manual
                                   </button>
                                   <button
-                                    onClick={() => deleteFaceoffMutation.mutate(faceoff.id)}
+                                    onClick={() => handleDeleteFaceoff(faceoff.id)}
                                     disabled={deleteFaceoffMutation.isPending}
                                     className="px-2 py-1 bg-red-100 text-red-700 rounded hover:bg-red-200 text-xs font-medium disabled:opacity-50"
                                   >
@@ -802,6 +825,35 @@ export default function GamePage() {
                 className="flex-1 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
               >
                 Delete Goal
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Faceoff Confirmation Modal */}
+      {showFaceoffDeleteModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              Delete Faceoff Record
+            </h3>
+            <p className="text-gray-600 mb-6">
+              Are you sure you want to remove this player from faceoffs tracking? This action cannot be undone.
+            </p>
+            <div className="flex space-x-3">
+              <button
+                onClick={cancelDeleteFaceoff}
+                className="flex-1 px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDeleteFaceoff}
+                disabled={deleteFaceoffMutation.isPending}
+                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors disabled:opacity-50"
+              >
+                {deleteFaceoffMutation.isPending ? 'Deleting...' : 'Delete'}
               </button>
             </div>
           </div>

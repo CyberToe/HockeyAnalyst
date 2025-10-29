@@ -42,6 +42,8 @@ export default function TeamPlayersPage() {
       playersApi.createPlayer(teamId!, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['players', teamId] })
+      // Also invalidate game players queries to update any open game pages
+      queryClient.invalidateQueries({ queryKey: ['gamePlayers'] })
       setShowCreateModal(false)
       toast.success('Player created successfully')
     },

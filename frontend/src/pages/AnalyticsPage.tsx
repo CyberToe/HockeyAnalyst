@@ -31,6 +31,10 @@ export default function AnalyticsPage() {
   const [hasInitializedGames, setHasInitializedGames] = useState(false)
   const [hasInitializedPlayers, setHasInitializedPlayers] = useState(false)
   
+  // State for sorting
+  const [sortField, setSortField] = useState<string>('number')
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc')
+  
   // Refs for shot visualizations
   const shotVizRefs = useRef<(HTMLDivElement | null)[]>([])
 
@@ -145,6 +149,20 @@ export default function AnalyticsPage() {
       newSelectedPlayers.add(playerId)
     }
     setSelectedPlayers(newSelectedPlayers)
+  }
+
+  const handleSort = (field: string) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')
+    } else {
+      setSortField(field)
+      setSortDirection('asc')
+    }
+  }
+
+  const getSortIcon = (field: string) => {
+    if (sortField !== field) return '↕️'
+    return sortDirection === 'asc' ? '↑' : '↓'
   }
 
   const handleDeselectAllGames = () => {
@@ -376,33 +394,125 @@ export default function AnalyticsPage() {
                     <table className="min-w-full divide-y divide-gray-200">
                       <thead className="bg-gray-50">
                         <tr>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Player
+                          <th 
+                            className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
+                            onClick={() => handleSort('name')}
+                          >
+                            <div className="flex items-center space-x-1">
+                              <span>Player</span>
+                              <span className="text-lg">{getSortIcon('name')}</span>
+                            </div>
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Shots
+                          <th 
+                            className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
+                            onClick={() => handleSort('shots')}
+                          >
+                            <div className="flex items-center space-x-1">
+                              <span>Shots</span>
+                              <span className="text-lg">{getSortIcon('shots')}</span>
+                            </div>
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Goals
+                          <th 
+                            className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
+                            onClick={() => handleSort('goals')}
+                          >
+                            <div className="flex items-center space-x-1">
+                              <span>Goals</span>
+                              <span className="text-lg">{getSortIcon('goals')}</span>
+                            </div>
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Assists
+                          <th 
+                            className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
+                            onClick={() => handleSort('assists')}
+                          >
+                            <div className="flex items-center space-x-1">
+                              <span>Assists</span>
+                              <span className="text-lg">{getSortIcon('assists')}</span>
+                            </div>
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Faceoffs Taken
+                          <th 
+                            className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
+                            onClick={() => handleSort('faceoffsTaken')}
+                          >
+                            <div className="flex items-center space-x-1">
+                              <span>Faceoffs Taken</span>
+                              <span className="text-lg">{getSortIcon('faceoffsTaken')}</span>
+                            </div>
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Faceoffs Won
+                          <th 
+                            className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
+                            onClick={() => handleSort('faceoffsWon')}
+                          >
+                            <div className="flex items-center space-x-1">
+                              <span>Faceoffs Won</span>
+                              <span className="text-lg">{getSortIcon('faceoffsWon')}</span>
+                            </div>
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Faceoff %
+                          <th 
+                            className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
+                            onClick={() => handleSort('faceoffPercentage')}
+                          >
+                            <div className="flex items-center space-x-1">
+                              <span>Faceoff %</span>
+                              <span className="text-lg">{getSortIcon('faceoffPercentage')}</span>
+                            </div>
                           </th>
                         </tr>
                       </thead>
                       <tbody className="bg-white divide-y divide-gray-200">
                         {analyticsData.players
                           .filter((player: any) => selectedPlayers.has(player.id))
-                          .sort((a: any, b: any) => (a.number || 999) - (b.number || 999))
+                          .sort((a: any, b: any) => {
+                            let aValue, bValue
+                            
+                            switch (sortField) {
+                              case 'name':
+                                aValue = a.name || ''
+                                bValue = b.name || ''
+                                break
+                              case 'shots':
+                                aValue = a.statistics?.shots || 0
+                                bValue = b.statistics?.shots || 0
+                                break
+                              case 'goals':
+                                aValue = a.statistics?.goals || 0
+                                bValue = b.statistics?.goals || 0
+                                break
+                              case 'assists':
+                                aValue = a.statistics?.assists || 0
+                                bValue = b.statistics?.assists || 0
+                                break
+                              case 'faceoffsTaken':
+                                aValue = a.statistics?.faceoffsTaken || 0
+                                bValue = b.statistics?.faceoffsTaken || 0
+                                break
+                              case 'faceoffsWon':
+                                aValue = a.statistics?.faceoffsWon || 0
+                                bValue = b.statistics?.faceoffsWon || 0
+                                break
+                              case 'faceoffPercentage':
+                                aValue = a.statistics?.faceoffsTaken > 0 
+                                  ? (a.statistics?.faceoffsWon || 0) / a.statistics?.faceoffsTaken 
+                                  : 0
+                                bValue = b.statistics?.faceoffsTaken > 0 
+                                  ? (b.statistics?.faceoffsWon || 0) / b.statistics?.faceoffsTaken 
+                                  : 0
+                                break
+                              default:
+                                aValue = a.number || 999
+                                bValue = b.number || 999
+                            }
+                            
+                            if (typeof aValue === 'string' && typeof bValue === 'string') {
+                              return sortDirection === 'asc' 
+                                ? aValue.localeCompare(bValue)
+                                : bValue.localeCompare(aValue)
+                            }
+                            
+                            return sortDirection === 'asc' 
+                              ? aValue - bValue
+                              : bValue - aValue
+                          })
                           .map((player: any) => (
                           <tr key={player.id} className="hover:bg-gray-50">
                             <td className="px-6 py-4 whitespace-nowrap">
