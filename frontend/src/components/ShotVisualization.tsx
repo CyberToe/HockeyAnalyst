@@ -183,6 +183,8 @@ export default function ShotVisualization({ shots, period, title, periodAttackin
       let y = shot.yCoord
 
       // Mirror shots based on attacking direction
+      // For each period rink, the attacking direction should be right
+      // If the goal is saved as attacking left, flip the node, else just draw the node as saved
       if (period === 'all') {
         // For "All Periods", mirror shots that were taken when attacking direction was 'left'
         if (shot.attackingDirection === 'left') {
@@ -191,6 +193,7 @@ export default function ShotVisualization({ shots, period, title, periodAttackin
         }
       } else {
         // For individual periods, mirror shots if the period's attacking direction was 'left'
+        // This ensures all periods show attacking right (flip left-direction shots)
         if (periodAttackingDirection === 'left') {
           console.log(`Mirroring shot ${shot.id} for period ${period} (left direction)`)
           x = width - x

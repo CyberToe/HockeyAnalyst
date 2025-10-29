@@ -118,8 +118,15 @@ router.get('/teams/:teamId', requireTeamMember, async (req: AuthRequest, res, ne
       const teamPeriodGoals = teamPeriodShots.filter(shot => shot.scored).length;
       const opponentPeriodGoals = opponentPeriodShots.filter(shot => shot.scored).length;
 
+      // Get the attacking direction for this period from the first shot of the period
+      const firstShotOfPeriod = periodShots[0];
+      const attackingDirection = firstShotOfPeriod?.period?.attackingDirection || 'right';
+
       return {
-        period: periodNum,
+        period: {
+          periodNumber: periodNum,
+          attackingDirection: attackingDirection
+        },
         statistics: {
           teamShots: teamPeriodShots.length,
           teamGoals: teamPeriodGoals,
@@ -130,6 +137,23 @@ router.get('/teams/:teamId', requireTeamMember, async (req: AuthRequest, res, ne
         }
       };
     });
+
+    // Shot timeline for visualizations
+    const shotTimeline = allShots.map(shot => ({
+      id: shot.id,
+      takenAt: shot.takenAt,
+      xCoord: shot.xCoord,
+      yCoord: shot.yCoord,
+      scored: shot.scored,
+      scoredAgainst: shot.scoredAgainst,
+      shooter: shot.shooter ? {
+        id: shot.shooter.id,
+        name: shot.shooter.name,
+        number: shot.shooter.number
+      } : null,
+      period: shot.period.periodNumber,
+      attackingDirection: shot.period.attackingDirection
+    }));
 
     res.json({
       team: {
@@ -145,9 +169,10 @@ router.get('/teams/:teamId', requireTeamMember, async (req: AuthRequest, res, ne
         shootingPercentage: Math.round(teamShootingPercentage * 100) / 100,
         goalDifference: teamGoals - opponentGoals
       },
-      playerStats,
+      players,
       gameStats,
-      periodStats
+      periodStats,
+      shotTimeline
     });
   } catch (error) {
     next(error);
