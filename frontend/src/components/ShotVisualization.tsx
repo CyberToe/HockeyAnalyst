@@ -4,6 +4,8 @@ interface Shot {
   id: string
   xCoord: number
   yCoord: number
+  rinkWidth?: number
+  rinkHeight?: number
   scored: boolean
   scoredAgainst: boolean
   shooter?: {
@@ -179,8 +181,17 @@ export default function ShotVisualization({ shots, period, title, periodAttackin
     })
 
     filteredShots.forEach(shot => {
+      // For backwards compatibility: if rink dimensions are not saved, use coordinates as-is
       let x = shot.xCoord
       let y = shot.yCoord
+      
+      // Only scale if rink dimensions were saved
+      if (shot.rinkWidth && shot.rinkHeight) {
+        const scaleX = width / shot.rinkWidth
+        const scaleY = canvas.height / shot.rinkHeight
+        x = shot.xCoord * scaleX
+        y = shot.yCoord * scaleY
+      }
 
       // Mirror shots based on attacking direction and shot type
       // Team shots should show attacking right, opponent shots should show attacking left

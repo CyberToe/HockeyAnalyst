@@ -59,7 +59,7 @@ router.get('/games/:gameId', async (req: AuthRequest, res, next) => {
 router.post('/games/:gameId', validateSchema(createShotSchema), async (req: AuthRequest, res, next) => {
   try {
     const { gameId } = req.params;
-    const { periodId, shooterPlayerId, xCoord, yCoord, scored, scoredAgainst, notes } = req.body;
+    const { periodId, shooterPlayerId, xCoord, yCoord, rinkWidth, rinkHeight, scored, scoredAgainst, notes } = req.body;
 
     // Get game and verify team membership
     const game = await prisma.game.findUnique({
@@ -112,6 +112,8 @@ router.post('/games/:gameId', validateSchema(createShotSchema), async (req: Auth
         shooterPlayerId,
         xCoord,
         yCoord,
+        rinkWidth,
+        rinkHeight,
         scored,
         scoredAgainst,
         notes,
@@ -142,7 +144,7 @@ router.post('/games/:gameId', validateSchema(createShotSchema), async (req: Auth
 router.put('/:shotId', validateSchema(updateShotSchema), async (req: AuthRequest, res, next) => {
   try {
     const { shotId } = req.params;
-    const { shooterPlayerId, xCoord, yCoord, scored, scoredAgainst, notes } = req.body;
+    const { shooterPlayerId, xCoord, yCoord, rinkWidth, rinkHeight, scored, scoredAgainst, notes } = req.body;
 
     // Get shot and verify team membership
     const shot = await prisma.shot.findUnique({
@@ -189,6 +191,8 @@ router.put('/:shotId', validateSchema(updateShotSchema), async (req: AuthRequest
         ...(shooterPlayerId !== undefined && { shooterPlayerId }),
         ...(xCoord !== undefined && { xCoord }),
         ...(yCoord !== undefined && { yCoord }),
+        ...(rinkWidth !== undefined && { rinkWidth }),
+        ...(rinkHeight !== undefined && { rinkHeight }),
         ...(scored !== undefined && { scored }),
         ...(scoredAgainst !== undefined && { scoredAgainst }),
         ...(notes !== undefined && { notes })

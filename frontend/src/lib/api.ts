@@ -131,6 +131,8 @@ export const shotsApi = {
     shooterPlayerId?: string;
     xCoord: number;
     yCoord: number;
+    rinkWidth?: number;
+    rinkHeight?: number;
     scored: boolean;
     scoredAgainst?: boolean;
     notes?: string;
@@ -139,6 +141,8 @@ export const shotsApi = {
     shooterPlayerId?: string;
     xCoord?: number;
     yCoord?: number;
+    rinkWidth?: number;
+    rinkHeight?: number;
     scored?: boolean;
     scoredAgainst?: boolean;
     notes?: string;

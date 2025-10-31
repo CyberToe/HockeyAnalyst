@@ -67,6 +67,8 @@ export default function ShotTracker({ lastSelectedPeriod = 1, onPeriodChange, ga
     id: string
     xCoord: number
     yCoord: number
+    rinkWidth?: number
+    rinkHeight?: number
     scored: boolean
     scoredAgainst: boolean
     shooter?: Player | null
@@ -193,6 +195,8 @@ export default function ShotTracker({ lastSelectedPeriod = 1, onPeriodChange, ga
         id: shot.id,
         xCoord: shot.xCoord,
         yCoord: shot.yCoord,
+        rinkWidth: shot.rinkWidth,
+        rinkHeight: shot.rinkHeight,
         scored: shot.scored,
         scoredAgainst: shot.scoredAgainst,
         shooter: shot.shooter,
@@ -345,8 +349,17 @@ export default function ShotTracker({ lastSelectedPeriod = 1, onPeriodChange, ga
     })
 
     filteredShots.forEach(shot => {
+      // For backwards compatibility: if rink dimensions are not saved, use coordinates as-is
       let x = shot.xCoord
       let y = shot.yCoord
+      
+      // Only scale if rink dimensions were saved
+      if (shot.rinkWidth && shot.rinkHeight) {
+        const scaleX = width / shot.rinkWidth
+        const scaleY = canvasRef.current!.height / shot.rinkHeight
+        x = shot.xCoord * scaleX
+        y = shot.yCoord * scaleY
+      }
 
       // If current attacking direction is different from when shot was taken, flip coordinates
       if (attackingDirection !== shot.attackingDirectionWhenShot) {
@@ -438,6 +451,8 @@ export default function ShotTracker({ lastSelectedPeriod = 1, onPeriodChange, ga
       shooterPlayerId: selectedPlayer === 'AGAINST' ? undefined : selectedPlayer.id,
       xCoord: x,
       yCoord: y,
+      rinkWidth: canvas.width,
+      rinkHeight: canvas.height,
       scored: scoringMode === 'SCORE',
       scoredAgainst: selectedPlayer === 'AGAINST'
     }
@@ -465,14 +480,24 @@ export default function ShotTracker({ lastSelectedPeriod = 1, onPeriodChange, ga
 
     let foundShot = null
     for (const shot of filteredShots) {
+      // For backwards compatibility: if rink dimensions are not saved, use coordinates as-is
       let shotX = shot.xCoord
+      let shotY = shot.yCoord
+      
+      // Only scale if rink dimensions were saved
+      if (shot.rinkWidth && shot.rinkHeight) {
+        const scaleX = canvas.width / shot.rinkWidth
+        const scaleY = canvas.height / shot.rinkHeight
+        shotX = shot.xCoord * scaleX
+        shotY = shot.yCoord * scaleY
+      }
       
       // If current attacking direction is different from when shot was taken, flip coordinates
       if (attackingDirection !== shot.attackingDirectionWhenShot) {
         shotX = canvas.width - shotX
       }
 
-      const distance = Math.sqrt((x - shotX) ** 2 + (y - shot.yCoord) ** 2)
+      const distance = Math.sqrt((x - shotX) ** 2 + (y - shotY) ** 2)
       if (distance <= 12) {
         foundShot = shot
         break

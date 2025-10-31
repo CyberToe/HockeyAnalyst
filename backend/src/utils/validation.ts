@@ -126,6 +126,8 @@ export const createShotSchema = z.object({
   shooterPlayerId: z.string().uuid('Invalid player ID').optional(),
   xCoord: z.number().min(0).max(1000, 'Invalid X coordinate'),
   yCoord: z.number().min(0).max(1000, 'Invalid Y coordinate'),
+  rinkWidth: z.number().min(1).max(10000).optional(),
+  rinkHeight: z.number().min(1).max(10000).optional(),
   scored: z.boolean().default(false),
   scoredAgainst: z.boolean().default(false),
   notes: z.string().max(500, 'Notes too long').optional()
@@ -135,6 +137,8 @@ export const updateShotSchema = z.object({
   shooterPlayerId: z.string().uuid('Invalid player ID').optional(),
   xCoord: z.number().min(0).max(1000, 'Invalid X coordinate').optional(),
   yCoord: z.number().min(0).max(1000, 'Invalid Y coordinate').optional(),
+  rinkWidth: z.number().min(1).max(10000).optional(),
+  rinkHeight: z.number().min(1).max(10000).optional(),
   scored: z.boolean().optional(),
   scoredAgainst: z.boolean().optional(),
   notes: z.string().max(500, 'Notes too long').optional()
