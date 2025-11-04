@@ -1,60 +1,119 @@
-import { useState } from 'react'
-import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline'
+import { useState, useEffect } from 'react'
+import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline'
 import NavigationContent from './NavigationContent'
 
 export default function Sidebar() {
   const [isCollapsed, setIsCollapsed] = useState(() => {
-    // Check localStorage for saved preference
-    if (typeof window !== 'undefined') {
+    // Check localStorage for saved preference (desktop only)
+    if (typeof window !== 'undefined' && window.innerWidth >= 768) {
       const saved = localStorage.getItem('sidebarCollapsed')
       return saved === 'true'
     }
     return false
   })
 
+  const [isMobileOpen, setIsMobileOpen] = useState(false)
+
+  // Close mobile sidebar when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement
+      if (window.innerWidth < 768 && isMobileOpen && !target.closest('.sidebar-container')) {
+        setIsMobileOpen(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [isMobileOpen])
+
   const toggleCollapsed = () => {
-    const newState = !isCollapsed
-    setIsCollapsed(newState)
-    localStorage.setItem('sidebarCollapsed', String(newState))
+    // On mobile, toggle open/closed instead of collapsed/expanded
+    if (typeof window !== 'undefined' && window.innerWidth < 768) {
+      setIsMobileOpen(!isMobileOpen)
+    } else {
+      // On desktop, toggle collapsed/expanded
+      const newState = !isCollapsed
+      setIsCollapsed(newState)
+      localStorage.setItem('sidebarCollapsed', String(newState))
+    }
+  }
+
+  const handleMobileClose = () => {
+    setIsMobileOpen(false)
   }
 
   return (
-    <div className={`${isCollapsed ? 'w-16' : 'w-64'} flex flex-col transition-all duration-300`}>
-      <div className="flex flex-col flex-grow pt-5 overflow-y-auto bg-white border-r border-gray-200 relative">
-        <div className="flex items-center flex-shrink-0 px-4">
-          <div className="flex items-center">
-            <div className="w-8 h-8 flex items-center justify-center">
-              <img 
-                src="/images/logo.jpg" 
-                alt="Hockey-Assistant Logo" 
-                className="w-8 h-8 rounded-lg object-cover"
-              />
+    <>
+      {/* Mobile: Hidden by default, shown when isMobileOpen is true */}
+      <div className={`md:hidden fixed inset-0 z-40 transition-opacity duration-300 ${
+        isMobileOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+      }`}>
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-75" onClick={handleMobileClose} />
+        <div className={`sidebar-container fixed inset-y-0 left-0 w-64 flex flex-col bg-white transform transition-transform duration-300 ${
+          isMobileOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}>
+          <div className="flex flex-col flex-grow pt-5 overflow-y-auto">
+            <div className="flex items-center flex-shrink-0 px-4">
+              <div className="flex items-center">
+                <div className="w-8 h-8 flex items-center justify-center">
+                  <img 
+                    src="/images/logo.jpg" 
+                    alt="Hockey-Assistant Logo" 
+                    className="w-8 h-8 rounded-lg object-cover"
+                  />
+                </div>
+                <span className="ml-2 text-xl font-bold text-gray-900">
+                  Hockey-Assistant
+                </span>
+              </div>
             </div>
-            {!isCollapsed && (
-              <span className="ml-2 text-xl font-bold text-gray-900">
-                Hockey-Assistant
-              </span>
-            )}
+            
+            <div className="mt-5 flex-grow flex flex-col">
+              <NavigationContent isCollapsed={false} onNavigate={handleMobileClose} />
+            </div>
           </div>
         </div>
-        
-        <div className="mt-5 flex-grow flex flex-col">
-          <NavigationContent isCollapsed={isCollapsed} />
-        </div>
-
-        {/* Toggle button - visible on mobile */}
-        <button
-          onClick={toggleCollapsed}
-          className="md:hidden absolute bottom-4 right-2 p-2 rounded-md bg-gray-100 hover:bg-gray-200 text-gray-600 hover:text-gray-900 transition-colors z-10"
-          aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-        >
-          {isCollapsed ? (
-            <ChevronRightIcon className="h-5 w-5" />
-          ) : (
-            <ChevronLeftIcon className="h-5 w-5" />
-          )}
-        </button>
       </div>
-    </div>
+
+      {/* Desktop: Always visible, can be collapsed/expanded */}
+      <div className={`hidden md:flex ${isCollapsed ? 'w-16' : 'w-64'} flex-col transition-all duration-300`}>
+        <div className="flex flex-col flex-grow pt-5 overflow-y-auto bg-white border-r border-gray-200 relative">
+          <div className="flex items-center flex-shrink-0 px-4">
+            <div className="flex items-center">
+              <div className="w-8 h-8 flex items-center justify-center">
+                <img 
+                  src="/images/logo.jpg" 
+                  alt="Hockey-Assistant Logo" 
+                  className="w-8 h-8 rounded-lg object-cover"
+                />
+              </div>
+              {!isCollapsed && (
+                <span className="ml-2 text-xl font-bold text-gray-900">
+                  Hockey-Assistant
+                </span>
+              )}
+            </div>
+          </div>
+          
+          <div className="mt-5 flex-grow flex flex-col">
+            <NavigationContent isCollapsed={isCollapsed} />
+          </div>
+        </div>
+      </div>
+
+      {/* Toggle button - visible on mobile */}
+      <button
+        onClick={toggleCollapsed}
+        className="md:hidden fixed bottom-4 left-4 p-3 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 hover:text-gray-900 transition-colors z-50 shadow-lg"
+        aria-label={isMobileOpen ? 'Close sidebar' : 'Open sidebar'}
+      >
+        {isMobileOpen ? (
+          <XMarkIcon className="h-6 w-6" />
+        ) : (
+          <Bars3Icon className="h-6 w-6" />
+        )}
+      </button>
+    </>
   )
 }
