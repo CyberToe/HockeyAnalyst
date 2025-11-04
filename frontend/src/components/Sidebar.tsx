@@ -2,7 +2,12 @@ import { useState, useEffect } from 'react'
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline'
 import NavigationContent from './NavigationContent'
 
-export default function Sidebar() {
+interface SidebarProps {
+  isMobileOpen?: boolean
+  onMobileOpenChange?: (open: boolean) => void
+}
+
+export default function Sidebar({ isMobileOpen: controlledMobileOpen, onMobileOpenChange }: SidebarProps) {
   const [isCollapsed, setIsCollapsed] = useState(() => {
     // Check localStorage for saved preference (desktop only)
     if (typeof window !== 'undefined' && window.innerWidth >= 768) {
@@ -12,7 +17,11 @@ export default function Sidebar() {
     return false
   })
 
-  const [isMobileOpen, setIsMobileOpen] = useState(false)
+  const [internalMobileOpen, setInternalMobileOpen] = useState(false)
+  
+  // Use controlled state if provided, otherwise use internal state
+  const isMobileOpen = controlledMobileOpen !== undefined ? controlledMobileOpen : internalMobileOpen
+  const setIsMobileOpen = onMobileOpenChange || setInternalMobileOpen
 
   // Close mobile sidebar when clicking outside
   useEffect(() => {

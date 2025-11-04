@@ -922,9 +922,25 @@ export default function ShotTracker({ lastSelectedPeriod = 1, onPeriodChange, ga
           : 'bg-blue-100'
       }`}>
         
-        {/* Rink Canvas */}
-        <div className="flex justify-center">
-          <div className="relative bg-blue-100 rounded-lg p-4 w-full">
+        {/* Desktop: Rink with stats on sides */}
+        <div className="hidden md:flex items-center justify-center gap-4">
+          {/* Left Stats - FOR */}
+          <div className="flex flex-col items-center space-y-4 bg-green-50 rounded-lg p-4 min-w-[120px]">
+            <div className="text-center">
+              <div className="text-lg font-bold text-green-800">FOR</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-green-600">{stats.forShots}</div>
+              <div className="text-xs text-green-700">Shots</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-green-600">{stats.forScores}</div>
+              <div className="text-xs text-green-700">Scores</div>
+            </div>
+          </div>
+
+          {/* Rink Canvas */}
+          <div className="relative bg-blue-100 rounded-lg p-4 flex-1 max-w-4xl">
             <div className="w-full" style={{ aspectRatio: '2 / 1' }}>
               <canvas 
                 ref={canvasRef}
@@ -953,37 +969,88 @@ export default function ShotTracker({ lastSelectedPeriod = 1, onPeriodChange, ga
               </div>
             </div>
           </div>
+
+          {/* Right Stats - AGAINST */}
+          <div className="flex flex-col items-center space-y-4 bg-red-50 rounded-lg p-4 min-w-[120px]">
+            <div className="text-center">
+              <div className="text-lg font-bold text-red-800">AGAINST</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-red-600">{stats.againstShots}</div>
+              <div className="text-xs text-red-700">Shots</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-red-600">{stats.againstScores}</div>
+              <div className="text-xs text-red-700">Scores</div>
+            </div>
+          </div>
         </div>
 
-        {/* Stats - FOR and AGAINST below rink */}
-        <div className="flex justify-center gap-4 mt-2">
-          {/* Stats - FOR */}
-          <div className="flex items-center gap-4 bg-green-50 rounded-lg px-4 py-2">
-            <div className="text-center">
-              <div className="text-sm font-bold text-green-800">FOR</div>
-            </div>
-            <div className="text-center border-l border-green-300 pl-4">
-              <div className="text-xl font-bold text-green-600">{stats.forShots}</div>
-              <div className="text-xs text-green-700">Shots</div>
-            </div>
-            <div className="text-center border-l border-green-300 pl-4">
-              <div className="text-xl font-bold text-green-600">{stats.forScores}</div>
-              <div className="text-xs text-green-700">Scores</div>
+        {/* Mobile: Rink with stats below */}
+        <div className="md:hidden">
+          {/* Rink Canvas */}
+          <div className="flex justify-center">
+            <div className="relative bg-blue-100 rounded-lg p-4 w-full">
+              <div className="w-full" style={{ aspectRatio: '2 / 1' }}>
+                <canvas 
+                  ref={canvasRef}
+                  width={800}
+                  height={400}
+                  className="w-full h-full border-4 border-gray-800 rounded-lg cursor-crosshair"
+                  onClick={handleCanvasClick}
+                  onMouseMove={handleCanvasMouseMove}
+                />
+              </div>
+              
+              {/* Rink Labels */}
+              <div className="flex justify-between items-center mt-2 text-xs text-gray-600">
+                <div className="text-center">
+                  <div className="font-medium">
+                    {attackingDirection === 'right' ? 'Home Goal' : 'Scoring Goal'}
+                  </div>
+                </div>
+                <div className="text-center">
+                  <div className="font-medium">Neutral Zone</div>
+                </div>
+                <div className="text-center">
+                  <div className="font-medium">
+                    {attackingDirection === 'right' ? 'Scoring Goal' : 'Home Goal'}
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
-          {/* Stats - AGAINST */}
-          <div className="flex items-center gap-4 bg-red-50 rounded-lg px-4 py-2">
-            <div className="text-center">
-              <div className="text-sm font-bold text-red-800">AGAINST</div>
+          {/* Stats - FOR and AGAINST below rink */}
+          <div className="flex justify-center gap-4 mt-2">
+            {/* Stats - FOR */}
+            <div className="flex items-center gap-4 bg-green-50 rounded-lg px-4 py-2">
+              <div className="text-center">
+                <div className="text-sm font-bold text-green-800">FOR</div>
+              </div>
+              <div className="text-center border-l border-green-300 pl-4">
+                <div className="text-xl font-bold text-green-600">{stats.forShots}</div>
+                <div className="text-xs text-green-700">Shots</div>
+              </div>
+              <div className="text-center border-l border-green-300 pl-4">
+                <div className="text-xl font-bold text-green-600">{stats.forScores}</div>
+                <div className="text-xs text-green-700">Scores</div>
+              </div>
             </div>
-            <div className="text-center border-l border-red-300 pl-4">
-              <div className="text-xl font-bold text-red-600">{stats.againstShots}</div>
-              <div className="text-xs text-red-700">Shots</div>
-            </div>
-            <div className="text-center border-l border-red-300 pl-4">
-              <div className="text-xl font-bold text-red-600">{stats.againstScores}</div>
-              <div className="text-xs text-red-700">Scores</div>
+
+            {/* Stats - AGAINST */}
+            <div className="flex items-center gap-4 bg-red-50 rounded-lg px-4 py-2">
+              <div className="text-center">
+                <div className="text-sm font-bold text-red-800">AGAINST</div>
+              </div>
+              <div className="text-center border-l border-red-300 pl-4">
+                <div className="text-xl font-bold text-red-600">{stats.againstShots}</div>
+                <div className="text-xs text-red-700">Shots</div>
+              </div>
+              <div className="text-center border-l border-red-300 pl-4">
+                <div className="text-xl font-bold text-red-600">{stats.againstScores}</div>
+                <div className="text-xs text-red-700">Scores</div>
+              </div>
             </div>
           </div>
         </div>
