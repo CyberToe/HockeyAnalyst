@@ -19,9 +19,10 @@ const navigation = [
 
 interface NavigationContentProps {
   onNavigate?: () => void // Callback for mobile navigation
+  isCollapsed?: boolean // Whether sidebar is collapsed (mobile only)
 }
 
-export default function NavigationContent({ onNavigate }: NavigationContentProps) {
+export default function NavigationContent({ onNavigate, isCollapsed = false }: NavigationContentProps) {
   const [expandedTeams, setExpandedTeams] = useState<Set<string>>(new Set())
   const [disabledTeamsCollapsed, setDisabledTeamsCollapsed] = useState(true)
   const location = useLocation()
@@ -70,18 +71,19 @@ export default function NavigationContent({ onNavigate }: NavigationContentProps
           to={item.href}
           onClick={handleNavClick}
           className={({ isActive }) =>
-            `group flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors duration-200 ${
+            `group flex items-center ${isCollapsed ? 'justify-center px-2' : 'px-2'} py-2 text-sm font-medium rounded-md transition-colors duration-200 ${
               isActive
                 ? 'bg-primary-100 text-primary-900'
                 : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
             }`
           }
+          title={isCollapsed ? item.name : undefined}
         >
           <item.icon
-            className="mr-3 flex-shrink-0 h-5 w-5"
+            className={`${isCollapsed ? '' : 'mr-3'} flex-shrink-0 h-5 w-5`}
             aria-hidden="true"
           />
-          {item.name}
+          {!isCollapsed && item.name}
         </NavLink>
       ))}
 
@@ -91,17 +93,27 @@ export default function NavigationContent({ onNavigate }: NavigationContentProps
           {/* Active Teams */}
           {teamsData.teams.filter((team: any) => team.state === 'ACTIVE').length > 0 && (
             <>
-              <div className="px-2 py-1 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                Active Teams
-              </div>
+              {!isCollapsed && (
+                <div className="px-2 py-1 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                  Active Teams
+                </div>
+              )}
               {teamsData.teams.filter((team: any) => team.state === 'ACTIVE').map((team: any) => (
                 <div key={team.id} className="mt-1">
-                  <button
-                    onClick={() => toggleTeam(team.id)}
-                    className="w-full flex items-center justify-between px-2 py-2 text-sm font-medium text-gray-600 rounded-md hover:bg-gray-50 hover:text-gray-900 transition-colors duration-200"
-                  >
-                    <div className="flex items-center">
-                      <div className="mr-3 flex-shrink-0 h-5 w-5 flex items-center justify-center">
+                  {isCollapsed ? (
+                    <NavLink
+                      to={`/teams/${team.id}`}
+                      onClick={handleNavClick}
+                      className={({ isActive }) =>
+                        `w-full flex items-center justify-center px-2 py-2 text-sm font-medium rounded-md transition-colors duration-200 ${
+                          isActive
+                            ? 'bg-primary-100 text-primary-900'
+                            : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                        }`
+                      }
+                      title={team.name}
+                    >
+                      <div className="flex-shrink-0 h-5 w-5 flex items-center justify-center">
                         {team.imageUrl ? (
                           <img 
                             src={team.imageUrl} 
@@ -112,17 +124,36 @@ export default function NavigationContent({ onNavigate }: NavigationContentProps
                           <UserGroupIcon className="h-5 w-5" />
                         )}
                       </div>
-                      {team.name}
-                    </div>
-                    {expandedTeams.has(team.id) ? (
-                      <ChevronDownIcon className="h-4 w-4" />
-                    ) : (
-                      <ChevronRightIcon className="h-4 w-4" />
-                    )}
-                  </button>
-                  
-                  {expandedTeams.has(team.id) && (
-                    <div className="ml-4 space-y-1">
+                    </NavLink>
+                  ) : (
+                    <>
+                      <button
+                        onClick={() => toggleTeam(team.id)}
+                        className="w-full flex items-center justify-between px-2 py-2 text-sm font-medium text-gray-600 rounded-md hover:bg-gray-50 hover:text-gray-900 transition-colors duration-200"
+                      >
+                        <div className="flex items-center">
+                          <div className="mr-3 flex-shrink-0 h-5 w-5 flex items-center justify-center">
+                            {team.imageUrl ? (
+                              <img 
+                                src={team.imageUrl} 
+                                alt={`${team.name} team logo`}
+                                className="h-5 w-5 rounded object-cover"
+                              />
+                            ) : (
+                              <UserGroupIcon className="h-5 w-5" />
+                            )}
+                          </div>
+                          {team.name}
+                        </div>
+                        {expandedTeams.has(team.id) ? (
+                          <ChevronDownIcon className="h-4 w-4" />
+                        ) : (
+                          <ChevronRightIcon className="h-4 w-4" />
+                        )}
+                      </button>
+                      
+                      {expandedTeams.has(team.id) && (
+                        <div className="ml-4 space-y-1">
                       {/* Members link - only for managers */}
                       {(() => {
                         const currentUser = JSON.parse(localStorage.getItem('user') || '{}')
@@ -191,7 +222,9 @@ export default function NavigationContent({ onNavigate }: NavigationContentProps
                         <ChartBarIcon className="mr-3 flex-shrink-0 h-4 w-4" />
                         Analytics
                       </NavLink>
-                    </div>
+                        </div>
+                      )}
+                    </>
                   )}
                 </div>
               ))}
@@ -199,7 +232,7 @@ export default function NavigationContent({ onNavigate }: NavigationContentProps
           )}
 
           {/* Disabled Teams */}
-          {teamsData.teams.filter((team: any) => team.state === 'DISABLED').length > 0 && (
+          {!isCollapsed && teamsData.teams.filter((team: any) => team.state === 'DISABLED').length > 0 && (
             <div className="mt-4">
               <button
                 onClick={() => setDisabledTeamsCollapsed(!disabledTeamsCollapsed)}
