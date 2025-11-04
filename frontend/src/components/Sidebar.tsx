@@ -23,7 +23,7 @@ export default function Sidebar({ isMobileOpen: controlledMobileOpen, onMobileOp
   const isMobileOpen = controlledMobileOpen !== undefined ? controlledMobileOpen : internalMobileOpen
   const setIsMobileOpen = onMobileOpenChange || setInternalMobileOpen
 
-  // Close mobile sidebar when clicking outside
+  // Close mobile sidebar when clicking outside or when screen size changes to desktop
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as HTMLElement
@@ -32,9 +32,20 @@ export default function Sidebar({ isMobileOpen: controlledMobileOpen, onMobileOp
       }
     }
 
+    const handleResize = () => {
+      // Close mobile sidebar when switching to desktop view
+      if (window.innerWidth >= 768 && isMobileOpen) {
+        setIsMobileOpen(false)
+      }
+    }
+
     document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [isMobileOpen])
+    window.addEventListener('resize', handleResize)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+      window.removeEventListener('resize', handleResize)
+    }
+  }, [isMobileOpen, setIsMobileOpen])
 
   const toggleCollapsed = () => {
     // On mobile, toggle open/closed instead of collapsed/expanded

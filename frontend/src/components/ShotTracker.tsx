@@ -225,11 +225,44 @@ export default function ShotTracker({ lastSelectedPeriod = 1, onPeriodChange, ga
 
   // Draw the hockey rink on canvas
   const drawRink = () => {
+    // Since we have two canvas elements (desktop and mobile) sharing the same ref,
+    // we need to find and draw to the visible one(s)
+    // Use the ref first, then try to find visible canvas if ref points to hidden one
     const canvas = canvasRef.current
     if (!canvas) return
 
-    const ctx = canvas.getContext('2d')
-    if (!ctx) return
+    // Check if ref canvas is visible
+    const rect = canvas.getBoundingClientRect()
+    const style = window.getComputedStyle(canvas)
+    const isVisible = rect.width > 0 && rect.height > 0 && style.display !== 'none' && style.visibility !== 'hidden'
+    
+    // If visible, use it; otherwise find the visible canvas in the parent container
+    let targetCanvas: HTMLCanvasElement | null = canvas
+    if (!isVisible) {
+      // Find the parent container and look for visible canvas within it
+      const container = canvas.closest('.mb-6')
+      if (container) {
+        const canvases = container.querySelectorAll('canvas')
+        targetCanvas = Array.from(canvases).find(canv => {
+          const r = canv.getBoundingClientRect()
+          const s = window.getComputedStyle(canv)
+          return r.width > 0 && r.height > 0 && s.display !== 'none' && s.visibility !== 'hidden'
+        }) as HTMLCanvasElement || null
+      }
+      
+      if (!targetCanvas) {
+        // Retry after delay
+        setTimeout(() => drawRink(), 100)
+        return
+      }
+    }
+
+    const visibleCanvases = [targetCanvas].filter(Boolean) as HTMLCanvasElement[]
+
+    // Draw to all visible canvases (should only be one at a time)
+    visibleCanvases.forEach(canvas => {
+      const ctx = canvas.getContext('2d')
+      if (!ctx) return
 
     const width = canvas.width
     const height = canvas.height
@@ -280,14 +313,20 @@ export default function ShotTracker({ lastSelectedPeriod = 1, onPeriodChange, ga
     drawFaceoffCircle(ctx, width * 0.5, height * 0.5, 64)
 
     // Goal creases
-    drawGoalCrease(ctx, width * 0.05, height * 0.5)
-    drawGoalCrease(ctx, width * 0.95, height * 0.5)
+    drawGoalCrease(ctx, width * 0.05, height * 0.5, width)
+    drawGoalCrease(ctx, width * 0.95, height * 0.5, width)
 
     // Red lines behind goal creases
     drawRedLinesBehindCreases(ctx, width, height)
 
     // Draw shot markers
-    drawShotMarkers(ctx, width)
+    drawShotMarkers(ctx, width, height)
+    })
+    
+    // If no visible canvas found, retry after delay
+    if (visibleCanvases.length === 0) {
+      setTimeout(() => drawRink(), 100)
+    }
   }
 
   // Draw face-off circle
@@ -306,13 +345,13 @@ export default function ShotTracker({ lastSelectedPeriod = 1, onPeriodChange, ga
   }
 
   // Draw goal crease
-  const drawGoalCrease = (ctx: CanvasRenderingContext2D, x: number, y: number) => {
+  const drawGoalCrease = (ctx: CanvasRenderingContext2D, x: number, y: number, canvasWidth: number) => {
     ctx.strokeStyle = '#0033a0'
     ctx.fillStyle = 'rgba(0, 51, 160, 0.1)'
     ctx.lineWidth = 2
 
     ctx.beginPath()
-    if (x < canvasRef.current!.width / 2) {
+    if (x < canvasWidth / 2) {
       // Left goal
       ctx.arc(x, y, 30, -Math.PI / 2, Math.PI / 2)
     } else {
@@ -342,7 +381,7 @@ export default function ShotTracker({ lastSelectedPeriod = 1, onPeriodChange, ga
   }
 
   // Draw shot markers
-  const drawShotMarkers = (ctx: CanvasRenderingContext2D, width: number) => {
+  const drawShotMarkers = (ctx: CanvasRenderingContext2D, width: number, height: number) => {
     const filteredShots = shots.filter(shot => {
       if (selectedPeriod === 'all') return true
       return shot.period.periodNumber === selectedPeriod
@@ -356,7 +395,7 @@ export default function ShotTracker({ lastSelectedPeriod = 1, onPeriodChange, ga
       // Only scale if rink dimensions were saved
       if (shot.rinkWidth && shot.rinkHeight) {
         const scaleX = width / shot.rinkWidth
-        const scaleY = canvasRef.current!.height / shot.rinkHeight
+        const scaleY = height / shot.rinkHeight
         x = shot.xCoord * scaleX
         y = shot.yCoord * scaleY
       }
@@ -589,9 +628,28 @@ export default function ShotTracker({ lastSelectedPeriod = 1, onPeriodChange, ga
     // Small delay to ensure canvas is rendered
     const timer = setTimeout(() => {
       drawRink()
-    }, 10)
+    }, 50)
     return () => clearTimeout(timer)
   }, [game, shots, selectedPeriod, attackingDirection])
+
+  // Also redraw on window resize to handle canvas visibility changes (desktop/mobile switch)
+  useEffect(() => {
+    let resizeTimer: NodeJS.Timeout
+    const handleResize = () => {
+      // Clear any pending timer
+      if (resizeTimer) clearTimeout(resizeTimer)
+      // Redraw canvas after resize to handle desktop/mobile transitions
+      resizeTimer = setTimeout(() => {
+        drawRink()
+      }, 100)
+    }
+
+    window.addEventListener('resize', handleResize)
+    return () => {
+      window.removeEventListener('resize', handleResize)
+      if (resizeTimer) clearTimeout(resizeTimer)
+    }
+  }, [shots, selectedPeriod, attackingDirection])
 
   // Sync selectedPeriod when lastSelectedPeriod changes (when switching back from other trackers)
   useEffect(() => {
@@ -948,6 +1006,7 @@ export default function ShotTracker({ lastSelectedPeriod = 1, onPeriodChange, ga
             <div className="w-full" style={{ aspectRatio: '2 / 1' }}>
               <canvas 
                 ref={canvasRef}
+                data-canvas-type="rink"
                 width={800}
                 height={400}
                 className="w-full h-full border-4 border-gray-800 rounded-lg cursor-crosshair"
@@ -998,6 +1057,7 @@ export default function ShotTracker({ lastSelectedPeriod = 1, onPeriodChange, ga
               <div className="w-full" style={{ aspectRatio: '2 / 1' }}>
                 <canvas 
                   ref={canvasRef}
+                  data-canvas-type="rink"
                   width={800}
                   height={400}
                   className="w-full h-full border-4 border-gray-800 rounded-lg cursor-crosshair"
