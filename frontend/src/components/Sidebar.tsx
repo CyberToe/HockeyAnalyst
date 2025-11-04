@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline'
+import { Bars3Icon, XMarkIcon, ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline'
 import NavigationContent from './NavigationContent'
 
 interface SidebarProps {
@@ -108,21 +108,21 @@ export default function Sidebar({ isMobileOpen: controlledMobileOpen, onMobileOp
           <div className="mt-5 flex-grow flex flex-col">
             <NavigationContent isCollapsed={isCollapsed} />
           </div>
+
+          {/* Desktop toggle button for collapse/expand */}
+          <button
+            onClick={toggleCollapsed}
+            className="hidden md:block absolute bottom-4 right-2 p-2 rounded-md bg-gray-100 hover:bg-gray-200 text-gray-600 hover:text-gray-900 transition-colors z-10"
+            aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          >
+            {isCollapsed ? (
+              <ChevronRightIcon className="h-5 w-5" />
+            ) : (
+              <ChevronLeftIcon className="h-5 w-5" />
+            )}
+          </button>
         </div>
       </div>
-
-      {/* Toggle button - visible on mobile */}
-      <button
-        onClick={toggleCollapsed}
-        className="md:hidden fixed bottom-4 left-4 p-3 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 hover:text-gray-900 transition-colors z-50 shadow-lg"
-        aria-label={isMobileOpen ? 'Close sidebar' : 'Open sidebar'}
-      >
-        {isMobileOpen ? (
-          <XMarkIcon className="h-6 w-6" />
-        ) : (
-          <Bars3Icon className="h-6 w-6" />
-        )}
-      </button>
     </>
   )
 }

@@ -586,7 +586,11 @@ export default function ShotTracker({ lastSelectedPeriod = 1, onPeriodChange, ga
 
   // Draw rink when component mounts or shots change
   useEffect(() => {
-    drawRink()
+    // Small delay to ensure canvas is rendered
+    const timer = setTimeout(() => {
+      drawRink()
+    }, 10)
+    return () => clearTimeout(timer)
   }, [game, shots, selectedPeriod, attackingDirection])
 
   // Sync selectedPeriod when lastSelectedPeriod changes (when switching back from other trackers)
@@ -939,7 +943,7 @@ export default function ShotTracker({ lastSelectedPeriod = 1, onPeriodChange, ga
             </div>
           </div>
 
-          {/* Rink Canvas */}
+          {/* Rink Canvas Container (desktop) */}
           <div className="relative bg-blue-100 rounded-lg p-4 flex-1 max-w-4xl">
             <div className="w-full" style={{ aspectRatio: '2 / 1' }}>
               <canvas 
@@ -988,7 +992,7 @@ export default function ShotTracker({ lastSelectedPeriod = 1, onPeriodChange, ga
 
         {/* Mobile: Rink with stats below */}
         <div className="md:hidden">
-          {/* Rink Canvas */}
+          {/* Rink Canvas Container (mobile) */}
           <div className="flex justify-center">
             <div className="relative bg-blue-100 rounded-lg p-4 w-full">
               <div className="w-full" style={{ aspectRatio: '2 / 1' }}>
