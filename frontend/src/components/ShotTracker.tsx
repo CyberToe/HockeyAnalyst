@@ -517,15 +517,39 @@ export default function ShotTracker({ lastSelectedPeriod = 1, onPeriodChange, ga
 
   // Handle canvas mouse move for tooltip
   const handleCanvasMouseMove = (event: React.MouseEvent<HTMLCanvasElement>) => {
-    const canvas = canvasRef.current
+    // Use the actual canvas element that the mouse is moving over (event.currentTarget)
+    const canvas = event.currentTarget as HTMLCanvasElement
     if (!canvas) return
 
     const rect = canvas.getBoundingClientRect()
+    
+    // Validate that the canvas has valid dimensions
+    if (rect.width === 0 || rect.height === 0 || canvas.width === 0 || canvas.height === 0) {
+      setTooltip({
+        show: false,
+        x: 0,
+        y: 0,
+        shot: null
+      })
+      return
+    }
+
     const scaleX = canvas.width / rect.width
     const scaleY = canvas.height / rect.height
     
     const x = (event.clientX - rect.left) * scaleX
     const y = (event.clientY - rect.top) * scaleY
+
+    // Validate coordinates are valid numbers
+    if (isNaN(x) || isNaN(y) || !isFinite(x) || !isFinite(y)) {
+      setTooltip({
+        show: false,
+        x: 0,
+        y: 0,
+        shot: null
+      })
+      return
+    }
 
     // Check if mouse is over any shot marker
     const filteredShots = shots.filter(shot => {
