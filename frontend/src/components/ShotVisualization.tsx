@@ -306,12 +306,14 @@ export default function ShotVisualization({ shots, period, title, periodAttackin
 
         {/* Canvas for rink */}
         <div className="flex justify-center">
-          <canvas
-            ref={canvasRef}
-            width={800}
-            height={400}
-            className="border border-gray-300 rounded-lg"
-          />
+          <div className="w-full max-w-4xl" style={{ aspectRatio: '2 / 1' }}>
+            <canvas
+              ref={canvasRef}
+              width={800}
+              height={400}
+              className="w-full h-full border border-gray-300 rounded-lg"
+            />
+          </div>
         </div>
 
       </div>

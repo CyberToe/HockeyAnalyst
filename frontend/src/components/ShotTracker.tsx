@@ -906,14 +906,16 @@ export default function ShotTracker({ lastSelectedPeriod = 1, onPeriodChange, ga
 
           {/* Rink Canvas */}
           <div className="relative bg-blue-100 rounded-lg p-4">
-            <canvas 
-              ref={canvasRef}
-              width={800}
-              height={400}
-              className="w-full h-96 border-4 border-gray-800 rounded-lg cursor-crosshair"
-              onClick={handleCanvasClick}
-              onMouseMove={handleCanvasMouseMove}
-            />
+            <div className="w-full" style={{ aspectRatio: '2 / 1' }}>
+              <canvas 
+                ref={canvasRef}
+                width={800}
+                height={400}
+                className="w-full h-full border-4 border-gray-800 rounded-lg cursor-crosshair"
+                onClick={handleCanvasClick}
+                onMouseMove={handleCanvasMouseMove}
+              />
+            </div>
             
             {/* Rink Labels */}
             <div className="flex justify-between items-center mt-2 text-xs text-gray-600">
