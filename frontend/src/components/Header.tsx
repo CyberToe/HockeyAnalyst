@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { ArrowRightOnRectangleIcon, Bars3Icon } from '@heroicons/react/24/outline'
 import { useAuthStore } from '../stores/authStore'
@@ -6,10 +7,35 @@ interface HeaderProps {
   onMobileMenuClick?: () => void
 }
 
+// Helper function to detect if device is mobile (including landscape phones)
+const isMobileDevice = () => {
+  if (typeof window === 'undefined') return false
+  // Check if it's a touch device and screen width is less than 1024px (lg breakpoint)
+  // This ensures phones in landscape (often 800-900px) are still treated as mobile
+  const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0
+  const isSmallScreen = window.innerWidth < 1024
+  return isTouch && isSmallScreen
+}
+
 export default function Header({ onMobileMenuClick }: HeaderProps) {
+  const [isMobile, setIsMobile] = useState(isMobileDevice)
   const location = useLocation()
   const { user, logout } = useAuthStore()
   const navigate = useNavigate()
+
+  // Update mobile state on resize/orientation change
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(isMobileDevice())
+    }
+
+    window.addEventListener('resize', handleResize)
+    window.addEventListener('orientationchange', handleResize)
+    return () => {
+      window.removeEventListener('resize', handleResize)
+      window.removeEventListener('orientationchange', handleResize)
+    }
+  }, [])
 
   const handleLogout = () => {
     logout()
@@ -32,14 +58,16 @@ export default function Header({ onMobileMenuClick }: HeaderProps) {
     <div className="sticky top-0 z-10 bg-white border-b border-gray-200">
       <div className="flex items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
         <div className="flex items-center">
-          <button
-            type="button"
-            className="md:hidden -ml-0.5 -mt-0.5 h-12 w-12 inline-flex items-center justify-center rounded-md text-gray-500 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary-500 mr-2"
-            onClick={onMobileMenuClick}
-          >
-            <span className="sr-only">Open sidebar</span>
-            <Bars3Icon className="h-6 w-6" aria-hidden="true" />
-          </button>
+          {isMobile && (
+            <button
+              type="button"
+              className="-ml-0.5 -mt-0.5 h-12 w-12 inline-flex items-center justify-center rounded-md text-gray-500 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary-500 mr-2"
+              onClick={onMobileMenuClick}
+            >
+              <span className="sr-only">Open sidebar</span>
+              <Bars3Icon className="h-6 w-6" aria-hidden="true" />
+            </button>
+          )}
           <h1 className="text-2xl font-semibold text-gray-900">
             {getPageTitle()}
           </h1>
