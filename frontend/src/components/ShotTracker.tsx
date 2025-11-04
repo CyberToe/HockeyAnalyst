@@ -824,6 +824,40 @@ export default function ShotTracker({ lastSelectedPeriod = 1, onPeriodChange, ga
               }
             </button>
           </div>
+
+          {/* Shot Management Buttons */}
+          <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
+            <div className="text-xs font-medium text-gray-600 mb-2">Shot Management</div>
+            <div className="flex space-x-2">
+              <button
+                onClick={handleUndo}
+                disabled={deleteShotMutation.isPending || shots.length === 0}
+                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                  deleteShotMutation.isPending || shots.length === 0
+                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    : 'bg-yellow-600 text-white hover:bg-yellow-700'
+                }`}
+              >
+                {deleteShotMutation.isPending ? 'Removing...' : 'Undo Last Shot'}
+              </button>
+              <button
+                onClick={handleReset}
+                disabled={deleteAllShotsMutation.isPending || shots.length === 0}
+                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                  deleteAllShotsMutation.isPending || shots.length === 0
+                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    : 'bg-red-600 text-white hover:bg-red-700'
+                }`}
+              >
+                {deleteAllShotsMutation.isPending 
+                  ? 'Clearing...' 
+                  : selectedPeriod === 'all' 
+                    ? 'Reset All Shots' 
+                    : `Reset Period ${selectedPeriod} Shots`
+                }
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -922,33 +956,33 @@ export default function ShotTracker({ lastSelectedPeriod = 1, onPeriodChange, ga
         </div>
 
         {/* Stats - FOR and AGAINST below rink */}
-        <div className="flex justify-center gap-4 mt-4">
+        <div className="flex justify-center gap-4 mt-2">
           {/* Stats - FOR */}
-          <div className="flex flex-col items-center space-y-4 bg-green-50 rounded-lg p-4 min-w-[120px]">
+          <div className="flex items-center gap-4 bg-green-50 rounded-lg px-4 py-2">
             <div className="text-center">
-              <div className="text-lg font-bold text-green-800">FOR</div>
+              <div className="text-sm font-bold text-green-800">FOR</div>
             </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-green-600">{stats.forShots}</div>
+            <div className="text-center border-l border-green-300 pl-4">
+              <div className="text-xl font-bold text-green-600">{stats.forShots}</div>
               <div className="text-xs text-green-700">Shots</div>
             </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-green-600">{stats.forScores}</div>
+            <div className="text-center border-l border-green-300 pl-4">
+              <div className="text-xl font-bold text-green-600">{stats.forScores}</div>
               <div className="text-xs text-green-700">Scores</div>
             </div>
           </div>
 
           {/* Stats - AGAINST */}
-          <div className="flex flex-col items-center space-y-4 bg-red-50 rounded-lg p-4 min-w-[120px]">
+          <div className="flex items-center gap-4 bg-red-50 rounded-lg px-4 py-2">
             <div className="text-center">
-              <div className="text-lg font-bold text-red-800">AGAINST</div>
+              <div className="text-sm font-bold text-red-800">AGAINST</div>
             </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-red-600">{stats.againstShots}</div>
+            <div className="text-center border-l border-red-300 pl-4">
+              <div className="text-xl font-bold text-red-600">{stats.againstShots}</div>
               <div className="text-xs text-red-700">Shots</div>
             </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-red-600">{stats.againstScores}</div>
+            <div className="text-center border-l border-red-300 pl-4">
+              <div className="text-xl font-bold text-red-600">{stats.againstScores}</div>
               <div className="text-xs text-red-700">Scores</div>
             </div>
           </div>
@@ -978,39 +1012,6 @@ export default function ShotTracker({ lastSelectedPeriod = 1, onPeriodChange, ga
       </div>
       </div>
 
-      {/* Shot Management Buttons */}
-      <div className="mb-6">
-        <h3 className="text-sm font-medium text-gray-700 mb-3">Shot Management</h3>
-        <div className="flex space-x-2">
-          <button
-            onClick={handleUndo}
-            disabled={deleteShotMutation.isPending || shots.length === 0}
-            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-              deleteShotMutation.isPending || shots.length === 0
-                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                : 'bg-yellow-600 text-white hover:bg-yellow-700'
-            }`}
-          >
-            {deleteShotMutation.isPending ? 'Removing...' : 'Undo Last Shot'}
-          </button>
-          <button
-            onClick={handleReset}
-            disabled={deleteAllShotsMutation.isPending || shots.length === 0}
-            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-              deleteAllShotsMutation.isPending || shots.length === 0
-                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                : 'bg-red-600 text-white hover:bg-red-700'
-            }`}
-          >
-            {deleteAllShotsMutation.isPending 
-              ? 'Clearing...' 
-              : selectedPeriod === 'all' 
-                ? 'Reset All Shots' 
-                : `Reset Period ${selectedPeriod} Shots`
-            }
-          </button>
-        </div>
-      </div>
 
       {/* Tooltip */}
       {tooltip.show && tooltip.shot && (
