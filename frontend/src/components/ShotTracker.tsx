@@ -888,24 +888,9 @@ export default function ShotTracker({ lastSelectedPeriod = 1, onPeriodChange, ga
           : 'bg-blue-100'
       }`}>
         
-        <div className="flex items-center justify-center gap-4">
-          {/* Left Stats - FOR */}
-          <div className="flex flex-col items-center space-y-4 bg-green-50 rounded-lg p-4 min-w-[120px]">
-            <div className="text-center">
-              <div className="text-lg font-bold text-green-800">FOR</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-green-600">{stats.forShots}</div>
-              <div className="text-xs text-green-700">Shots</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-green-600">{stats.forScores}</div>
-              <div className="text-xs text-green-700">Scores</div>
-            </div>
-          </div>
-
-          {/* Rink Canvas */}
-          <div className="relative bg-blue-100 rounded-lg p-4">
+        {/* Rink Canvas */}
+        <div className="flex justify-center">
+          <div className="relative bg-blue-100 rounded-lg p-4 w-full">
             <div className="w-full" style={{ aspectRatio: '2 / 1' }}>
               <canvas 
                 ref={canvasRef}
@@ -934,8 +919,26 @@ export default function ShotTracker({ lastSelectedPeriod = 1, onPeriodChange, ga
               </div>
             </div>
           </div>
+        </div>
 
-          {/* Right Stats - AGAINST */}
+        {/* Stats - FOR and AGAINST below rink */}
+        <div className="flex justify-center gap-4 mt-4">
+          {/* Stats - FOR */}
+          <div className="flex flex-col items-center space-y-4 bg-green-50 rounded-lg p-4 min-w-[120px]">
+            <div className="text-center">
+              <div className="text-lg font-bold text-green-800">FOR</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-green-600">{stats.forShots}</div>
+              <div className="text-xs text-green-700">Shots</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-green-600">{stats.forScores}</div>
+              <div className="text-xs text-green-700">Scores</div>
+            </div>
+          </div>
+
+          {/* Stats - AGAINST */}
           <div className="flex flex-col items-center space-y-4 bg-red-50 rounded-lg p-4 min-w-[120px]">
             <div className="text-center">
               <div className="text-lg font-bold text-red-800">AGAINST</div>
@@ -951,7 +954,7 @@ export default function ShotTracker({ lastSelectedPeriod = 1, onPeriodChange, ga
           </div>
         </div>
         
-        {/* Legend - Centered below rink */}
+        {/* Legend - Centered below stats */}
         <div className="flex justify-center mt-4">
           <div className="flex flex-wrap gap-3 text-xs">
             <div className="flex items-center gap-1">
