@@ -143,6 +143,8 @@ export default function ShotTracker({ lastSelectedPeriod = 1, onPeriodChange, ga
       shooterPlayerId?: string
       xCoord: number
       yCoord: number
+      rinkWidth?: number
+      rinkHeight?: number
       scored: boolean
       scoredAgainst: boolean
     }) => shotsApi.createShot(gameId!, data),
@@ -467,15 +469,29 @@ export default function ShotTracker({ lastSelectedPeriod = 1, onPeriodChange, ga
       return
     }
 
-    const canvas = canvasRef.current
+    // Use the actual canvas element that was clicked (event.currentTarget)
+    const canvas = event.currentTarget as HTMLCanvasElement
     if (!canvas) return
 
     const rect = canvas.getBoundingClientRect()
+    
+    // Validate that the canvas has valid dimensions
+    if (rect.width === 0 || rect.height === 0 || canvas.width === 0 || canvas.height === 0) {
+      toast.error('Canvas not ready. Please try again.')
+      return
+    }
+
     const scaleX = canvas.width / rect.width
     const scaleY = canvas.height / rect.height
     
     const x = (event.clientX - rect.left) * scaleX
     const y = (event.clientY - rect.top) * scaleY
+
+    // Validate coordinates are valid numbers
+    if (isNaN(x) || isNaN(y) || !isFinite(x) || !isFinite(y)) {
+      toast.error('Invalid coordinates. Please try again.')
+      return
+    }
     
     // Find the current period
     const currentPeriod = game?.periods.find(p => p.periodNumber === selectedPeriod)
