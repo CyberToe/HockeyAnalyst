@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { teamsApi, gamesApi } from '../lib/api'
+import { useAuthStore } from '../stores/authStore'
 import { PlusIcon, TrashIcon, PencilIcon, PlayIcon } from '@heroicons/react/24/outline'
 import toast from 'react-hot-toast'
 
@@ -18,12 +19,14 @@ export default function TeamGamesPage() {
   const { teamId } = useParams<{ teamId: string }>()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
+  const { user } = useAuthStore()
   
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)
   const [editingGame, setEditingGame] = useState<Game | null>(null)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [gameToDelete, setGameToDelete] = useState<string | null>(null)
+  const [showReadOnlyModal, setShowReadOnlyModal] = useState(false)
 
   // Fetch team data
   const { data: teamData, isLoading: teamLoading } = useQuery({
@@ -103,6 +106,14 @@ export default function TeamGamesPage() {
   }
 
   const handleEnterGame = (gameId: string) => {
+    // Check if user is read-only
+    if (teamData?.team?.members && user) {
+      const currentUserMember = teamData.team.members.find((member: any) => member.user.id === user.id)
+      if (currentUserMember?.readOnly) {
+        setShowReadOnlyModal(true)
+        return
+      }
+    }
     navigate(`/teams/${teamId}/games/${gameId}`)
   }
 
@@ -280,6 +291,35 @@ export default function TeamGamesPage() {
                 className="flex-1 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors disabled:opacity-50"
               >
                 {deleteGameMutation.isPending ? 'Deleting...' : 'Delete'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Read-Only Modal */}
+      {showReadOnlyModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
+            <div className="flex items-center justify-center mb-4">
+              <div className="flex-shrink-0 h-12 w-12 rounded-full bg-yellow-100 flex items-center justify-center">
+                <svg className="h-6 w-6 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+              </div>
+            </div>
+            <h3 className="text-xl font-semibold text-gray-900 text-center mb-4">
+              Read-Only Access
+            </h3>
+            <p className="text-gray-600 text-center mb-6">
+              You are set as read-only. You cannot enter games to add statistics. Please ask the team manager to give you permission to modify the team.
+            </p>
+            <div className="flex justify-center">
+              <button
+                onClick={() => setShowReadOnlyModal(false)}
+                className="px-6 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+              >
+                OK
               </button>
             </div>
           </div>

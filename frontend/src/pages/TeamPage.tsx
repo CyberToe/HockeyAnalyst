@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { teamsApi, playersApi, gamesApi } from '../lib/api'
+import { useAuthStore } from '../stores/authStore'
 import { PlusIcon, UserGroupIcon, CalendarIcon, ClipboardDocumentIcon } from '@heroicons/react/24/outline'
 import CreatePlayerModal from '../components/CreatePlayerModal'
 import CreateGameModal from '../components/CreateGameModal'
@@ -10,8 +11,11 @@ import toast from 'react-hot-toast'
 
 export default function TeamPage() {
   const { teamId } = useParams<{ teamId: string }>()
+  const navigate = useNavigate()
+  const { user } = useAuthStore()
   const [showCreatePlayerModal, setShowCreatePlayerModal] = useState(false)
   const [showCreateGameModal, setShowCreateGameModal] = useState(false)
+  const [showReadOnlyModal, setShowReadOnlyModal] = useState(false)
   const queryClient = useQueryClient()
 
   const copyTeamCode = async (teamCode: string) => {
@@ -230,12 +234,22 @@ export default function TeamPage() {
                         {game.startTime ? new Date(game.startTime).toLocaleDateString() : 'No date set'}
                       </p>
                     </div>
-                    <Link
-                      to={`/teams/${teamId}/games/${game.id}`}
+                    <button
+                      onClick={() => {
+                        // Check if user is read-only
+                        if (teamData?.team?.members && user) {
+                          const currentUserMember = teamData.team.members.find((member: any) => member.user.id === user.id)
+                          if (currentUserMember?.readOnly) {
+                            setShowReadOnlyModal(true)
+                            return
+                          }
+                        }
+                        navigate(`/teams/${teamId}/games/${game.id}`)
+                      }}
                       className="text-sm text-primary-600 hover:text-primary-900"
                     >
                       Track Game
-                    </Link>
+                    </button>
                   </div>
                 ))}
               </div>
@@ -267,6 +281,35 @@ export default function TeamPage() {
         }}
         teamId={teamId!}
       />
+
+      {/* Read-Only Modal */}
+      {showReadOnlyModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
+            <div className="flex items-center justify-center mb-4">
+              <div className="flex-shrink-0 h-12 w-12 rounded-full bg-yellow-100 flex items-center justify-center">
+                <svg className="h-6 w-6 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+              </div>
+            </div>
+            <h3 className="text-xl font-semibold text-gray-900 text-center mb-4">
+              Read-Only Access
+            </h3>
+            <p className="text-gray-600 text-center mb-6">
+              You are set as read-only. You cannot enter games to add statistics. Please ask the team manager to give you permission to modify the team.
+            </p>
+            <div className="flex justify-center">
+              <button
+                onClick={() => setShowReadOnlyModal(false)}
+                className="px-6 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+              >
+                OK
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
