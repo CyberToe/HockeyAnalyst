@@ -34,6 +34,11 @@ router.get('/games/:gameId', async (req: AuthRequest, res, next) => {
       return res.status(403).json({ error: 'Access denied' });
     }
 
+    // Check if member is read-only
+    if (membership.readOnly) {
+      return res.status(403).json({ error: 'You are set as read-only. Please ask the team manager to give you permission to modify the team.' });
+    }
+
     const faceoffs = await prisma.faceoff.findMany({
       where: { gameId },
       include: {
@@ -82,6 +87,11 @@ router.post('/games/:gameId', validateSchema(createFaceoffSchema), async (req: A
 
     if (!membership) {
       return res.status(403).json({ error: 'Access denied' });
+    }
+
+    // Check if member is read-only
+    if (membership.readOnly) {
+      return res.status(403).json({ error: 'You are set as read-only. Please ask the team manager to give you permission to modify the team.' });
     }
 
     // Verify player belongs to the team

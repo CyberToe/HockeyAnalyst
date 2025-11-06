@@ -34,6 +34,11 @@ router.get('/games/:gameId', async (req: AuthRequest, res, next) => {
       return res.status(403).json({ error: 'Access denied' });
     }
 
+    // Check if member is read-only
+    if (membership.readOnly) {
+      return res.status(403).json({ error: 'You are set as read-only. Please ask the team manager to give you permission to modify the team.' });
+    }
+
     const goals = await prisma.goal.findMany({
       where: { gameId },
       include: {
@@ -84,6 +89,11 @@ router.post('/games/:gameId', validateSchema(createGoalSchema), async (req: Auth
 
     if (!membership) {
       return res.status(403).json({ error: 'Access denied' });
+    }
+
+    // Check if member is read-only
+    if (membership.readOnly) {
+      return res.status(403).json({ error: 'You are set as read-only. Please ask the team manager to give you permission to modify the team.' });
     }
 
     // Verify scorer belongs to the team
@@ -314,6 +324,11 @@ router.delete('/games/:gameId/all', async (req: AuthRequest, res, next) => {
 
     if (!membership) {
       return res.status(403).json({ error: 'Access denied' });
+    }
+
+    // Check if member is read-only
+    if (membership.readOnly) {
+      return res.status(403).json({ error: 'You are set as read-only. Please ask the team manager to give you permission to modify the team.' });
     }
 
     await prisma.goal.deleteMany({

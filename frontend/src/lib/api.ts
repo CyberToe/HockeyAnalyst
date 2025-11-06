@@ -78,6 +78,8 @@ export const teamsApi = {
     api.post(`/teams/${teamId}/demote`, { userId }),
   removeMember: (teamId: string, userId: string) =>
     api.delete(`/teams/${teamId}/members/${userId}`),
+  updateMemberReadOnly: (teamId: string, userId: string, readOnly: boolean) =>
+    api.put(`/teams/${teamId}/members/${userId}/readonly`, { readOnly }),
 }
 
 // Team Images API

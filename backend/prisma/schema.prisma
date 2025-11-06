@@ -49,6 +49,7 @@ model TeamMember {
   teamId   String     @map("team_id")
   userId   String     @map("user_id")
   role     MemberRole @default(member)
+  readOnly Boolean   @default(true) @map("read_only")
   joinedAt DateTime   @default(now()) @map("joined_at")
   team     Team       @relation(fields: [teamId], references: [id], onDelete: Cascade)
   user     User       @relation(fields: [userId], references: [id], onDelete: Cascade)

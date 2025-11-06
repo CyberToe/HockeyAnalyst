@@ -31,6 +31,20 @@ router.post('/teams/:teamId', requireTeamMember, validateSchema(createPlayerSche
     const { teamId } = req.params;
     const { name, number, type } = req.body;
 
+    // Check if user is read-only
+    const membership = await prisma.teamMember.findUnique({
+      where: {
+        teamId_userId: {
+          teamId,
+          userId: req.userId!
+        }
+      }
+    });
+
+    if (membership?.readOnly) {
+      return res.status(403).json({ error: 'You are set as read-only. Please ask the team manager to give you permission to modify the team.' });
+    }
+
     // Check if player name already exists in team
     const existingPlayer = await prisma.player.findFirst({
       where: {
@@ -122,6 +136,11 @@ router.put('/:playerId', validateSchema(updatePlayerSchema), async (req: AuthReq
       return res.status(403).json({ error: 'Access denied' });
     }
 
+    // Check if member is read-only
+    if (membership.readOnly) {
+      return res.status(403).json({ error: 'You are set as read-only. Please ask the team manager to give you permission to modify the team.' });
+    }
+
     // Check for name conflicts (if name is being updated)
     if (name && name !== player.name) {
       const existingPlayer = await prisma.player.findFirst({
@@ -199,6 +218,11 @@ router.delete('/:playerId', async (req: AuthRequest, res, next) => {
       return res.status(403).json({ error: 'Access denied' });
     }
 
+    // Check if member is read-only
+    if (membership.readOnly) {
+      return res.status(403).json({ error: 'You are set as read-only. Please ask the team manager to give you permission to modify the team.' });
+    }
+
     // Check if player has any shots recorded
     const shotCount = await prisma.shot.count({
       where: { shooterPlayerId: playerId }
@@ -255,6 +279,11 @@ router.get('/:playerId/stats', async (req: AuthRequest, res, next) => {
 
     if (!membership) {
       return res.status(403).json({ error: 'Access denied' });
+    }
+
+    // Check if member is read-only
+    if (membership.readOnly) {
+      return res.status(403).json({ error: 'You are set as read-only. Please ask the team manager to give you permission to modify the team.' });
     }
 
     // Calculate statistics

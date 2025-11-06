@@ -34,6 +34,11 @@ router.get('/games/:gameId', async (req: AuthRequest, res, next) => {
       return res.status(403).json({ error: 'Access denied' });
     }
 
+    // Check if member is read-only
+    if (membership.readOnly) {
+      return res.status(403).json({ error: 'You are set as read-only. Please ask the team manager to give you permission to modify the team.' });
+    }
+
     const shots = await prisma.shot.findMany({
       where: { gameId },
       include: {
@@ -83,6 +88,11 @@ router.post('/games/:gameId', validateSchema(createShotSchema), async (req: Auth
 
     if (!membership) {
       return res.status(403).json({ error: 'Access denied' });
+    }
+
+    // Check if member is read-only
+    if (membership.readOnly) {
+      return res.status(403).json({ error: 'You are set as read-only. Please ask the team manager to give you permission to modify the team.' });
     }
 
     // Verify period belongs to the game
@@ -288,6 +298,11 @@ router.delete('/games/:gameId/all', async (req: AuthRequest, res, next) => {
 
     if (!membership) {
       return res.status(403).json({ error: 'Access denied' });
+    }
+
+    // Check if member is read-only
+    if (membership.readOnly) {
+      return res.status(403).json({ error: 'You are set as read-only. Please ask the team manager to give you permission to modify the team.' });
     }
 
     const result = await prisma.shot.deleteMany({

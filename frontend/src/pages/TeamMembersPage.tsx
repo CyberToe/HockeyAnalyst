@@ -66,6 +66,19 @@ export default function TeamMembersPage() {
     }
   })
 
+  const updateReadOnlyMutation = useMutation({
+    mutationFn: ({ userId, readOnly }: { userId: string; readOnly: boolean }) => 
+      teamsApi.updateMemberReadOnly(teamId!, userId, readOnly),
+    onSuccess: () => {
+      toast.success('Member read-only status updated successfully!')
+      refetch()
+    },
+    onError: (error: any) => {
+      const message = error.response?.data?.error || 'Failed to update read-only status'
+      toast.error(message)
+    }
+  })
+
   if (teamLoading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -197,6 +210,11 @@ export default function TeamMembersPage() {
                         Manager
                       </span>
                     )}
+                    {member.readOnly && member.role !== 'admin' && (
+                      <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                        Read Only
+                      </span>
+                    )}
                   </div>
                   <p className="text-sm text-gray-500">{member.user.email}</p>
                   <p className="text-xs text-gray-400">
@@ -215,12 +233,21 @@ export default function TeamMembersPage() {
                       Demote to Member
                     </button>
                   ) : (
-                    <button
-                      onClick={() => handlePromoteClick(member)}
-                      className="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded text-yellow-700 bg-yellow-100 hover:bg-yellow-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500"
-                    >
-                      Promote to Manager
-                    </button>
+                    <>
+                      <button
+                        onClick={() => handlePromoteClick(member)}
+                        className="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded text-yellow-700 bg-yellow-100 hover:bg-yellow-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500"
+                      >
+                        Promote to Manager
+                      </button>
+                      <button
+                        onClick={() => updateReadOnlyMutation.mutate({ userId: member.user.id, readOnly: !member.readOnly })}
+                        disabled={updateReadOnlyMutation.isPending}
+                        className="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded text-blue-700 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+                      >
+                        {member.readOnly ? 'Enable Editing' : 'Set Read Only'}
+                      </button>
+                    </>
                   )}
                   <button
                     onClick={() => handleRemoveClick(member)}

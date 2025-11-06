@@ -85,7 +85,8 @@ router.post('/', validateSchema(createTeamSchema), async (req: AuthRequest, res,
         members: {
           create: {
             userId: req.userId!,
-            role: 'admin'
+            role: 'admin',
+            readOnly: false
           }
         }
       },
@@ -146,12 +147,13 @@ router.post('/join', validateSchema(joinTeamSchema), async (req: AuthRequest, re
       return;
     }
 
-    // Add user to team
+    // Add user to team as read-only by default
     const membership = await prisma.teamMember.create({
       data: {
         teamId: team.id,
         userId: req.userId!,
-        role: 'member'
+        role: 'member',
+        readOnly: true
       },
       include: {
         team: {
@@ -491,6 +493,67 @@ router.delete('/:teamId/members/:userId', requireAdmin, async (req: AuthRequest,
     });
 
     res.json({ message: 'Member removed successfully' });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Update member read-only status
+router.put('/:teamId/members/:userId/readonly', requireAdmin, async (req: AuthRequest, res, next) => {
+  try {
+    const { teamId, userId } = req.params;
+    const { readOnly } = req.body;
+
+    if (typeof readOnly !== 'boolean') {
+      res.status(400).json({ error: 'readOnly must be a boolean value' });
+      return;
+    }
+
+    // Check if target user is a member
+    const targetMembership = await prisma.teamMember.findUnique({
+      where: {
+        teamId_userId: {
+          teamId,
+          userId
+        }
+      }
+    });
+
+    if (!targetMembership) {
+      res.status(404).json({ error: 'User is not a member of this team' });
+      return;
+    }
+
+    // Owners cannot be set as read-only
+    if (targetMembership.role === 'admin' && readOnly === true) {
+      res.status(400).json({ error: 'Owners cannot be set as read-only' });
+      return;
+    }
+
+    // Update read-only status
+    const updatedMembership = await prisma.teamMember.update({
+      where: {
+        teamId_userId: {
+          teamId,
+          userId
+        }
+      },
+      data: { readOnly },
+      include: {
+        user: {
+          select: {
+            id: true,
+            email: true,
+            displayName: true
+          }
+        }
+      }
+    });
+
+    res.json({
+      message: `Member ${readOnly ? 'set as' : 'removed from'} read-only successfully`,
+      member: updatedMembership
+    });
   } catch (error) {
     next(error);
   }
