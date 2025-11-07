@@ -102,6 +102,50 @@ router.post('/login', async (req, res) => {
   }
 });
 
+// Demo Login
+router.post('/demo-login', async (req, res) => {
+  try {
+    const { userId } = req.body;
+
+    if (!userId) {
+      return res.status(400).json({ error: 'User ID is required' });
+    }
+
+    // Find user by ID
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        email: true,
+        displayName: true,
+        createdAt: true
+      }
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: 'Demo user not found' });
+    }
+
+    // Generate token
+    const jwtSecret = process.env.JWT_TOKEN || 'hockey-analytics-super-secret-key-2025-production-change-this';
+    const token = jwt.sign({ userId: user.id }, jwtSecret, { expiresIn: '7d' });
+
+    return res.json({
+      data: {
+        user: {
+          id: user.id,
+          email: user.email,
+          displayName: user.displayName
+        },
+        token
+      }
+    });
+  } catch (error) {
+    console.error('Demo login error:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // Get current user profile
 router.get('/me', authenticateToken, async (req: AuthRequest, res) => {
   try {

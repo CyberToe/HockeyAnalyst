@@ -1,6 +1,29 @@
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import { useAuthStore } from '../stores/authStore'
+import { useState } from 'react'
+import toast from 'react-hot-toast'
+
+const DEMO_USER_ID = '6a3bea9a-047f-4fde-b1ee-e8df8db68f5d'
 
 export default function LandingPage() {
+  const navigate = useNavigate()
+  const { demoLogin } = useAuthStore()
+  const [isLoading, setIsLoading] = useState(false)
+
+  const handleDemoLogin = async () => {
+    try {
+      setIsLoading(true)
+      await demoLogin(DEMO_USER_ID)
+      toast.success('Welcome to the demo!')
+      navigate('/dashboard', { replace: true })
+    } catch (error) {
+      console.error('Demo login error:', error)
+      toast.error('Failed to start demo. Please try again.')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex flex-col">
       {/* Header with Login/Create Account */}
@@ -135,7 +158,14 @@ export default function LandingPage() {
           </div>
 
           {/* Call to Action */}
-          <div className="text-center mt-6">
+          <div className="text-center mt-6 flex gap-4 justify-center items-center">
+            <button
+              onClick={handleDemoLogin}
+              disabled={isLoading}
+              className="inline-block bg-gray-600 hover:bg-gray-700 text-white px-6 py-2.5 rounded-lg font-semibold text-base transition-colors shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isLoading ? 'Loading...' : 'Try Demo'}
+            </button>
             <Link
               to="/register"
               className="inline-block bg-primary-600 hover:bg-primary-700 text-white px-6 py-2.5 rounded-lg font-semibold text-base transition-colors shadow-md hover:shadow-lg"

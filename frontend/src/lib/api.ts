@@ -1,5 +1,6 @@
 import axios from 'axios'
 import toast from 'react-hot-toast'
+import { useDemoModalStore } from '../stores/demoModalStore'
 
 const API_BASE_URL = (import.meta as any).env?.VITE_API_URL || '/api'
 
@@ -10,7 +11,7 @@ export const api = axios.create({
   },
 })
 
-// Request interceptor to add auth token
+// Request interceptor to add auth token and check demo mode
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('auth_token')
@@ -22,6 +23,23 @@ api.interceptors.request.use(
         localStorage.removeItem('auth_token')
       }
     }
+    
+    // Check if in demo mode and if this is a modification request
+    const isDemoMode = localStorage.getItem('demo_mode') === 'true'
+    const isModificationRequest = ['post', 'put', 'delete', 'patch'].includes(config.method?.toLowerCase() || '')
+    const isDemoLoginEndpoint = config.url?.includes('/auth/demo-login')
+    
+    if (isDemoMode && isModificationRequest && !isDemoLoginEndpoint) {
+      // Intercept modification requests in demo mode
+      const modalStore = useDemoModalStore.getState()
+      modalStore.openModal()
+      
+      // Cancel the request by throwing an error
+      const error = new Error('DEMO_MODE_MODIFICATION_BLOCKED')
+      ;(error as any).isDemoBlock = true
+      throw error
+    }
+    
     return config
   },
   (error) => {
@@ -35,6 +53,12 @@ api.interceptors.response.use(
     return response
   },
   (error) => {
+    // Handle demo mode modification block
+    if (error.message === 'DEMO_MODE_MODIFICATION_BLOCKED' || (error as any).isDemoBlock) {
+      // Don't show error toast for demo mode blocks
+      return Promise.reject(error)
+    }
+    
     console.error('API Error:', error.response?.status, error.response?.data)
     if (error.response?.status === 401) {
       localStorage.removeItem('auth_token')
@@ -55,6 +79,8 @@ export const authApi = {
     api.post('/auth/register', data),
   login: (data: { email: string; password: string }) =>
     api.post('/auth/login', data),
+  demoLogin: (userId: string) =>
+    api.post('/auth/demo-login', { userId }),
   refresh: () => api.post('/auth/refresh'),
   getMe: () => api.get('/auth/me'),
   updateProfile: (data: { displayName?: string; email?: string }) =>

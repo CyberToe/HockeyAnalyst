@@ -15,11 +15,13 @@ interface AuthState {
   token: string | null
   isLoading: boolean
   isAuthenticated: boolean
+  isDemoMode: boolean
 }
 
 interface AuthActions {
   login: (email: string, password: string) => Promise<void>
   register: (email: string, password: string, displayName: string) => Promise<void>
+  demoLogin: (userId: string) => Promise<void>
   logout: () => void
   checkAuth: () => Promise<void>
   setLoading: (loading: boolean) => void
@@ -36,6 +38,7 @@ export const useAuthStore = create<AuthStore>()(
       token: null,
       isLoading: false,
       isAuthenticated: false,
+      isDemoMode: false,
 
       // Actions
       login: async (email: string, password: string) => {
@@ -49,10 +52,12 @@ export const useAuthStore = create<AuthStore>()(
           }
           
           localStorage.setItem('auth_token', token)
+          localStorage.removeItem('demo_mode')
           set({
             user,
             token,
             isAuthenticated: true,
+            isDemoMode: false,
             isLoading: false,
           })
           console.log('Auth store: Login successful, user set')
@@ -74,6 +79,7 @@ export const useAuthStore = create<AuthStore>()(
             user,
             token,
             isAuthenticated: true,
+            isDemoMode: false,
             isLoading: false,
           })
         } catch (error) {
@@ -82,22 +88,53 @@ export const useAuthStore = create<AuthStore>()(
         }
       },
 
+      demoLogin: async (userId: string) => {
+        try {
+          set({ isLoading: true })
+          const response = await authApi.demoLogin(userId)
+          const { user, token } = response.data.data
+          
+          if (!token || token === 'undefined' || token === 'null') {
+            throw new Error('Invalid token received from server')
+          }
+          
+          localStorage.setItem('auth_token', token)
+          localStorage.setItem('demo_mode', 'true')
+          set({
+            user,
+            token,
+            isAuthenticated: true,
+            isDemoMode: true,
+            isLoading: false,
+          })
+          console.log('Auth store: Demo login successful')
+        } catch (error) {
+          console.error('Auth store: Demo login error:', error)
+          set({ isLoading: false })
+          throw error
+        }
+      },
+
       logout: () => {
         localStorage.removeItem('auth_token')
         localStorage.removeItem('user')
+        localStorage.removeItem('demo_mode')
         localStorage.removeItem('auth-storage') // Clear zustand storage too
         set({
           user: null,
           token: null,
           isAuthenticated: false,
+          isDemoMode: false,
           isLoading: false,
         })
       },
 
       checkAuth: async () => {
         const token = localStorage.getItem('auth_token')
+        const isDemoMode = localStorage.getItem('demo_mode') === 'true'
+        
         if (!token) {
-          set({ isAuthenticated: false, user: null })
+          set({ isAuthenticated: false, user: null, isDemoMode: false })
           return
         }
 
@@ -110,15 +147,18 @@ export const useAuthStore = create<AuthStore>()(
             user,
             token,
             isAuthenticated: true,
+            isDemoMode,
             isLoading: false,
           })
         } catch (error) {
           localStorage.removeItem('auth_token')
           localStorage.removeItem('user')
+          localStorage.removeItem('demo_mode')
           set({
             user: null,
             token: null,
             isAuthenticated: false,
+            isDemoMode: false,
             isLoading: false,
           })
         }
@@ -150,6 +190,7 @@ export const useAuthStore = create<AuthStore>()(
           user: null,
           token: null,
           isAuthenticated: false,
+          isDemoMode: false,
           isLoading: false,
         })
       },
@@ -160,6 +201,7 @@ export const useAuthStore = create<AuthStore>()(
         user: state.user,
         token: state.token,
         isAuthenticated: state.isAuthenticated,
+        isDemoMode: state.isDemoMode,
       }),
     }
   )

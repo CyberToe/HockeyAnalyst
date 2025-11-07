@@ -14,16 +14,21 @@ import GamePage from './pages/GamePage'
 import AnalyticsPage from './pages/AnalyticsPage'
 import ProfilePage from './pages/ProfilePage'
 import ProtectedRoute from './components/ProtectedRoute'
+import DemoModificationModal from './components/DemoModificationModal'
+import { useDemoModalStore } from './stores/demoModalStore'
 
 function App() {
   const { user, checkAuth } = useAuthStore()
+  const { isOpen, closeModal } = useDemoModalStore()
 
   useEffect(() => {
     checkAuth()
   }, [checkAuth])
 
   return (
-    <Routes>
+    <>
+      <DemoModificationModal isOpen={isOpen} onClose={closeModal} />
+      <Routes>
       {/* Public routes */}
       <Route 
         path="/" 
@@ -56,7 +61,8 @@ function App() {
 
       {/* Catch all route */}
       <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+      </Routes>
+    </>
   )
 }
 
