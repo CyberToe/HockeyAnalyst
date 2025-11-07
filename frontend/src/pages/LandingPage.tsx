@@ -158,20 +158,14 @@ export default function LandingPage() {
           </div>
 
           {/* Call to Action */}
-          <div className="text-center mt-6 flex gap-4 justify-center items-center">
+          <div className="text-center mt-6">
             <button
               onClick={handleDemoLogin}
               disabled={isLoading}
-              className="inline-block bg-gray-600 hover:bg-gray-700 text-white px-6 py-2.5 rounded-lg font-semibold text-base transition-colors shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+              className="inline-block bg-green-600 hover:bg-green-700 text-white px-10 py-4 rounded-lg font-semibold text-lg transition-colors shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading ? 'Loading...' : 'Try Demo'}
             </button>
-            <Link
-              to="/register"
-              className="inline-block bg-primary-600 hover:bg-primary-700 text-white px-6 py-2.5 rounded-lg font-semibold text-base transition-colors shadow-md hover:shadow-lg"
-            >
-              Get Started
-            </Link>
           </div>
         </div>
       </main>
